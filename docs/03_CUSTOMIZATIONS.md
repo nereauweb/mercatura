@@ -425,7 +425,7 @@ cent.
 - The JS keeps its cascade and request shape; only the request key
   `printings` → `customizations` (server accepts both for one release).
 - The configurator view keeps its name and stacks; copy gains
-  kind-aware wording only where a new key is added (e.g. "Ricamo" is no
+  technique-aware wording only where a new key is added (e.g. "Ricamo" is no
   longer introduced as a print technique).
 - Endpoints: `image_and_sizes` → returns `areas`; `colors` → returns
   `options` (`id`, `label`, `units`); shapes otherwise unchanged. Dead
@@ -485,7 +485,7 @@ Column rename, lang keys for yes/no, controller reads
   (session cart → order rows and totals), `SiblingLookupTest`,
   `ConfiguratorEndpointsTest` (shapes, not only 404s).
 - Each phase keeps those green; v2c.2 adds schema tests
-  (`CustomizationSchemaTest`: tables, kinds, foreign keys, migrated
+  (`CustomizationSchemaTest`: tables, columns, foreign keys, migrated
   order rows), v2c.3 adds snapshot assertions, v2c.6 admin tests.
 - Connector package tests updated with their release.
 
@@ -567,7 +567,7 @@ as in `02_V2B_ADMIN.md`.
   Mitigated by the characterisation tests written *before* any change
   and by keeping the tier/markup algebra untouched.
 - **Renaming with data.** `RENAME TABLE` is atomic; the column renames
-  and the `kind` backfill are one transaction per table on MariaDB
+  and the added columns are one transaction per table on MariaDB
   10.11; downtime of minutes, not hours. The migrated fixture is the
   rehearsal.
 - **Sessions in flight** during the v2c.3 deploy hold `printings` keys;
@@ -580,7 +580,7 @@ as in `02_V2B_ADMIN.md`.
   machine) to list PF `impMethodCode` values and confirm the Sipec code
   prefixes; until then connectors write `family` only where the mapping is
   certain, otherwise null.
-- **Open:** should `has_packaging` become a customization of kind
+- **Open:** should `has_packaging` become a customization with family
   `packaging` instead of a flag with its own tier columns? Not in v2c
   (parity); worth a decision when a second supplier prices packaging
   differently.
