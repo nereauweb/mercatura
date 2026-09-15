@@ -20,10 +20,10 @@ for them. The task recorded before the public repo (`pre-public-repo-todo`
 task 2) is to turn this into a **customization** domain that:
 
 - holds decorations that are not prints (embroidery, engraving, labels,
-  digital transfer, none) with their own kind-specific data;
+  digital transfer, none) without forcing a taxonomy the feeds do not carry;
 - stays the contract that supplier connectors write, with no supplier
   assumption left in the core;
-- prices every kind through one code path, shared by the configurator,
+- prices every technique through one code path, shared by the configurator,
   the cart, the order and the demo seeder;
 - snapshots what the customer bought, so an order does not depend on the
   supplier's price table of the day;
@@ -92,10 +92,10 @@ deviation is listed in §3.
 
 ### 2.3 Data model facts that shape the rewrite
 
-- The tree is the right shape. Every kind of customization is "a
+- The tree is the right shape. Every customization is "a
   decoration at a place on the article, with a size or extent, with an
   option that drives the price (colours, threads, passes), priced by
-  quantity tiers plus fixed costs". What changes per kind is the *meaning*
+  quantity tiers plus fixed costs". What changes per technique is the *meaning*
   of the middle levels, not the number of levels.
 - The **option level is the pricing dimension**, not a colour: PF and
   Sipec use `number_of_colors` = `0` for full colour, `N` for N colours;
@@ -196,7 +196,7 @@ maintain by hand. That is the reason for decision 2 below.
 The pipeline filter, the connector stage mechanism, the import jobs, the
 cleanup command, the media handling of print files, the configurator's
 cascade (place → technique → extent → option) and the tier lookup are all
-kind-agnostic once names change. The abstraction is mostly a rename plus
+technique-agnostic once names change. The abstraction is mostly a rename plus
 a discriminator plus one pricing service, not a redesign.
 
 ## 3. Decisions *(proposed)*
@@ -250,7 +250,7 @@ a discriminator plus one pricing service, not a redesign.
    today's values as defaults. Installations set them in `.env`. Not a
    behaviour change.
 6. **Order snapshot.** `order_item_customizations` stores, per article
-   line: option id, kind, technique, position, area label, option label,
+   line: option id, family, technique, position, area label, option label,
    units, unit price, quantity, packaging unit price, plus `label` (the
    rendered string, for mails and legacy reads) and `file` (was
    `print_file`). Setup, start, packaging and surcharge become
@@ -262,7 +262,7 @@ a discriminator plus one pricing service, not a redesign.
    `{articles, printings: [option ids], has_packaging}`; the key
    `printings` is renamed `customizations` with a read fallback for
    sessions alive during the deploy. The configurator JSON request and
-   response shapes do not change; the response gains `kind` per line.
+   response shapes do not change; the response gains `family` per line.
 8. **Endpoints.** The four `/prodotti/personalizzazione/*` URLs and route
    names stay (skins may link them). The two dead ones
    (`…/dimensioni`, `…/setup`) are removed — **route removal, needs the
@@ -288,12 +288,12 @@ a discriminator plus one pricing service, not a redesign.
     `CustomizationPipeline`, `ImportPrintingsJob` →
     `ImportCustomizationsJob` (old class kept as subclass for queued
     payloads), `cleanup:printing_variants` → `cleanup:customizations`
-    (old signature kept as alias). Connectors write `kind` on every row
-    (`print` unless they know better). The normalized layer definition in
+    (old signature kept as alias). Connectors write `family` only when
+    the feed makes it certain, null otherwise. The normalized layer definition in
     ARCHITECTURE §13 is updated to the new names.
 13. **Admin editing is the last phase and optional for parity.** A
     relation manager on the variant (customizations → areas → options →
-    tiers) with the same gating (`catalog.manage`), plus a "kind" badge
+    tiers) with the same gating (`catalog.manage`), plus a family badge
     on the read-only section from v2c.2 onwards. Import-owned rows show
     their source and are editable at the installation's risk (an import
     overwrites them), exactly like prices today.
