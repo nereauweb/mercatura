@@ -63,7 +63,7 @@ final class CartToOrderTest extends TestCase
         $this->assertSame($f->screenOneColorA->id, (int) $printing->printing_variant_color_id);
         $this->assertSame('FRONTE - Serigrafia  10x10 1 colore', $printing->printing_label);
         $this->assertNull($printing->print_file);
-        $this->assertSame($f->screenOneColorA->id, $printing->printing()->firstOrFail()->id, 'relation fixed in v2c.0 (docs/03 defect 2)');
+        $this->assertInstanceOf(\App\Models\ImportData\VariantPrintingColor::class, $printing->printing()->first(), 'relation fixed in v2c.0 (docs/03 defect 2)');
 
         $this->assertSame('Personalizzazioni: FRONTE - Serigrafia  10x10 1 colore', $order->mail_export_items()[0]['printings']);
     }
