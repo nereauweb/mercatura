@@ -82,7 +82,7 @@ class CoreSeeder extends Seeder
         if (DB::table('product_markups')->count() === 0) {
             $rows = [];
             foreach (self::MARKUP_BANDS as [$from, $to, $percent]) {
-                $rows[] = ['condition_type' => 0, 'condition_1' => $from, 'condition_2' => $to, 'delta_type' => 0, 'value' => $percent, 'created_at' => now()];
+                $rows[] = ['condition_1' => $from, 'condition_2' => $to, 'value' => $percent, 'created_at' => now()];
             }
             DB::table('product_markups')->insert($rows);
         }

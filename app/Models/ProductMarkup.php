@@ -15,17 +15,13 @@ use Illuminate\Database\Eloquent\Model;
  * in the admin (Sistema → Regole di prezzo); seeded by CoreSeeder.
  *
  * @property int $id
- * @property int $condition_type
  * @property float $condition_1
  * @property float $condition_2
- * @property int $delta_type
  * @property float $value
  */
 class ProductMarkup extends Model
 {
     protected $table = 'product_markups';
 
-    protected $fillable = ['condition_type', 'condition_1', 'condition_2', 'delta_type', 'value'];
-
-    protected $attributes = ['condition_type' => 0, 'delta_type' => 0];
+    protected $fillable = ['condition_1', 'condition_2', 'value'];
 }
