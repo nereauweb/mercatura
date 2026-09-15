@@ -80,14 +80,14 @@ class CoreSeeder extends Seeder
         $oneSizeId = (int) config('mercatura.catalog.one_size_id', 52);
         ProductSize::query()->firstOrCreate(['id' => $oneSizeId], ['type_id' => $type->id, 'label' => 'Unica']);
 
-        if (DB::table('normalized_rules_pricing_products')->count() === 0) {
+        if (DB::table('product_markups')->count() === 0) {
             $rows = [];
             foreach ([0, 1] as $condition3) {
                 foreach (self::MARKUP_BANDS as [$from, $to, $percent]) {
                     $rows[] = ['condition_type' => 0, 'condition_1' => $from, 'condition_2' => $to, 'condition_3' => $condition3, 'delta_type' => 0, 'value' => $percent, 'created_at' => now()];
                 }
             }
-            DB::table('normalized_rules_pricing_products')->insert($rows);
+            DB::table('product_markups')->insert($rows);
         }
     }
 

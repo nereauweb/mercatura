@@ -103,7 +103,7 @@ deviation is listed in §3.
   `original_setup`, `setup_multiplier`, `start_cost` live there.
 - Prices are **baked at import**: `printing_variants_prices.price` is
   `original_price` marked up with the *article's* band
-  (`MarkupRules::percent(qty × cost, condition_3 = 1)`), by the PF
+  (`MarkupRules::percent(qty × cost, condition_3 = 1)` on `product_markups`), by the PF
   calculator or inline by Sipec V3. The storefront then reads `price`
   or, when it has the article markup at hand, recomputes from
   `original_price`. Both paths must survive.
@@ -149,7 +149,8 @@ deviation is listed in §3.
 8. `connectors/pfconcept` `update:app-printings-pf` writes
    `printing_variants.last_seen_in_feed`, a column that does not exist.
 9. `ProductMarkup` / `product_markups` (seeded by `CoreSeeder`) is read
-   by nobody; the live bands are `normalized_rules_pricing_products`.
+   by nobody; the live bands (renamed `product_markups` on 2026-09-16) are
+   edited in the admin under Sistema → Regole di prezzo.
 10. `order_items` in the schema dump has no `unit_price` column while
     `store_order` writes one (to verify against the migrated fixture).
 

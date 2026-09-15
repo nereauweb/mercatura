@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Tests\Feature;
 
 use App\Contracts\ImportConnector;
-use App\Models\ImportData\NormalizedRulesPricingProducts;
 use App\Models\ImportData\VariantPrinting;
 use App\Models\Product;
+use App\Models\ProductMarkup;
 use App\Support\Connectors\BaseConnector;
 use App\Support\Connectors\MarkupRules;
 use App\Support\Connectors\PrintingPipeline;
@@ -53,7 +53,7 @@ class ConnectorFrameworkTest extends TestCase
                 return 12;
             }
 
-            public function markupPercent(float $percent, ?NormalizedRulesPricingProducts $rule, float $condition, int $condition3, ?string $sku): float
+            public function markupPercent(float $percent, ?ProductMarkup $rule, float $condition, int $condition3, ?string $sku): float
             {
                 return max($percent, 42.0);
             }

@@ -16,6 +16,26 @@ return [
         'system' => 'Sistema',
     ],
 
+    'pricing' => [
+        'markup' => 'Fascia di markup',
+        'markups' => 'Regole di prezzo: markup',
+        'markups_hint' => 'Ricarico applicato al costo del fornitore in base al valore dell\'ordine (quantità × costo unitario). La serie "Storefront" agisce subito su carrello e configuratore; la serie "Import" sui listini calcolati al prossimo import.',
+        'series' => 'Serie',
+        'series_import' => 'Import (listini normalizzati)',
+        'series_storefront' => 'Storefront (carrello e configuratore)',
+        'from_value' => 'Valore ordine da',
+        'from_value_hint' => 'Escluso: la fascia parte da questo valore in su.',
+        'to_value' => 'Valore ordine fino a',
+        'percent' => 'Ricarico',
+        'overlap' => 'La fascia si sovrappone a un\'altra della stessa serie.',
+        'tier' => 'Scaglione di quantità',
+        'tiers' => 'Regole di prezzo: scaglioni',
+        'tiers_hint' => 'Per ogni intervallo di costo unitario, le quattro quantità a cui l\'import genera i listini delle varianti. Non incidono sui prezzi già salvati fino al prossimo import.',
+        'from_cost' => 'Costo unitario da',
+        'to_cost' => 'Costo unitario fino a',
+        'quantity_n' => 'Quantità :n',
+    ],
+
     'common' => [
         'id' => 'ID',
         'created_at' => 'Creato il',

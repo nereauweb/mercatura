@@ -478,7 +478,8 @@ prices, attributes, media, categories).
   registry matches sources case-insensitively against key, label and
   aliases, so no data migration is required.
 - **Admin.** Generic screens stay in the core (import runs and log, category
-  aliases, markup bands to come); connector-specific pages come with the
+  aliases, markup bands and quantity tiers under Sistema → Regole di prezzo);
+  connector-specific pages come with the
   package as a Filament plugin returned by `adminPlugin()`.
 - **Schema.** Raw supplier tables are created by the package migrations
   (guarded with `hasTable` for installations migrated from the monolith);

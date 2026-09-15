@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace App\Support\Connectors;
 
 use App\Models\ImportData\NormalizedRulesPriceTiers;
-use App\Models\ImportData\NormalizedRulesPricingProducts;
+use App\Models\ProductMarkup;
 use App\Support\ImportConnectors;
 
 /**
- * Selling price from unit cost: markup bands in normalized_rules_pricing_products
+ * Selling price from unit cost: markup bands in product_markups
  * (condition = quantity × cost, condition_3 = 0 normal / 1 web-shop) and
  * quantity breaks in normalized_rules_price_tiers. Connectors may adjust
  * the percent for their own sources (ImportConnector::markupPercent).
@@ -18,9 +18,9 @@ final class MarkupRules
 {
     public function __construct(private readonly ImportConnectors $connectors) {}
 
-    public function rule(float $condition, int $condition3): ?NormalizedRulesPricingProducts
+    public function rule(float $condition, int $condition3): ?ProductMarkup
     {
-        return NormalizedRulesPricingProducts::query()
+        return ProductMarkup::query()
             ->where('condition_1', '<', $condition)
             ->where('condition_2', '>=', $condition)
             ->where('condition_3', '=', $condition3)

@@ -6,8 +6,8 @@ namespace App\Support\Connectors;
 
 use App\Contracts\ImportConnector;
 use App\Models\ImportData\NormalizedProductVariant;
-use App\Models\ImportData\NormalizedRulesPricingProducts;
 use App\Models\Product;
+use App\Models\ProductMarkup;
 use App\Models\ProductVariant;
 use Filament\Contracts\Plugin;
 
@@ -52,7 +52,7 @@ abstract class BaseConnector implements ImportConnector
         return null;
     }
 
-    public function markupPercent(float $percent, ?NormalizedRulesPricingProducts $rule, float $condition, int $condition3, ?string $sku): float
+    public function markupPercent(float $percent, ?ProductMarkup $rule, float $condition, int $condition3, ?string $sku): float
     {
         return $percent;
     }

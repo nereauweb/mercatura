@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Contracts;
 
 use App\Models\ImportData\NormalizedProductVariant;
-use App\Models\ImportData\NormalizedRulesPricingProducts;
 use App\Models\Product;
+use App\Models\ProductMarkup;
 use App\Models\ProductVariant;
 use Filament\Contracts\Plugin;
 
@@ -73,7 +73,7 @@ interface ImportConnector
      * @param  float  $condition  quantity × unit cost
      * @param  int  $condition3  0 normal, 1 web-shop
      */
-    public function markupPercent(float $percent, ?NormalizedRulesPricingProducts $rule, float $condition, int $condition3, ?string $sku): float;
+    public function markupPercent(float $percent, ?ProductMarkup $rule, float $condition, int $condition3, ?string $sku): float;
 
     /** Whether a single-tier price (no band) still gets the markup applied (supplier exception). */
     public function appliesMarkupToSingleTier(?string $sku): bool;
