@@ -1,0 +1,68 @@
+@import "tailwindcss" source(none);
+@source "../views";
+@source "../skins";
+@source "../js";
+
+/*
+| Semantic design tokens (docs/ARCHITECTURE.md §5, CLAUDE.md "Semantic
+| Tailwind tokens"). Shared markup uses these names only: bg-primary,
+| text-accent, border-muted… Never a colour name, never a client name.
+| A skin restyles the storefront by redefining the variables at :root in
+| its own stylesheet; the core palette is deliberately generic.
+*/
+@theme {
+    --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+
+    --color-primary: #1e40af;
+    --color-primary-strong: #1e3a8a;
+    --color-primary-soft: #dbeafe;
+    --color-on-primary: #ffffff;
+
+    --color-accent: #ea580c;
+    --color-accent-strong: #c2410c;
+    --color-on-accent: #ffffff;
+
+    --color-positive: #65a30d;
+    --color-danger: #dc2626;
+    --color-danger-soft: #fee2e2;
+
+    --color-surface: #ffffff;
+    --color-surface-muted: #f1f5f9;
+    --color-surface-strong: #e2e8f0;
+
+    --color-text: #0f172a;
+    --color-text-muted: #64748b;
+    --color-on-dark: #f8fafc;
+
+    --color-border: #cbd5e1;
+    --color-border-muted: #e2e8f0;
+
+    --radius-card: 0.5rem;
+}
+
+/*
+| Only the layer that must exist regardless of utilities: Alpine's
+| x-cloak and Livewire's loading helpers.
+*/
+[x-cloak] {
+    display: none !important;
+}
+
+@layer components {
+    .mercatura-flash {
+        @apply pointer-events-auto rounded-card px-4 py-3 text-sm font-medium shadow-lg;
+    }
+
+    /* Rich text from the CMS (product descriptions, pages, articles). */
+    .prose :where(p, ul, ol, blockquote, table) { @apply my-3; }
+    .prose :where(h2) { @apply mt-6 mb-2 text-xl font-bold text-primary; }
+    .prose :where(h3) { @apply mt-4 mb-2 text-lg font-bold text-primary; }
+    .prose :where(h4, h5, h6) { @apply mt-3 mb-1 font-bold; }
+    .prose :where(ul) { @apply list-disc pl-6; }
+    .prose :where(ol) { @apply list-decimal pl-6; }
+    .prose :where(a) { @apply text-accent underline; }
+    .prose :where(img) { @apply my-4 h-auto max-w-full rounded-card; }
+    .prose :where(table) { @apply w-full border-collapse text-sm; }
+    .prose :where(th, td) { @apply border border-border-muted px-2 py-1 text-left; }
+    .prose :where(strong) { @apply font-bold; }
+}

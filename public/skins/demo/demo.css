@@ -1,0 +1,9 @@
+/* Demo skin: proves that a skin can ship its own static assets. */
+.mercatura-demo-ribbon {
+    background: #fde68a;
+    color: #78350f;
+    font: 600 13px/1.6 system-ui, sans-serif;
+    letter-spacing: .04em;
+    text-align: center;
+    text-transform: uppercase;
+}

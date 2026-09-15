@@ -1,0 +1,5 @@
+# Copied to tests/legacy-content.patterns (git-ignored): one regular
+# expression per line, matched case-insensitively against every storefront
+# view, mail and seeded page by the tests (Tests\Support\LegacyContent).
+# List here the names, phone numbers and ids of the installation the core
+# was bootstrapped from; the public repository must not carry them.

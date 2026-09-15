@@ -1,0 +1,913 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$active\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Console/Commands/DisableWrongProducts.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$source_sku\.$#'
+			identifier: property.notFound
+			count: 4
+			path: app/Console/Commands/DisableWrongProducts.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:getFirstMedia\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Console/Commands/DisableWrongProducts.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:normalized_variant\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Console/Commands/DisableWrongProducts.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:prices\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: app/Console/Commands/DisableWrongProducts.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:addMediaConversion\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Console/Commands/FixMediaFileExtensions.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$filename\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Console/Commands/FixMediaOrder.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Console/Commands/FixMediaOrder.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$sku\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Console/Commands/FixMediaOrder.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:getMedia\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Console/Commands/FixMediaOrder.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$app_variant\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Console/Commands/PrepareLegacyExport.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$brand\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Console/Commands/PrepareLegacyExport.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$colors\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Console/Commands/PrepareLegacyExport.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$countryOfOrigin\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Console/Commands/PrepareLegacyExport.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$dimensions\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Console/Commands/PrepareLegacyExport.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$full_description\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Console/Commands/PrepareLegacyExport.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$gender\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Console/Commands/PrepareLegacyExport.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 5
+			path: app/Console/Commands/PrepareLegacyExport.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$ink_color\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Console/Commands/PrepareLegacyExport.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$keywords\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Console/Commands/PrepareLegacyExport.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$markSegment\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Console/Commands/PrepareLegacyExport.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$material\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Console/Commands/PrepareLegacyExport.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Console/Commands/PrepareLegacyExport.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$next_stock_date\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Console/Commands/PrepareLegacyExport.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$next_stock_quantity\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Console/Commands/PrepareLegacyExport.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$packageDepthCm\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Console/Commands/PrepareLegacyExport.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$packageHeightCm\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Console/Commands/PrepareLegacyExport.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$packageWidthCm\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Console/Commands/PrepareLegacyExport.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$packagingGrossWeightKg\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Console/Commands/PrepareLegacyExport.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$packagingNetWeightKg\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Console/Commands/PrepareLegacyExport.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$printing_default_dimension\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Console/Commands/PrepareLegacyExport.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$printing_default_location\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Console/Commands/PrepareLegacyExport.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$printing_default_max_colors\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Console/Commands/PrepareLegacyExport.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$printing_default_technique\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Console/Commands/PrepareLegacyExport.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$product_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Console/Commands/PrepareLegacyExport.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$qtyPerCarton\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Console/Commands/PrepareLegacyExport.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$related\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Console/Commands/PrepareLegacyExport.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$sale\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Console/Commands/PrepareLegacyExport.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$short_description\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Console/Commands/PrepareLegacyExport.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$size\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Console/Commands/PrepareLegacyExport.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$source_id\.$#'
+			identifier: property.notFound
+			count: 5
+			path: app/Console/Commands/PrepareLegacyExport.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$theme\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Console/Commands/PrepareLegacyExport.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$weightG\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Console/Commands/PrepareLegacyExport.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:prices\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Console/Commands/PrepareLegacyExport.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$app_variant\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Console/Commands/ProcessNormalizedProductData.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$color\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Console/Commands/ProcessNormalizedProductData.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$colors\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Console/Commands/ProcessNormalizedProductData.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$full_description\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Console/Commands/ProcessNormalizedProductData.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Console/Commands/ProcessNormalizedProductData.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$last_seen_active\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Console/Commands/ProcessNormalizedProductData.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 4
+			path: app/Console/Commands/ProcessNormalizedProductData.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$next_stock_date\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Console/Commands/ProcessNormalizedProductData.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$next_stock_quantity\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Console/Commands/ProcessNormalizedProductData.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$parent_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Console/Commands/ProcessNormalizedProductData.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$prices\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Console/Commands/ProcessNormalizedProductData.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$sale\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Console/Commands/ProcessNormalizedProductData.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$size\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Console/Commands/ProcessNormalizedProductData.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$source_id\.$#'
+			identifier: property.notFound
+			count: 13
+			path: app/Console/Commands/ProcessNormalizedProductData.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$stock\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Console/Commands/ProcessNormalizedProductData.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$theme\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Console/Commands/ProcessNormalizedProductData.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:colors\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Console/Commands/ProcessNormalizedProductData.php
+
+		-
+			message: '#^Method Illuminate\\Http\\Client\\Response\:\:header\(\) invoked with 2 parameters, 1 required\.$#'
+			identifier: arguments.count
+			count: 1
+			path: app/Console/Commands/ProcessNormalizedProductData.php
+
+		-
+			message: '#^Negated boolean expression is always false\.$#'
+			identifier: booleanNot.alwaysFalse
+			count: 1
+			path: app/Console/Commands/ProcessNormalizedProductData.php
+
+		-
+			message: '#^Parameter \#1 \$array of function sort contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Console/Commands/ProcessNormalizedProductData.php
+
+		-
+			message: '#^Result of \|\| is always false\.$#'
+			identifier: booleanOr.alwaysFalse
+			count: 1
+			path: app/Console/Commands/ProcessNormalizedProductData.php
+
+		-
+			message: '#^Variable \$images in empty\(\) always exists and is not falsy\.$#'
+			identifier: empty.variable
+			count: 1
+			path: app/Console/Commands/ProcessNormalizedProductData.php
+
+		-
+			message: '#^Variable \$images in isset\(\) always exists and is not nullable\.$#'
+			identifier: isset.variable
+			count: 1
+			path: app/Console/Commands/ProcessNormalizedProductData.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$description\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Console/Commands/UpdateProductsDescriptions.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Console/Commands/UpdateProductsDescriptions.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$sku\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Console/Commands/UpdateProductsDescriptions.php
+
+		-
+			message: '#^Call to an undefined method Throwable\:\:getStatusCode\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Exceptions/Handler.php
+
+		-
+			message: '#^Negated boolean expression is always true\.$#'
+			identifier: booleanNot.alwaysTrue
+			count: 1
+			path: app/Exceptions/Handler.php
+
+		-
+			message: '#^Parameter \#1 \$e of method App\\Exceptions\\Handler\:\:renderHttpException\(\) expects Symfony\\Component\\HttpKernel\\Exception\\HttpExceptionInterface, Throwable given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Exceptions/Handler.php
+
+		-
+			message: '#^Unreachable statement \- code above always terminates\.$#'
+			identifier: deadCode.unreachable
+			count: 4
+			path: app/Exceptions/Handler.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$billing_address\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/FrontendAuthController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$billing_address_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/FrontendAuthController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 4
+			path: app/Http/Controllers/FrontendAuthController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$shipping_address\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/FrontendAuthController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$shipping_address_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/FrontendAuthController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$billing_address\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/FrontendCartController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/FrontendCartController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$shipping_address\.$#'
+			identifier: property.notFound
+			count: 7
+			path: app/Http/Controllers/FrontendCartController.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:articles\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Controllers/FrontendCartController.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:printings\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Controllers/FrontendCartController.php
+
+		-
+			message: '#^Negated boolean expression is always false\.$#'
+			identifier: booleanNot.alwaysFalse
+			count: 1
+			path: app/Http/Controllers/FrontendCartController.php
+
+		-
+			message: '#^Using nullsafe property access on non\-nullable type App\\Models\\Customer\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/FrontendCartController.php
+
+		-
+			message: '#^Variable \$this_minimum on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.variable
+			count: 2
+			path: app/Http/Controllers/FrontendCartController.php
+
+		-
+			message: '#^Parameter \#1 \$view of function view expects view\-string\|null, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/FrontendContactsController.php
+
+		-
+			message: '#^Negated boolean expression is always false\.$#'
+			identifier: booleanNot.alwaysFalse
+			count: 1
+			path: app/Http/Controllers/FrontendLoginController.php
+
+		-
+			message: '#^Using nullsafe property access on non\-nullable type App\\Models\\Customer\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/FrontendLoginController.php
+
+		-
+			message: '#^Call to an undefined method Symfony\\Component\\HttpFoundation\\File\\UploadedFile\:\:extension\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: app/Http/Controllers/FrontendOrderController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model&object\{pivot\: Illuminate\\Database\\Eloquent\\Relations\\Pivot\}\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/FrontendProductController.php
+
+		-
+			message: '#^Method App\\Models\\ImportData\\VariantPrintingColor\:\:calculate_print_price\(\) invoked with 1 parameter, 2\-5 required\.$#'
+			identifier: arguments.count
+			count: 1
+			path: app/Http/Controllers/FrontendProductController.php
+
+		-
+			message: '#^Variable \$this_minimum on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.variable
+			count: 1
+			path: app/Http/Controllers/FrontendProductController.php
+
+		-
+			message: '#^Result of static method Illuminate\\Cache\\Repository\:\:remember\(\) \(void\) is used\.$#'
+			identifier: staticMethod.void
+			count: 1
+			path: app/Http/Middleware/GetFrontendMenu.php
+
+		-
+			message: '#^Argument of an invalid type Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\ProductVariant\> supplied for foreach, only iterables are supported\.$#'
+			identifier: foreach.nonIterable
+			count: 1
+			path: app/Models/Category.php
+
+		-
+			message: '#^If condition is always true\.$#'
+			identifier: if.alwaysTrue
+			count: 1
+			path: app/Models/Category.php
+
+		-
+			message: '#^Class App\\Models\\ImportData\\NormalizedPrintingPosition not found\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/ImportData/NormalizedProduct.php
+
+		-
+			message: '#^Parameter \#1 \$related of method Illuminate\\Database\\Eloquent\\Model\:\:belongsToMany\(\) expects class\-string\<Illuminate\\Database\\Eloquent\\Model\>, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Models/ImportData/NormalizedProduct.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$printing_size\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/ImportData/VariantPrintingPrice.php
+
+		-
+			message: '#^Class App\\Models\\CategoryAlias not found\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/MetaCategory.php
+
+		-
+			message: '#^Parameter \#1 \$related of method Illuminate\\Database\\Eloquent\\Model\:\:hasMany\(\) expects class\-string\<Illuminate\\Database\\Eloquent\\Model\>, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Models/MetaCategory.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$activity\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/Order.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$articles\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/Order.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$cig_code\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/Order.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$company\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/Order.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$customer_type\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/Order.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$email\.$#'
+			identifier: property.notFound
+			count: 6
+			path: app/Models/Order.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$ipa_code\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/Order.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/Order.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$pec\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/Order.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$phone\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/Order.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$price\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/Order.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$printings\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/Order.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$product_image_url\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/Order.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$product_name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/Order.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$product_sku\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/Order.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$quantity\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/Order.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$sdi_code\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/Order.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$surname\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/Order.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$tax_code\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/Order.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$vat_code\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/Order.php
+
+		-
+			message: '#^Loose comparison using \=\= between false and ''category_id'' will always evaluate to false\.$#'
+			identifier: equal.alwaysFalse
+			count: 1
+			path: app/Models/PageContent.php
+
+		-
+			message: '#^Loose comparison using \=\= between false and ''is_sale'' will always evaluate to false\.$#'
+			identifier: equal.alwaysFalse
+			count: 1
+			path: app/Models/PageContent.php
+
+		-
+			message: '#^Loose comparison using \=\= between false and ''product_id'' will always evaluate to false\.$#'
+			identifier: equal.alwaysFalse
+			count: 1
+			path: app/Models/PageContent.php
+
+		-
+			message: '#^Negated boolean expression is always false\.$#'
+			identifier: booleanNot.alwaysFalse
+			count: 3
+			path: app/Models/PageContent.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model&object\{pivot\: Illuminate\\Database\\Eloquent\\Relations\\Pivot\}\:\:\$parent_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/Product.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/Product.php
+
+		-
+			message: '#^Call to an undefined method App\\Models\\Product\:\:printing_positions\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Models/Product.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model&object\{pivot\: Illuminate\\Database\\Eloquent\\Relations\\Pivot\}\:\:parent_category\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Models/Product.php
+
+		-
+			message: '#^Cannot access an offset on false\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 1
+			path: app/Models/Product.php
+
+		-
+			message: '#^Undefined variable\: \$color_id$#'
+			identifier: variable.undefined
+			count: 1
+			path: app/Models/Product.php
+
+		-
+			message: '#^Class App\\Models\\ProductColorAlias not found\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/ProductColor.php
+
+		-
+			message: '#^Method App\\Models\\ProductColor\:\:invert_color\(\) is unused\.$#'
+			identifier: method.unused
+			count: 1
+			path: app/Models/ProductColor.php
+
+		-
+			message: '#^Parameter \#1 \$related of method Illuminate\\Database\\Eloquent\\Model\:\:hasMany\(\) expects class\-string\<Illuminate\\Database\\Eloquent\\Model\>, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Models/ProductColor.php
+
+		-
+			message: '#^Class App\\Models\\ProductSizeAlias not found\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/ProductSize.php
+
+		-
+			message: '#^Parameter \#1 \$related of method Illuminate\\Database\\Eloquent\\Model\:\:hasMany\(\) expects class\-string\<Illuminate\\Database\\Eloquent\\Model\>, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Models/ProductSize.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\ProductVariant\:\:\$highestMinPrintQuantity\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/ProductVariant.php
+
+		-
+			message: '#^Call to an undefined method Spatie\\Image\\Drivers\\ImageDriver\:\:nonQueued\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Models/ProductVariant.php
+
+		-
+			message: '#^Loose comparison using \=\= between false and 2 will always evaluate to false\.$#'
+			identifier: equal.alwaysFalse
+			count: 1
+			path: app/Models/ProductVariant.php
+
+		-
+			message: '#^Variable \$images in empty\(\) always exists and is not falsy\.$#'
+			identifier: empty.variable
+			count: 1
+			path: app/Models/ProductVariant.php
+
+		-
+			message: '#^Variable \$images in isset\(\) always exists and is not nullable\.$#'
+			identifier: isset.variable
+			count: 1
+			path: app/Models/ProductVariant.php
+
+		-
+			message: '#^Class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo referenced with incorrect case\: Illuminate\\Database\\Eloquent\\Relations\\belongsTo\.$#'
+			identifier: class.nameCase
+			count: 1
+			path: app/Models/QuotationItem.php
+
+		-
+			message: '#^PHPDoc type array\<int, string\> of property App\\Models\\User\:\:\$fillable is not covariant with PHPDoc type list\<string\> of overridden property Illuminate\\Database\\Eloquent\\Model\:\:\$fillable\.$#'
+			identifier: property.phpDocType
+			count: 1
+			path: app/Models/User.php
+
+		-
+			message: '#^PHPDoc type array\<int, string\> of property App\\Models\\User\:\:\$hidden is not covariant with PHPDoc type list\<string\> of overridden property Illuminate\\Database\\Eloquent\\Model\:\:\$hidden\.$#'
+			identifier: property.phpDocType
+			count: 1
+			path: app/Models/User.php
+
+		-
+			message: '#^Method Carbon\\Carbon\:\:addHour\(\) invoked with 1 parameter, 0 required\.$#'
+			identifier: arguments.count
+			count: 1
+			path: app/Providers/AppServiceProvider.php
+
+		-
+			message: '#^Class App\\View\\Composers\\ProfileComposer not found\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Providers/FrontendNavServiceProvider.php
+
+		-
+			message: '#^Negated boolean expression is always false\.$#'
+			identifier: booleanNot.alwaysFalse
+			count: 1
+			path: app/Support/FrontendDebugLog.php
+
+		-
+			message: '#^Class Spatie\\MediaLibraryPro\\Models\\TemporaryUpload not found\.$#'
+			identifier: class.notFound
+			count: 1
+			path: config/media-library.php
+
+		-
+			message: '#^Static access to instance property Spatie\\Permission\\PermissionRegistrar\:\:\$pivotPermission\.$#'
+			identifier: property.staticAccess
+			count: 7
+			path: database/migrations/2023_03_28_153358_create_permission_tables.php
+
+		-
+			message: '#^Static access to instance property Spatie\\Permission\\PermissionRegistrar\:\:\$pivotRole\.$#'
+			identifier: property.staticAccess
+			count: 7
+			path: database/migrations/2023_03_28_153358_create_permission_tables.php
+
+		-
+			message: '#^Call to method PHPUnit\\Framework\\Assert\:\:assertTrue\(\) with true will always evaluate to true\.$#'
+			identifier: method.alreadyNarrowedType
+			count: 1
+			path: tests/Unit/ExampleTest.php

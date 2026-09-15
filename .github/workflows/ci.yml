@@ -1,0 +1,100 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  contract:
+    name: Core/installation contract
+    # Core-only rules; an installation (a fork of this repository, ARCHITECTURE §8) skips them.
+    if: github.repository == 'nereauweb/mercatura'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Only the demo skin may exist in the core
+        run: |
+          violations=$(find resources/skins public/skins -mindepth 1 -maxdepth 1 2>/dev/null | grep -vE '^(resources|public)/skins/demo$' || true)
+          if [ -n "$violations" ]; then
+            echo "Skins other than demo are not allowed in the core:"
+            echo "$violations"
+            exit 1
+          fi
+      - name: No Windows metadata files
+        run: |
+          if find . -name '*:Zone.Identifier' -not -path './.git/*' | grep -q .; then
+            echo "Zone.Identifier files must not be committed"; exit 1
+          fi
+
+  php:
+    name: PHP ${{ matrix.php }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['8.4']
+    services:
+      mariadb:
+        image: mariadb:10.11
+        env:
+          MARIADB_DATABASE: mercatura_test
+          MARIADB_USER: mercatura
+          MARIADB_PASSWORD: mercatura
+          MARIADB_ROOT_PASSWORD: root
+        ports: ['3306:3306']
+        options: >-
+          --health-cmd "healthcheck.sh --connect --innodb_initialized"
+          --health-interval 10s --health-timeout 5s --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: mbstring, intl, gd, bcmath, pdo_mysql, zip, exif
+          coverage: none
+      - name: Install dependencies
+        # Installations set the COMPOSER_AUTH secret ({"github-oauth":{"github.com":"<token>"}})
+        # so Composer can fetch their private connector packages; the core needs none.
+        env:
+          COMPOSER_AUTH: ${{ secrets.COMPOSER_AUTH }}
+        run: composer install --no-interaction --prefer-dist --no-progress
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Build assets
+        run: |
+          npm ci
+          npm run build
+      - name: Prepare environment
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+      - name: Pint
+        run: composer pint -- --test
+      - name: Larastan
+        run: composer larastan
+      - name: Skin check (every skin in the checkout)
+        run: |
+          for skin in resources/skins/*/; do
+            php artisan mercatura:skin-check "$(basename "$skin")"
+          done
+      - name: Migrate the test database
+        env:
+          DB_CONNECTION: mysql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_DATABASE: mercatura_test
+          DB_USERNAME: mercatura
+          DB_PASSWORD: mercatura
+        run: php artisan migrate --force
+      - name: Tests
+        env:
+          DB_CONNECTION: mysql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_DATABASE: mercatura_test
+          DB_USERNAME: mercatura
+          DB_PASSWORD: mercatura
+        run: composer test

@@ -1,0 +1,14 @@
+# Default rule for all bots
+User-agent: *
+Allow: /
+# Block private/functional pages from all bots
+Disallow: /carrello/
+Disallow: /checkout/
+Disallow: /admin/
+# Block product listing page only (allow individual product pages like /prodotti/slug)
+Disallow: /prodotti$
+Disallow: /prodotti/$
+Disallow: /ordine/
+Disallow: /accedi/
+Disallow: /logout/
+

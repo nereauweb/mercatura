@@ -1,0 +1,10 @@
+{
+    "preset": "laravel",
+    "exclude": [
+        "bootstrap/cache",
+        "database/schema",
+        "storage"
+    ],
+    "notName": [
+    ]
+}

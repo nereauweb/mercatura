@@ -1,0 +1,84 @@
+# Dependencies
+/vendor
+/node_modules
+
+# Environment
+.env
+.env.*
+!.env.example
+auth.json
+
+# Laravel runtime
+/bootstrap/cache/*
+!/bootstrap/cache/.gitignore
+/storage/*
+!/storage/app/
+/storage/app/*
+!/storage/app/.gitignore
+!/storage/app/public/
+/storage/app/public/*
+!/storage/app/public/.gitignore
+!/storage/framework/
+/storage/framework/*
+!/storage/framework/.gitignore
+!/storage/framework/cache/
+/storage/framework/cache/*
+!/storage/framework/cache/.gitignore
+!/storage/framework/cache/data/
+/storage/framework/cache/data/*
+!/storage/framework/cache/data/.gitignore
+!/storage/framework/sessions/
+/storage/framework/sessions/*
+!/storage/framework/sessions/.gitignore
+!/storage/framework/testing/
+/storage/framework/testing/*
+!/storage/framework/testing/.gitignore
+!/storage/framework/views/
+/storage/framework/views/*
+!/storage/framework/views/.gitignore
+!/storage/logs/
+/storage/logs/*
+!/storage/logs/.gitignore
+/public/hot
+/public/js/filament
+/public/storage
+/public/build
+/public/css/filament
+/public/fonts/filament
+/public/sitemap*.xml
+
+# Databases
+/database/*.sqlite
+/database/*.sqlite3
+
+# Tests and tooling
+.phpunit.result.cache
+.phpunit.cache
+/coverage
+/.phpstan.cache
+
+# Editors and OS
+/.idea
+/.vscode
+/.fleet
+*.sublime-workspace
+*.sublime-project
+.DS_Store
+Thumbs.db
+*:Zone.Identifier
+
+# Misc
+*.bak
+*.tmp
+*.swp
+npm-debug.log
+yarn-error.log
+nohup.out
+
+# Lighthouse/chrome-launcher profile dirs created with a Windows path under WSL
+/C:*
+
+# Supplier connector packages checked out for development or deployed by directory (docs/ARCHITECTURE.md §13)
+/connectors/*
+!/connectors/README.md
+/tests/legacy-content.patterns
