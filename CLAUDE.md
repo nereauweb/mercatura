@@ -185,4 +185,5 @@ app/Filament/              the admin panel (resources, pages, widgets); app/Acti
 app/Support/Connectors/    the connector framework (ARCHITECTURE §13); connector packages live outside the repo
 connectors/                git-ignored checkout of private connector packages (development, or deploy by directory)
 docs/02_V2B_ADMIN.md        v2b (Filament admin) analysis, plan and deviations
+docs/03_CUSTOMIZATIONS.md   v2c (printing → customizations) analysis and plan, awaiting approval
 ```
