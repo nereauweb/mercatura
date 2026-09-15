@@ -72,7 +72,7 @@ final class LinePricingTest extends TestCase
         $this->assertEqualsWithDelta(12.18, $item['unit_price'], 0.001, 'cart unit price excludes additional costs');
         $this->assertEqualsWithDelta(10.0, $item['additional_costs'], 0.001);
         $this->assertEqualsWithDelta(1218.00, $cart['items_price'], 0.001);
-        $this->assertSame(0, $cart['delivery_cost'], 'free delivery above 500');
+        $this->assertEqualsWithDelta(0.0, $cart['delivery_cost'], 0.001, 'free delivery above 500');
         $this->assertEqualsWithDelta(1218.00, $cart['total_price'], 0.001);
         $this->assertEqualsWithDelta(267.96, $cart['tax'], 0.001);
         $this->assertEqualsWithDelta(1495.96, $cart['total_taxed_price'], 0.001);
@@ -98,7 +98,7 @@ final class LinePricingTest extends TestCase
 
         $cart = $this->cart(['line1' => $payload]);
         $this->assertEqualsWithDelta(471.00, $cart['items_price'], 0.001);
-        $this->assertSame(16, $cart['delivery_cost']);
+        $this->assertEqualsWithDelta(16.0, $cart['delivery_cost'], 0.001);
         $this->assertEqualsWithDelta(487.00, $cart['total_price'], 0.001);
         $this->assertEqualsWithDelta(107.14, $cart['tax'], 0.001);
         $this->assertEqualsWithDelta(596.14, $cart['total_taxed_price'], 0.001, '487 + 107.14 + additional 2');
@@ -119,8 +119,8 @@ final class LinePricingTest extends TestCase
 
     public function test_two_prints_on_one_article_and_the_setup_multiplier_zero_asymmetry(): void
     {
-        // docs/03_CUSTOMIZATIONS.md §2.4 defect 7: the configurator counts a
-        // setup_multiplier of 0 as 1, the cart multiplies by 0. Resolved in v2c.1 (decision 4).
+        // docs/03_CUSTOMIZATIONS.md §2.4 defect 7, resolved in v2c.1 (decision 4): a
+        // setup_multiplier of 0 counts as 1 everywhere, as the configurator always did.
         $payload = ['articles' => [[$this->f->a->id, 100]], 'printings' => [$this->f->screenOneColorA->id, $this->f->embroideryOptionA->id], 'has_packaging' => 0];
 
         $summary = $this->summary($payload);
@@ -129,7 +129,7 @@ final class LinePricingTest extends TestCase
         $this->assertSame(['FIX-001-01', 'FRONTE - Serigrafia  10x10 1 colore', 'RETRO - Ricamo  8x8 Fino a 12', 'Avviamento', 'Setup Serigrafia Fronte', 'Setup Ricamo Retro'], array_map(fn (string $l): string => strip_tags(html_entity_decode(explode(' <span', $l)[0])), $lines));
 
         $cart = $this->cart(['line1' => $payload]);
-        $this->assertEqualsWithDelta(1231.00, $cart['items_price'], 0.001, 'same payload, 60 less: the embroidery setup is multiplied by 0');
+        $this->assertEqualsWithDelta(1291.00, $cart['items_price'], 0.001, 'same total as the configurator');
         $this->assertSame(18, $cart['delivery_days'], 'product 12 + the longest print (embroidery 6)');
     }
 

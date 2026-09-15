@@ -14,6 +14,8 @@ use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\Quotation;
 use App\Models\User;
+use App\Support\Customizations\LinePricer;
+use App\Support\Customizations\Pricing;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
@@ -112,11 +114,11 @@ class DemoCustomersSeeder extends Seeder
             if ($variant === null) {
                 continue;
             }
-            $unitPrice = (float) $variant->price_per_quantity($quantity);
             $printing = $variant->default_printing();
             $printColor = $printing?->printing_sizes()->first()?->printing_colors()->first();
-            $printCosts = $printColor ? $printColor->calculate_print_price($quantity, $quantity) : ['price' => 0.0];
-            $linePrice = round($quantity * $unitPrice + (float) $printCosts['price'] + (float) ($printColor->setup ?? 0), 2);
+            $line = app(LinePricer::class)->price([[$variant->id, $quantity]], $printColor ? [$printColor->id] : [], false);
+            $unitPrice = $line->articles[0]->unitPrice;
+            $linePrice = round($line->price, 2);
 
             $item = OrderItem::query()->create([
                 'order_id' => $order->id, 'product_id' => $product->id, 'product_sku' => $product->sku, 'product_name' => $product->name,
@@ -134,8 +136,9 @@ class DemoCustomersSeeder extends Seeder
         }
 
         $order->items_price = round($itemsPrice, 2);
+        $order->delivery_cost = Pricing::deliveryCost($itemsPrice);
         $order->total_price = round($itemsPrice + (float) $order->delivery_cost, 2);
-        $order->total_tax = round((float) $order->total_price * 0.22, 2);
+        $order->total_tax = Pricing::vat((float) $order->total_price);
         $order->total_taxed_price = round((float) $order->total_price + (float) $order->total_tax, 2);
         $order->save();
     }

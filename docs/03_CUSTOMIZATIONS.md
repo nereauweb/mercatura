@@ -1,6 +1,6 @@
 # v2c — Customizations (printing → generic product customization)
 
-Status: **approved 2026-09-15 (decisions §3 as revised on real data). v2c.0 done (2026-09-15); v2c.1 next.**
+Status: **approved 2026-09-15 (decisions §3 as revised on real data). v2c.0 and v2c.1 done (2026-09-16); v2c.2 next.**
 Written after the connector extraction and the repository split, from a
 full read of the printing domain in the core, the demo seeders and the two
 supplier packages. Decisions marked *(proposed)* need approval before v2c
@@ -602,6 +602,25 @@ the column and storing the value — the only data the phase adds.
 routes removed. PF Concept package: the write of the nonexistent
 `last_seen_in_feed` column removed (`v1.0.1`). No behaviour change in any
 total or page.
+
+**v2c.1 (2026-09-16).** `App\Support\Customizations\LinePricer` with typed
+results (`PricedLine`, `PricedArticle`, `PricedArticleCustomization`,
+`PricedCustomization`) and `Pricing` for the constants now in
+`config/mercatura.php` `pricing` (env `MERCATURA_VAT_RATE`,
+`MERCATURA_DELIVERY_COST`, `MERCATURA_FREE_DELIVERY_FROM`,
+`MERCATURA_UNDER_MINIMUM_SURCHARGE`, defaults unchanged). Configurator
+summary, cart and demo seeder read the pricer; the controllers only format.
+Defect 7 resolved as decision 4 (cart now 1 291 on the two-print case, as
+the configurator). Two small differences worth noting: the line minimum and
+print days come from the chosen option (the cart's reading; the configurator
+read the minimum from each article's equivalent option, same value on every
+known catalogue), and an unknown variant id now answers 404 instead of a
+server error. Demo orders are priced by the pricer, so their totals differ
+from the earlier hand-made approximation. Also on 2026-09-16, outside the
+plan: markup bands renamed `product_markups` (`from_condition`,
+`to_condition`, `value`; the second series and the two constant columns
+dropped on the user's decision), quantity breaks `normalized_tiers_rules`,
+admin pages under Sistema → Regole di prezzo.
 
 ## 9. What needs approval before v2c starts
 

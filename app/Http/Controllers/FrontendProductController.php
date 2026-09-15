@@ -3,12 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\ImportData\VariantPrinting;
-use App\Models\ImportData\VariantPrintingColor;
 use App\Models\ImportData\VariantPrintingSize;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Support\CaughtExceptionLogger;
 use App\Support\Connectors\PrintingPipeline;
+use App\Support\Customizations\LinePricer;
 use App\Support\FrontendDebugLog;
 use App\Support\ProductPageData;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -211,167 +211,77 @@ class FrontendProductController extends Controller
     public function build_articles_request(Request $request, $return_data = false)
     {
         FrontendDebugLog::prezzoConfiguratore('******** INIZIO NUOVA RICHIESTA (CONFIGURATORE)');
+        $line = app(LinePricer::class)->price(
+            array_map(fn ($article): array => [intval($article[0]), intval($article[1])], (array) $request->articles),
+            array_map('intval', (array) ($request->printings ?: [])),
+            $request->has_packaging == '1',
+        );
+
         $lines = [];
-        // $print_lines = [];
-        $total_quantity = 0;
-        $total_price = 0;
-        $total_additional_costs = 0;
-        $with_packaging = $request->has_packaging == '1' ? true : false;
-        $minimum = 0;
-        $under_minimum = false;
-        foreach ($request->articles as $article_request) {
-            $article_request_id = intval($article_request[0]);
-            $article_request_quantity = intval($article_request[1]);
-            $total_quantity += $article_request_quantity;
-        }
-        FrontendDebugLog::prezzoConfiguratore("Quantità totale richiesta: $total_quantity");
-        FrontendDebugLog::prezzoConfiguratore('--- Calcolo prezzi articoli ---');
-        foreach ($request->articles as $article_request) {
-            $article_request_id = intval($article_request[0]);
-            $article_request_quantity = intval($article_request[1]);
-            $article = ProductVariant::find($article_request_id);
-            FrontendDebugLog::prezzoConfiguratore("Articolo: $article->sku");
-            $article_original_price = $article->price_per_quantity($total_quantity, true);
-            FrontendDebugLog::prezzoConfiguratore("Prezzo originario (determinato da quantità totale della richiesta): $article_original_price");
-            $article_markup_percent = $article->get_markup_percent($total_quantity, $article_original_price);
-            FrontendDebugLog::prezzoConfiguratore("Markup articolo (determinato da quantità totale della richiesta x prezzo originario su tabella markup): $article_markup_percent %");
-            $article_markup = round($article_original_price * ($article_markup_percent / 100), 2);
-            $article_price = $article_original_price + $article_markup;
-            $quantity_price = $article_request_quantity * $article_price;
-            $additional_costs = $article_request_quantity * $article->additional_unit_costs_per_quantity($article_request_quantity);
-            FrontendDebugLog::prezzoConfiguratore("Prezzo singolo (prezzo originario + markup): $article_price | Quantità articolo richiesta: $article_request_quantity | Prezzo quantità (prezzo singolo x quantità articolo richiesta): $quantity_price | Costi aggiuntivi: $additional_costs");
-            array_push($lines, [
+        foreach ($line->articles as $article) {
+            $variant = $article->variant;
+            $lines[] = [
                 'column_1_style' => '',
-                'column_1' => $article->sku.' <span style="display:inline-block;width: 12px;min-width: 12px;height: 12px;min-height: 12px;border-radius: 12px;border: 1px solid #cccccc;'.$article->color->render_code().'"></span>&nbsp;'.($article->size ? $article->size->shown_label() : 'Unica'),
-                // 'column_2' => $article_request_quantity . 'x' . number_format($article_price,2) .'&nbsp;&euro; ('.number_format($article_original_price,2).')',
-                'column_2' => $article_request_quantity.'x'.number_format($article_price, 2).'&nbsp;&euro;',
-                'column_3' => number_format($quantity_price, 2, ',', '.').'&nbsp;&euro;',
-            ]);
-            $total_additional_costs += $additional_costs;
-            $total_price += $quantity_price;
-            if ($request->printings) {
-                FrontendDebugLog::prezzoConfiguratore('--- Calcolo personalizzazioni articolo ---');
-                foreach ($request->printings as $printing_color_id) {
-                    $main_printing_color = VariantPrintingColor::find($printing_color_id);
-                    if (! PrintingPipeline::colorIsLive($main_printing_color)) {
-                        continue;
-                    }
-                    // article printing color
-                    $printing_color = $main_printing_color->sibling($article_request_id);
-                    // original printing prices
-                    $original_printing_price = $printing_color->calculate_print_price($total_quantity, $article_request_quantity, $with_packaging, true);
-                    // printing price
-                    FrontendDebugLog::prezzoConfiguratore("[Personalizzazione richiesta] VariantPrintingColor $printing_color->id | Quantità totale: $total_quantity | Quantità articolo: $article_request_quantity | Packaging: ".($with_packaging ? 'Sì' : 'No')." | Markup (da markup articolo): $article_markup_percent %");
-                    $printing_price = $printing_color->calculate_print_price($total_quantity, $article_request_quantity, $with_packaging, false, $article_markup_percent);
-                    $total_price += $printing_price['price'];
-                    $printing_label = $printing_color->printing_label();
-                    array_push($lines, [
+                'column_1' => $variant->sku.' <span style="display:inline-block;width: 12px;min-width: 12px;height: 12px;min-height: 12px;border-radius: 12px;border: 1px solid #cccccc;'.$variant->color->render_code().'"></span>&nbsp;'.($variant->size ? $variant->size->shown_label() : 'Unica'),
+                'column_2' => $article->quantity.'x'.number_format($article->unitPrice, 2).'&nbsp;&euro;',
+                'column_3' => number_format($article->price, 2, ',', '.').'&nbsp;&euro;',
+            ];
+            foreach ($article->customizations as $customization) {
+                $lines[] = [
+                    'column_1_style' => 'padding-left:20px;',
+                    'column_1' => $customization->label,
+                    'column_2' => $customization->quantity.'x'.number_format($customization->unitPrice, 2, ',', '.').'&nbsp;&euro;',
+                    'column_3' => number_format($customization->price, 2, ',', '.').'&nbsp;&euro;',
+                ];
+                if ($line->packaging) {
+                    $lines[] = [
                         'column_1_style' => 'padding-left:20px;',
-                        'column_1' => $printing_label,
-                        // 'column_2' => $printing_price['quantity'] . 'x' . number_format($printing_price['unit_price'],2,',','.') .'&nbsp;&euro; ('.number_format($original_printing_price['unit_price'],2,',','.').')',
-                        'column_2' => $printing_price['quantity'].'x'.number_format($printing_price['unit_price'], 2, ',', '.').'&nbsp;&euro;',
-                        'column_3' => number_format($printing_price['price'], 2, ',', '.').'&nbsp;&euro;',
-                    ]);
-                    FrontendDebugLog::prezzoConfiguratore("[Personalizzazione senza markup] $printing_label => ".$original_printing_price['quantity'].' x '.$original_printing_price['unit_price'].' = '.$original_printing_price['price']);
-                    FrontendDebugLog::prezzoConfiguratore("[Personalizzazione con markup] $printing_label => ".$printing_price['quantity'].' x '.$printing_price['unit_price'].' = '.$printing_price['price']);
-                    // packaging
-                    if (isset($printing_price['packaging_price'])) {
-                        array_push($lines, [
-                            'column_1_style' => 'padding-left:20px;',
-                            'column_1' => 'Confezionamento',
-                            // 'column_2' => $printing_price['packaging_quantity'] . 'x' . number_format($printing_price['packaging_unit_price'],2,',','.') .'&nbsp;&euro; ('.number_format($original_printing_price['packaging_unit_price'],2,',','.').')',
-                            'column_2' => $printing_price['packaging_quantity'].'x'.number_format($printing_price['packaging_unit_price'], 2, ',', '.').'&nbsp;&euro;',
-                            'column_3' => number_format($printing_price['packaging_price'], 2, ',', '.').'&nbsp;&euro;',
-                        ]);
-                        FrontendDebugLog::prezzoConfiguratore("[Personalizzazione packaging] $printing_label => ".$printing_price['packaging_quantity'].' x '.$printing_price['packaging_unit_price'].' = '.$printing_price['packaging_price']);
-                        $total_price += $printing_price['packaging_price'];
-                    }
-                    // set minimum
-                    $this_minimum = $printing_color->printing_size->printing->minimum_quantity;
-                    if ($minimum == 0) {
-                        $minimum = $this_minimum ?? 0;
-                    } else {
-                        if ($minimum < $this_minimum) {
-                            $minimum = $this_minimum ?? 0;
-                        }
-                    }
+                        'column_1' => 'Confezionamento',
+                        'column_2' => $customization->quantity.'x'.number_format((float) $customization->packagingUnitPrice, 2, ',', '.').'&nbsp;&euro;',
+                        'column_3' => number_format($customization->packagingPrice, 2, ',', '.').'&nbsp;&euro;',
+                    ];
                 }
             }
         }
-        // check minimum
-        if ($total_quantity < $minimum) {
-            $original_under_minimum = 35;
-            $under_minimum = 40;
-            $total_price += $under_minimum;
-            array_push($lines, [
+        if ($line->underMinimum()) {
+            $lines[] = [
                 'column_1_style' => '',
-                'column_1' => 'Sotto soglia minima ('.$minimum.' pz)',
-                // 'column_2' => '('.number_format($original_under_minimum,2,',','.').')',
+                'column_1' => 'Sotto soglia minima ('.$line->minimumQuantity.' pz)',
                 'column_2' => '',
-                'column_3' => number_format($under_minimum, 2, ',', '.').'&nbsp;&euro;',
-            ]);
-            FrontendDebugLog::prezzoConfiguratore("--- Quantità totale sotto soglia minima ($minimum pz), applicato sovrapprezzo fisso al totale: + $under_minimum");
+                'column_3' => number_format($line->surcharge, 2, ',', '.').'&nbsp;&euro;',
+            ];
         }
-        if ($request->printings) {
-            FrontendDebugLog::prezzoConfiguratore('--- Calcolo avviamento e impianto personalizzazioni ---');
-            foreach ($request->printings as $printing_color_id) {
-                $printing_color = VariantPrintingColor::find($printing_color_id);
-                if (! PrintingPipeline::colorIsLive($printing_color)) {
-                    continue;
-                }
-                $printing_label = $printing_color->printing_label();
-                FrontendDebugLog::prezzoConfiguratore("Personalizzazione: $printing_label (ID VariantPrintingColor $printing_color->id)");
-                // start_cost
-                if ($printing_color->start_cost > 0) {
-                    array_push($lines, [
-                        'column_1_style' => '',
-                        'column_1' => 'Avviamento',
-                        // 'column_2' => '('.number_format($printing_color->original_start_cost,2,',','.').')',
-                        'column_2' => '',
-                        'column_3' => number_format($printing_color->start_cost, 2, ',', '.').'&nbsp;&euro;',
-                    ]);
-                    $total_price += $printing_color->start_cost;
-                    FrontendDebugLog::prezzoConfiguratore('[Avviamento] '.$printing_color->start_cost.' (originale: '.$printing_color->original_start_cost.')');
-                }
-                // setup
-                $setup_multiplier = $printing_color->setup_multiplier == 0 ? 1 : $printing_color->setup_multiplier;
-                $setup_price = $printing_color->setup * $setup_multiplier;
-                array_push($lines, [
+        foreach ($line->customizations as $customization) {
+            if ($customization->startCost > 0) {
+                $lines[] = [
                     'column_1_style' => '',
-                    'column_1' => $printing_color->setup_label(),
-                    // 'column_2' => number_format($printing_color->setup_multiplier,0) . 'x' . number_format($printing_color->setup,2,',','.') .' ('.number_format($printing_color->original_setup,2,',','.').')',
-                    'column_2' => number_format($setup_multiplier, 0).'x'.number_format($printing_color->setup, 2, ',', '.'),
-                    'column_3' => number_format($setup_price, 2, ',', '.').'&nbsp;&euro;',
-                ]);
-                $total_price += $setup_price;
-                FrontendDebugLog::prezzoConfiguratore("[Impianto] Prezzo: $printing_color->setup (originale: $printing_color->original_setup) | Moltiplicatore: $setup_multiplier | Prezzo finale impianto: $setup_price");
+                    'column_1' => $customization->option->start_label(),
+                    'column_2' => '',
+                    'column_3' => number_format($customization->startCost, 2, ',', '.').'&nbsp;&euro;',
+                ];
             }
-        }
-        FrontendDebugLog::prezzoConfiguratore('--- Calcolo totali ---');
-        $total_vat = round($total_price * 0.22, 2);
-        FrontendDebugLog::prezzoConfiguratore("Prezzo totale (senza IVA): $total_price | IVA: $total_vat | Costi aggiuntivi (no IVA): $total_additional_costs");
-        $response = [];
-        $response['lines'] = $lines;
-        $response['total_price'] = number_format($total_price, 2, ',', '.').'&nbsp;&euro;';
-        $unit_price = ($total_price + $total_additional_costs) / $total_quantity;
-        $response['unit_price'] = number_format($unit_price, 2, ',', '.').'&nbsp;&euro;';
-        FrontendDebugLog::prezzoConfiguratore("Prezzo unitario (prezzo totale + costi aggiuntivi / quantità totale): $unit_price");
-        $response['total_vat'] = number_format($total_vat, 2, ',', '.').'&nbsp;&euro;';
-        $response['total_quantity'] = number_format($total_quantity, 0);
-        $response['total_additional_costs_amount'] = round($total_additional_costs, 2);
-        $response['total_additional_costs'] = number_format($total_additional_costs, 2).'&nbsp;&euro;';
-        $total_taxed_price = $total_price + $total_vat + $total_additional_costs;
-        $response['total_taxed_price'] = number_format($total_taxed_price, 2, ',', '.').'&nbsp;&euro;';
-        FrontendDebugLog::prezzoConfiguratore("Prezzo totale incluso IVA (prezzo totale + IVA + costi aggiuntivi): $total_taxed_price");
-        $unit_taxed_price = ($total_price + $total_vat + $total_additional_costs) / $total_quantity;
-        $response['unit_taxed_price'] = number_format($unit_taxed_price, 2, ',', '.').'&nbsp;&euro;';
-        FrontendDebugLog::prezzoConfiguratore("Prezzo unitario incluso IVA (prezzo totale incluso IVA / quantità totale): $unit_taxed_price");
-        // return data or response
-        if ($return_data) {
-            return $response;
+            $lines[] = [
+                'column_1_style' => '',
+                'column_1' => $customization->option->setup_label(),
+                'column_2' => number_format($customization->setupMultiplier, 0).'x'.number_format($customization->setup, 2, ',', '.'),
+                'column_3' => number_format($customization->setupPrice, 2, ',', '.').'&nbsp;&euro;',
+            ];
         }
 
-        return response()->json($response);
+        FrontendDebugLog::prezzoConfiguratore('Totali: prezzo '.$line->price.' | IVA '.$line->vat().' | costi aggiuntivi '.$line->additionalCosts.' | quantità '.$line->quantity);
+        $response = [
+            'lines' => $lines,
+            'total_price' => number_format($line->price, 2, ',', '.').'&nbsp;&euro;',
+            'unit_price' => number_format($line->unitPriceWithAdditionalCosts(), 2, ',', '.').'&nbsp;&euro;',
+            'total_vat' => number_format($line->vat(), 2, ',', '.').'&nbsp;&euro;',
+            'total_quantity' => number_format($line->quantity, 0),
+            'total_additional_costs_amount' => round($line->additionalCosts, 2),
+            'total_additional_costs' => number_format($line->additionalCosts, 2).'&nbsp;&euro;',
+            'total_taxed_price' => number_format($line->totalTaxedPrice(), 2, ',', '.').'&nbsp;&euro;',
+            'unit_taxed_price' => number_format($line->totalTaxedPrice() / $line->quantity, 2, ',', '.').'&nbsp;&euro;',
+        ];
+
+        return $return_data ? $response : response()->json($response);
     }
 
     public function get_product_variants_stock(Request $request)

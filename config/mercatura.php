@@ -101,6 +101,20 @@ return [
         'payment_methods' => array_filter(array_map('trim', explode(',', (string) env('MERCATURA_PAYMENT_METHODS', 'bank_transfer,stripe,paypal')))),
     ],
 
+    /*
+    | Line and cart pricing constants (App\Support\Customizations\LinePricer,
+    | App\Support\Customizations\Pricing). One VAT rate for everything sold;
+    | delivery is free from `free_delivery_from` of goods (excl. VAT); a line
+    | whose quantity is below the minimum of a chosen customization pays the
+    | flat surcharge.
+    */
+    'pricing' => [
+        'vat_rate' => (float) env('MERCATURA_VAT_RATE', 0.22),
+        'delivery_cost' => (float) env('MERCATURA_DELIVERY_COST', 16),
+        'free_delivery_from' => (float) env('MERCATURA_FREE_DELIVERY_FROM', 500),
+        'under_minimum_surcharge' => (float) env('MERCATURA_UNDER_MINIMUM_SURCHARGE', 40),
+    ],
+
     'features' => [
         // Supplier connectors (docs/ARCHITECTURE.md §13): each installed package
         // carries its own switch (`connector-<key>.enabled`, env

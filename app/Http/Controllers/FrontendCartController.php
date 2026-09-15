@@ -6,14 +6,13 @@ use App\Contracts\NewsletterProvider;
 use App\Contracts\TransactionalMailer;
 use App\Models\Customer;
 use App\Models\CustomerAddress;
-use App\Models\ImportData\VariantPrintingColor;
 use App\Models\Order;
-use App\Models\ProductVariant;
 use App\Models\User;
 use App\Rules\Captcha;
 use App\Support\CaughtExceptionLogger;
-use App\Support\Connectors\PrintingPipeline;
 use App\Support\CustomerFormRules;
+use App\Support\Customizations\LinePricer;
+use App\Support\Customizations\Pricing;
 use App\Support\FrontendDebugLog;
 use App\Support\PaymentGateways;
 use Carbon\Carbon;
@@ -495,160 +494,52 @@ class FrontendCartController extends Controller
         $cart = [
             'items' => [],
             'items_price' => 0,
-            'delivery_cost' => 16,
+            'delivery_cost' => Pricing::deliveryCost(0.0),
             'total_price' => 0,
             'total_taxed_price' => 0,
             'total_additional_costs' => 0,
             'delivery_days' => 4,
             'delivery_date' => Carbon::now()->addDays(4),
         ];
+        $pricer = app(LinePricer::class);
         foreach ($session_cart as $session_cart_item_id => $sci) {
-            FrontendDebugLog::prezzoCarrello('--- Processazione richiesta ---');
-            $cart_item = [];
-            $cart_item['id'] = $session_cart_item_id;
-            $cart_item['price'] = 0;
-            $cart_item['quantity'] = 0;
-            $cart_item['additional_costs'] = 0;
-            foreach ($sci['articles'] as $sci_article) {
-                $cart_item['quantity'] += $sci_article[1];
-            }
-            FrontendDebugLog::prezzoCarrello('Quantità totale richiesta: '.$cart_item['quantity']);
-            $cart_item['has_packaging'] = $sci['has_packaging'] ?? false;
-            $minimum = 0;
-            $print_processing_days = 0;
-            $under_minimum = false;
-            $cart_item_articles = [];
-            FrontendDebugLog::prezzoCarrello('--- Calcolo prezzi articoli ---');
-            foreach ($sci['articles'] as $sci_article) {
-                $article = ProductVariant::find($sci_article[0]);
-                FrontendDebugLog::prezzoCarrello("Articolo: $article->sku");
-                $article_quantity = $sci_article[1];
-                FrontendDebugLog::prezzoCarrello("Quantità articolo richiesta: $article_quantity");
-                $article_original_price = $article->price_per_quantity($cart_item['quantity'], true);
-                FrontendDebugLog::prezzoCarrello("Prezzo originario (determinato da quantità totale della richiesta): $article_original_price");
-                $article_markup_percent = $article->get_markup_percent($cart_item['quantity'], $article_original_price);
-                FrontendDebugLog::prezzoCarrello("Markup articolo (determinato da quantità totale della richiesta x prezzo originario su tabella markup): $article_markup_percent %");
-                $article_markup = round($article_original_price * ($article_markup_percent / 100), 2);
-                $article_unit_price = $article_original_price + $article_markup;
-                $article_additional_costs = $article_quantity * $article->additional_unit_costs_per_quantity($article_quantity);
-                $cart_item['additional_costs'] += $article_additional_costs;
-                $article_quantity_price = $article_quantity * $article_unit_price;
-                $cart_item['price'] += $article_quantity_price;
-                $cart['items_price'] += $article_quantity_price;
-                FrontendDebugLog::prezzoCarrello("Prezzo singolo (prezzo originario + markup): $article_unit_price | Quantità articolo richiesta: $article_quantity | Prezzo quantità (prezzo singolo x quantità articolo richiesta): $article_quantity_price | Costi aggiuntivi: $article_additional_costs");
-                $cart_item_article = [
-                    'article' => $article,
-                    'quantity' => $article_quantity,
-                    'unit_price' => $article_unit_price,
-                    'quantity_price' => $article_quantity_price,
-                    'additional_costs' => $article_additional_costs,
-                ];
-                if (! empty($sci['printings'])) {
-                    FrontendDebugLog::prezzoCarrello('--- Calcolo personalizzazioni articolo ---');
-                    foreach ($sci['printings'] as $sci_printing) {
-                        $main_printing_color = VariantPrintingColor::find($sci_printing);
-                        if (! PrintingPipeline::colorIsLive($main_printing_color)) {
-                            continue;
-                        }
-                        FrontendDebugLog::prezzoCarrello("[Personalizzazione richiesta] VariantPrintingColor $main_printing_color->id");
-                        // article printing color
-                        $printing_color = $main_printing_color->sibling($article->id); // ?
-                        $printing_price = $printing_color->calculate_print_price($cart_item['quantity'], $article_quantity, $cart_item['has_packaging'], false, $article_markup_percent);
-                        $printing_label = $printing_color->printing_label();
-                        FrontendDebugLog::prezzoCarrello("[Personalizzazione utilizzata] VariantPrintingColor $printing_color->id | $printing_label | Quantità totale: ".$cart_item['quantity']." | Quantità articolo: $article_quantity | Packaging: ".($cart_item['has_packaging'] ? 'Sì' : 'No')." | Markup (da markup articolo): $article_markup_percent %");
-                        $cart_item['price'] += $printing_price['price'];
-                        $cart['items_price'] += $printing_price['price'];
-                        FrontendDebugLog::prezzoCarrello('[Personalizzazione con markup] '.$printing_price['quantity'].' x '.$printing_price['unit_price'].' = '.$printing_price['price']);
-                        // packaging
-                        if ($cart_item['has_packaging']) {
-                            $cart_item['price'] += $printing_price['packaging_price'];
-                            $cart['items_price'] += $printing_price['packaging_price'];
-                            FrontendDebugLog::prezzoCarrello('[Personalizzazione packaging] '.$printing_price['packaging_quantity'].' x '.$printing_price['packaging_unit_price'].' = '.$printing_price['packaging_price']);
-                        }
-                    }
-                }
-                array_push($cart_item_articles, $cart_item_article);
-            }
-            if (! empty($sci['printings'])) {
-                FrontendDebugLog::prezzoCarrello('--- Calcolo avviamento e impianto personalizzazioni ---');
-                foreach ($sci['printings'] as $sci_printing) {
-                    $printing_color = VariantPrintingColor::find($sci_printing);
-                    if (! PrintingPipeline::colorIsLive($printing_color)) {
-                        continue;
-                    }
-                    $printing_label = $printing_color->printing_label();
-                    FrontendDebugLog::prezzoCarrello("Personalizzazione: $printing_label (ID VariantPrintingColor $printing_color->id)");
-                    // start_cost
-                    if ($printing_color->start_cost > 0) {
-                        $start_cost = $printing_color->start_cost;
-                        $cart_item['price'] += $start_cost;
-                        $cart['items_price'] += $start_cost;
-                        FrontendDebugLog::prezzoCarrello('[Avviamento] '.$printing_color->start_cost.' (originale: '.$printing_color->original_start_cost.')');
-                    }
-                    // setup
-                    $setup_price = $printing_color->setup * $printing_color->setup_multiplier;
-                    $cart_item['price'] += $setup_price;
-                    $cart['items_price'] += $setup_price;
-                    FrontendDebugLog::prezzoCarrello("[Impianto] Prezzo: $printing_color->setup (originale: $printing_color->original_setup) | Moltiplicatore: $printing_color->setup_multiplier | Prezzo finale impianto: $setup_price");
-                    // get print technique
-                    $printing = $printing_color->printing_size->printing;
-                    // set minimum
-                    $this_minimum = $printing->minimum_quantity;
-                    if ($minimum == 0) {
-                        $minimum = $this_minimum ?? 0;
-                    } else {
-                        if ($minimum < $this_minimum) {
-                            $minimum = $this_minimum ?? 0;
-                        }
-                    }
-                    // set processing_days
-                    if ($printing->processing_days > $print_processing_days) {
-                        $print_processing_days = $printing->processing_days;
-                    }
-                }
-            }
-            // check minimum
-            if ($cart_item['quantity'] < $minimum) {
-                $original_under_minimum = 35;
-                $under_minimum = 40;
-                $cart_item['price'] += $under_minimum;
-                $cart['items_price'] += $under_minimum;
-                FrontendDebugLog::prezzoCarrello("--- Quantità totale sotto soglia minima ($minimum pz), applicato sovrapprezzo fisso al totale: + $under_minimum");
-            }
-            // item product
-            $cart_item['product'] = $cart_item_articles[0]['article']->product;
-            // delivery days
-            $delivery_days = $cart_item['product']->processing_days() + $print_processing_days;
+            $line = $pricer->price(
+                array_map(fn ($article): array => [intval($article[0]), intval($article[1])], (array) ($sci['articles'] ?? [])),
+                array_map('intval', (array) ($sci['printings'] ?? [])),
+                (bool) ($sci['has_packaging'] ?? false),
+            );
+            $cart_item = [
+                'id' => $session_cart_item_id,
+                'price' => $line->price,
+                'quantity' => $line->quantity,
+                'additional_costs' => $line->additionalCosts,
+                'has_packaging' => $sci['has_packaging'] ?? false,
+                'product' => $line->product,
+                'articles' => array_map(fn ($article): array => [
+                    'article' => $article->variant,
+                    'quantity' => $article->quantity,
+                    'unit_price' => $article->unitPrice,
+                    'quantity_price' => $article->price,
+                    'additional_costs' => $article->additionalCosts,
+                ], $line->articles),
+                'printings' => array_map(fn ($customization) => $customization->option, $line->customizations),
+                'unit_price' => $line->unitPrice(),
+            ];
+            $delivery_days = $line->product->processing_days() + $line->processingDays;
             if ($cart['delivery_days'] < $delivery_days) {
                 $cart['delivery_days'] = $delivery_days;
             }
-            // item articles
-            $cart_item['articles'] = $cart_item_articles;
-            // item printings
-            $cart_item_printings = [];
-            foreach ($sci['printings'] as $sci_printing) {
-                $printing_color = VariantPrintingColor::find($sci_printing);
-                if (! PrintingPipeline::colorIsLive($printing_color)) {
-                    continue;
-                }
-                array_push($cart_item_printings, $printing_color);
-            }
-            $cart_item['printings'] = $cart_item_printings;
-            // item overall unit price
-            $cart_item['unit_price'] = round($cart_item['price'] / $cart_item['quantity'], 2);
-            array_push($cart['items'], $cart_item);
-            $cart['total_additional_costs'] += $cart_item['additional_costs'];
-            FrontendDebugLog::prezzoCarrello('Totali richiesta: Prezzo totale (senza IVA): '.$cart_item['price'].' | Quantità: '.$cart_item['quantity'].' | Prezzo unitario (senza IVA): '.$cart_item['unit_price'].' | Costi addizionali: '.$cart_item['additional_costs'].' ');
+            $cart['items'][] = $cart_item;
+            $cart['items_price'] += $line->price;
+            $cart['total_additional_costs'] += $line->additionalCosts;
+            FrontendDebugLog::prezzoCarrello('Riga '.$session_cart_item_id.': prezzo '.$line->price.' | quantità '.$line->quantity.' | costi addizionali '.$line->additionalCosts);
         }
-        FrontendDebugLog::prezzoCarrello('--- Calcolo totali carrello ---');
-        if ($cart['items_price'] > 500) {
-            $cart['delivery_cost'] = 0;
-        }
+        $cart['delivery_cost'] = Pricing::deliveryCost((float) $cart['items_price']);
         $cart['delivery_date'] = Carbon::now()->addDays($cart['delivery_days']);
         $cart['total_price'] = round($cart['items_price'] + $cart['delivery_cost'], 2);
-        $cart['tax'] = round($cart['total_price'] * 0.22, 2);
+        $cart['tax'] = Pricing::vat((float) $cart['total_price']);
         $cart['total_taxed_price'] = $cart['total_price'] + $cart['tax'] + $cart['total_additional_costs'];
-        FrontendDebugLog::prezzoCarrello('Totali carrello: Costo spedizione: '.$cart['delivery_cost'].' | Imponibile: '.$cart['total_price'].' | IVA: '.$cart['tax'].' | Costi addizionali: '.$cart['total_additional_costs'].' | Costo finale (IVA e costi addizionali inclusi): '.$cart['total_taxed_price'].' | Giorni di lavorazione: '.$cart['delivery_days'].' | Data di consegna prevista: '.$cart['delivery_date']);
+        FrontendDebugLog::prezzoCarrello('Totali carrello: spedizione '.$cart['delivery_cost'].' | imponibile '.$cart['total_price'].' | IVA '.$cart['tax'].' | costi addizionali '.$cart['total_additional_costs'].' | totale '.$cart['total_taxed_price'].' | giorni '.$cart['delivery_days']);
 
         return $cart;
     }
