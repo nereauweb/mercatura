@@ -48,7 +48,9 @@ class FrontendCartController extends Controller
             return back()->with('error', 'Impossibile aggiungere il prodotto al carrello. Verifica le quantità selezionate.');
         }
         $decodedCartItem['articles'] = $normalizedArticles;
-        $decodedCartItem['printings'] = $this->normalizeIntegerList($decodedCartItem['printings'] ?? []);
+        // The configurator posts `printings`; the session keeps `customizations` (docs/03 decision 7).
+        $decodedCartItem['customizations'] = $this->normalizeIntegerList($decodedCartItem['customizations'] ?? $decodedCartItem['printings'] ?? []);
+        unset($decodedCartItem['printings']);
         $decodedCartItem['has_packaging'] = $this->normalizeCheckboxLike($decodedCartItem['has_packaging'] ?? 0);
 
         $session_cart = $request->session()->has('cart') ? session('cart') : [];
@@ -430,12 +432,7 @@ class FrontendCartController extends Controller
                     'price' => $cart_item_article['quantity_price'],
                 ]);
             }
-            foreach ($cart_item['printings'] as $option) {
-                $order_item->customizations()->create([
-                    'option_id' => $option->id,
-                    'label' => $option->fullLabel(),
-                ]);
-            }
+            app(StoreOrderItemCustomizations::class)->handle($order_item, $cart_item['line']);
         }
 
         if ($order->payment_method == 'bank_transfer') {
@@ -505,7 +502,7 @@ class FrontendCartController extends Controller
         foreach ($session_cart as $session_cart_item_id => $sci) {
             $line = $pricer->price(
                 array_map(fn ($article): array => [intval($article[0]), intval($article[1])], (array) ($sci['articles'] ?? [])),
-                array_map('intval', (array) ($sci['printings'] ?? [])),
+                array_map('intval', (array) ($sci['customizations'] ?? $sci['printings'] ?? [])),
                 (bool) ($sci['has_packaging'] ?? false),
             );
             $cart_item = [
@@ -524,6 +521,7 @@ class FrontendCartController extends Controller
                 ], $line->articles),
                 'printings' => array_map(fn ($customization) => $customization->option, $line->customizations),
                 'unit_price' => $line->unitPrice(),
+                'line' => $line,
             ];
             $delivery_days = $line->product->processing_days() + $line->processingDays;
             if ($cart['delivery_days'] < $delivery_days) {

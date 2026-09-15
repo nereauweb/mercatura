@@ -186,7 +186,7 @@ class FrontendOrderController extends Controller
         return back()->with('success', 'File caricato con successo.');
     }
 
-    public function upload_printing_image(Request $request, $id)
+    public function uploadCustomizationFile(Request $request, $id)
     {
         $printing = OrderItemCustomization::with('item.order')->findOrFail($id);
         $order = optional($printing->item)->order;

@@ -1,6 +1,6 @@
 # v2c — Customizations (printing → generic product customization)
 
-Status: **approved 2026-09-15 (decisions §3 as revised on real data). v2c.0–v2c.2 done (2026-09-16); v2c.3 next.**
+Status: **approved 2026-09-15 (decisions §3 as revised on real data). v2c.0–v2c.3 done (2026-09-16); v2c.4 next.**
 Written after the connector extraction and the repository split, from a
 full read of the printing domain in the core, the demo seeders and the two
 supplier packages. Decisions marked *(proposed)* need approval before v2c
@@ -649,6 +649,23 @@ forwarding methods with the old names on `Product`/`ProductVariant` either
 `printingPipelines()`, the jobs and commands) stay until v2c.5 as planned.
 Demo seeder sets `family` for Ricamo (embroidery) and Incisione laser
 (engraving) only. Schema dump regenerated.
+
+**v2c.3 (2026-09-16).** Migration `2026_09_16_160000_order_customization_snapshot`:
+`order_item_customizations` gains `family`, `technique_label`,
+`position_label`, `area_label`, `option_label`, `number_of_colors`,
+`quantity`, `price`, `packaging_price` (`option_id` nullable), existing
+rows backfilled from the live option; `order_item_extras` gains `type`
+(setup, start, surcharge, other) and `customization_id`.
+`App\Actions\Orders\StoreOrderItemCustomizations` writes both from the
+priced line, for the checkout and the demo seeder. Deviation from decision
+6: **one snapshot row per option chosen, not per article** (the artwork
+upload belongs to the option; `price` is the option's total across the
+line's articles, `quantity` the line quantity), and packaging stays on the
+customization row rather than an extra. Session cart key `customizations`
+with read fallback on `printings`; the configurator request keeps
+`printings`. The areas endpoint answers `areas`, techniques carry
+`family`; the upload action is `uploadCustomizationFile` (route name and
+URL unchanged). Order totals unchanged; the cart shows the same rows.
 
 ## 9. What needs approval before v2c starts
 

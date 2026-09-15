@@ -304,11 +304,11 @@ class FrontendProductController extends Controller
     {
         $printing = Customization::find($request->printing_id);
         if (! CustomizationPipeline::isLive($printing)) {
-            return response()->json(['sizes' => [], 'image' => null], 404);
+            return response()->json(['areas' => [], 'image' => null], 404);
         }
 
         return response()->json([
-            'sizes' => $printing->areas->toArray(),
+            'areas' => $printing->areas->toArray(),
             'image' => $printing->image,
         ]);
     }

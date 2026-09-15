@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Database\Seeders\Demo;
 
+use App\Actions\Orders\StoreOrderItemCustomizations;
 use App\Models\Customer;
 use App\Models\CustomerAddress;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\OrderItemArticle;
-use App\Models\OrderItemCustomization;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\Quotation;
@@ -129,9 +129,7 @@ class DemoCustomersSeeder extends Seeder
                 'article_color_label' => (string) $variant->color?->label, 'article_image_url' => (string) $variant->cover(true),
                 'quantity' => $quantity, 'unit_price' => $unitPrice, 'price' => round($quantity * $unitPrice, 2),
             ]);
-            if ($printColor) {
-                OrderItemCustomization::query()->create(['item_id' => $item->id, 'option_id' => $printColor->id, 'label' => $printColor->fullLabel(), 'file' => null]);
-            }
+            app(StoreOrderItemCustomizations::class)->handle($item, $line);
             $itemsPrice += $linePrice;
         }
 

@@ -122,7 +122,7 @@ export function productConfigurator(config) {
             if (!selection.technique) return;
             try {
                 const data = await this.post(this.endpoints.sizes, { printing_id: selection.technique });
-                selection.sizes = data.sizes ?? [];
+                selection.sizes = data.areas ?? [];
                 if (data.image) selection.image = data.image;
             } catch (e) {
                 selection.sizes = [];

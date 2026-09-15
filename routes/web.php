@@ -106,7 +106,7 @@ Route::group(['middleware' => 'auth'], function () {
 
     Route::get('/ordini', [FrontendOrderController::class, 'list'])->name('frontend.auth.order.list');
     Route::get('/ordine/{id}', [FrontendOrderController::class, 'show'])->name('frontend.auth.order.show');
-    Route::put('/ordine/personalizzazione/file{id}', [FrontendOrderController::class, 'upload_printing_image'])
+    Route::put('/ordine/personalizzazione/file{id}', [FrontendOrderController::class, 'uploadCustomizationFile'])
         ->middleware('throttle:20,1')
         ->name('customer.order.printings.upload-image');
     Route::post('/ordine/{id}/upload-file', [FrontendOrderController::class, 'uploadOrderImage'])

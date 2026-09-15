@@ -119,7 +119,7 @@ final class ProductPageData
                     'id' => (int) $group->first()->id,
                     'label' => ucfirst((string) $label),
                     'image' => $group->first()->image ?: null,
-                    'techniques' => $group->sortBy('technique_label')->map(fn ($printing) => ['id' => (int) $printing->id, 'label' => ucfirst((string) $printing->technique_label)])->values()->all(),
+                    'techniques' => $group->sortBy('technique_label')->map(fn ($printing) => ['id' => (int) $printing->id, 'label' => ucfirst((string) $printing->technique_label), 'family' => $printing->family])->values()->all(),
                 ];
             }
         }

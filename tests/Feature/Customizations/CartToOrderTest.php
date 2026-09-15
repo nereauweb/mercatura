@@ -36,7 +36,7 @@ final class CartToOrderTest extends TestCase
         ]);
         config(['mercatura.checkout.payment_methods' => ['bank_transfer']]);
 
-        $line = ['articles' => [[$f->a->id, 60], [$f->b->id, 40]], 'printings' => [$f->screenOneColorA->id], 'has_packaging' => 1];
+        $line = ['articles' => [[$f->a->id, 60], [$f->b->id, 40]], 'customizations' => [$f->screenOneColorA->id], 'has_packaging' => 1];
         $this->actingAs($user)->withSession(['cart' => ['line1' => $line]])
             ->post(action([FrontendCartController::class, 'store_order']), ['payment_method' => 'bank_transfer', 'consent_gdpr' => '1', 'consent_terms' => '1'])
             ->assertOk();
@@ -64,6 +64,11 @@ final class CartToOrderTest extends TestCase
         $this->assertSame('FRONTE - Serigrafia  10x10 1 colore', $printing->label);
         $this->assertNull($printing->file);
         $this->assertInstanceOf(\App\Models\Customizations\CustomizationOption::class, $printing->option()->first(), 'relation fixed in v2c.0 (docs/03 defect 2)');
+        // v2c.3 snapshot: what was sold, without the supplier row.
+        $this->assertSame(['Serigrafia', 'Fronte', '10x10', '1 colore', 1, 100, 78.0, 65.0, null], [$printing->technique_label, $printing->position_label, $printing->area_label, $printing->option_label, (int) $printing->number_of_colors, (int) $printing->quantity, (float) $printing->price, (float) $printing->packaging_price, $printing->family]);
+        $extras = \App\Models\OrderItemExtra::query()->where('item_id', $item->id)->orderBy('id')->get();
+        $this->assertSame([['start', 'Avviamento', 5.0, $printing->id], ['setup', 'Setup Serigrafia Fronte', 30.0, $printing->id]], $extras->map(fn (\App\Models\OrderItemExtra $e) => [$e->type, $e->label, (float) $e->price, (int) $e->customization_id])->all());
+        $this->assertEqualsWithDelta(1218.0, 624 + 416 + 78 + 65 + 5 + 30, 0.001, 'articles + option + packaging + extras add up to the item price');
 
         $this->assertSame('Personalizzazioni: FRONTE - Serigrafia  10x10 1 colore', $order->mail_export_items()[0]['printings']);
     }

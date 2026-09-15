@@ -21,10 +21,10 @@ final class ConfiguratorEndpointsTest extends TestCase
 
         $sizes = $this->postJson('/prodotti/personalizzazione/immagine_dimensioni', ['printing_id' => $f->screenA->id])->assertOk()->json();
         $this->assertNull($sizes['image']);
-        $this->assertCount(1, $sizes['sizes']);
-        $this->assertSame('10x10', $sizes['sizes'][0]['label']);
-        $this->assertSame(100, (int) $sizes['sizes'][0]['width_mm']);
-        $sizeId = (int) $sizes['sizes'][0]['id'];
+        $this->assertCount(1, $sizes['areas']);
+        $this->assertSame('10x10', $sizes['areas'][0]['label']);
+        $this->assertSame(100, (int) $sizes['areas'][0]['width_mm']);
+        $sizeId = (int) $sizes['areas'][0]['id'];
 
         $colors = $this->postJson('/prodotti/personalizzazione/colori', ['printing_size_id' => $sizeId])->assertOk()->json();
         $this->assertSame(['1', '2'], array_column($colors, 'label'));
