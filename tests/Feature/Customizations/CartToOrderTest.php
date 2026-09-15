@@ -58,9 +58,8 @@ final class CartToOrderTest extends TestCase
         $articles = OrderItemArticle::query()->where('item_id', $item->id)->orderBy('id')->get();
         $this->assertSame([[$f->a->sku, 60, 10.4, 624.0], [$f->b->sku, 40, 10.4, 416.0]], $articles->map(fn (OrderItemArticle $a) => [$a->article_sku, (int) $a->quantity, (float) $a->unit_price, (float) $a->price])->all());
 
-        $printings = OrderItemPrinting::query()->where('item_id', $item->id)->get();
-        $this->assertCount(1, $printings, 'one row per option chosen, not per article');
-        $printing = $printings->firstOrFail();
+        $this->assertSame(1, OrderItemPrinting::query()->where('item_id', $item->id)->count(), 'one row per option chosen, not per article');
+        $printing = OrderItemPrinting::query()->where('item_id', $item->id)->firstOrFail();
         $this->assertSame($f->screenOneColorA->id, (int) $printing->printing_variant_color_id);
         $this->assertSame('FRONTE - Serigrafia  10x10 1 colore', $printing->printing_label);
         $this->assertNull($printing->print_file);

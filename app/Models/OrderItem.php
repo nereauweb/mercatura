@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
- * @property float|null $unit_price  item price / quantity, stored by the checkout since v2c.0
+ * @property float|null $unit_price item price / quantity, stored by the checkout since v2c.0
  */
 class OrderItem extends Model
 {
