@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Filament\Resources\System\Pricing;
 
 use App\Filament\Resources\System\Pricing\Pages\ManageProductPriceTiers;
-use App\Models\ImportData\NormalizedRulesPriceTiers;
+use App\Models\ImportData\NormalizedTiersRule;
 use BackedEnum;
 use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
@@ -20,7 +20,7 @@ use Filament\Tables\Table;
 /** Quantity breaks generated at import for a unit-cost range (MarkupRules::tiers). Nothing in the storefront reads them. */
 final class ProductPriceTierResource extends Resource
 {
-    protected static ?string $model = NormalizedRulesPriceTiers::class;
+    protected static ?string $model = NormalizedTiersRule::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedQueueList;
 

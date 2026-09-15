@@ -9,10 +9,13 @@ use Illuminate\Database\Eloquent\Model;
 /**
  * A markup band: for an order value (quantity × unit cost) between
  * condition_1 (exclusive) and condition_2 (inclusive), the selling price is
- * the cost plus `value` percent. Two series live side by side (condition_3):
- * 0 for the prices computed at import, 1 for the storefront (cart and
- * configurator). Read through App\Support\Connectors\MarkupRules; edited in
- * the admin (Sistema → Regole di prezzo); seeded by CoreSeeder.
+ * the cost plus `value` percent. The same bands serve the import (on the
+ * quantities of the price-list tiers) and the storefront (on the quantity
+ * actually bought). Two series live side by side (condition_3): 0 standard,
+ * 1 "web-shop", used for the products a connector assigns to it
+ * (ImportConnector::markupSeries; historically the PF Concept "ws" subtype).
+ * Read through App\Support\Connectors\MarkupRules; edited in the admin
+ * (Sistema → Regole di prezzo); seeded by CoreSeeder with both series equal.
  *
  * @property int $id
  * @property int $condition_type
@@ -24,9 +27,9 @@ use Illuminate\Database\Eloquent\Model;
  */
 class ProductMarkup extends Model
 {
-    public const SERIES_IMPORT = 0;
+    public const SERIES_STANDARD = 0;
 
-    public const SERIES_STOREFRONT = 1;
+    public const SERIES_WEBSHOP = 1;
 
     protected $table = 'product_markups';
 
@@ -38,8 +41,8 @@ class ProductMarkup extends Model
     public static function seriesOptions(): array
     {
         return [
-            self::SERIES_IMPORT => __('admin.pricing.series_import'),
-            self::SERIES_STOREFRONT => __('admin.pricing.series_storefront'),
+            self::SERIES_STANDARD => __('admin.pricing.series_standard'),
+            self::SERIES_WEBSHOP => __('admin.pricing.series_webshop'),
         ];
     }
 }

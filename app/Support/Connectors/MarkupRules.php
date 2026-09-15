@@ -4,15 +4,17 @@ declare(strict_types=1);
 
 namespace App\Support\Connectors;
 
-use App\Models\ImportData\NormalizedRulesPriceTiers;
+use App\Models\ImportData\NormalizedTiersRule;
 use App\Models\ProductMarkup;
 use App\Support\ImportConnectors;
 
 /**
  * Selling price from unit cost: markup bands in product_markups
- * (condition = quantity × cost, condition_3 = 0 normal / 1 web-shop) and
- * quantity breaks in normalized_rules_price_tiers. Connectors may adjust
- * the percent for their own sources (ImportConnector::markupPercent).
+ * (condition = quantity × cost, condition_3 = the series) and
+ * quantity breaks in normalized_tiers_rules. The series (condition_3) is
+ * the connector's choice per product (ImportConnector::markupSeries: 0
+ * standard, 1 web-shop); connectors may also adjust the percent for their
+ * own sources (ImportConnector::markupPercent).
  */
 final class MarkupRules
 {
@@ -51,7 +53,7 @@ final class MarkupRules
      */
     public function tiers(float $cost, ?string $source = null, ?string $sku = null): array
     {
-        $band = NormalizedRulesPriceTiers::query()->where('from_price', '<=', $cost)->where('to_price', '>', $cost)->first();
+        $band = NormalizedTiersRule::query()->where('from_price', '<=', $cost)->where('to_price', '>', $cost)->first();
         if (! $band) {
             $single = $cost;
             if ($this->connectors->forSource($source)?->appliesMarkupToSingleTier($sku)) {

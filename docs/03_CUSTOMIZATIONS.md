@@ -103,7 +103,7 @@ deviation is listed in §3.
   `original_setup`, `setup_multiplier`, `start_cost` live there.
 - Prices are **baked at import**: `printing_variants_prices.price` is
   `original_price` marked up with the *article's* band
-  (`MarkupRules::percent(qty × cost, condition_3 = 1)` on `product_markups`), by the PF
+  (`MarkupRules::percent(qty × cost, series)` on `product_markups`, the series being the connector's choice per product), by the PF
   calculator or inline by Sipec V3. The storefront then reads `price`
   or, when it has the article markup at hand, recomputes from
   `original_price`. Both paths must survive.
@@ -393,7 +393,7 @@ packaging, surcharge) and the option snapshot per article (used by
 total_quantity = Σ quantity
 per article:
   original      = variant->price_per_quantity(total_quantity, true)
-  markup%       = variant->get_markup_percent(total_quantity, original)   // MarkupRules band, condition_3 = 1
+  markup%       = variant->get_markup_percent(total_quantity, original)   // MarkupRules band of the product's series (ImportConnector::markupSeries)
   unit          = original + round(original * markup% / 100, 2)
   line price    = quantity * unit
   additional    = quantity * variant->additional_unit_costs_per_quantity(quantity)   // SIAE, VAT-free

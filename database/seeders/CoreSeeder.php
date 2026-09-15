@@ -44,8 +44,8 @@ class CoreSeeder extends Seeder
 
     /**
      * Markup bands: [from order value, to order value, markup %]. The order
-     * value is quantity × unit cost; the same bands apply to products and
-     * printings (condition_3 = 0 and 1).
+     * value is quantity × unit cost; the bands are seeded in both series
+     * (condition_3 = 0 standard, 1 web-shop) with the same values.
      */
     public const MARKUP_BANDS = [
         [0, 100, 100.0], [100, 150, 90.0], [150, 200, 80.0], [200, 250, 65.0], [250, 350, 60.0],

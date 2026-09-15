@@ -57,6 +57,11 @@ abstract class BaseConnector implements ImportConnector
         return $percent;
     }
 
+    public function markupSeries(Product $product): int
+    {
+        return ProductMarkup::SERIES_STANDARD;
+    }
+
     public function appliesMarkupToSingleTier(?string $sku): bool
     {
         return false;
