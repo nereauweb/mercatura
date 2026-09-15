@@ -16,13 +16,15 @@ class OrderItemPrinting extends Model
         'print_file',
     ];
 
+    /** @return BelongsTo<OrderItem, $this> */
     public function item(): BelongsTo
     {
         return $this->belongsTo(OrderItem::class, 'item_id');
     }
 
+    /** The option (technique + position + size + colours) the customer chose. @return BelongsTo<\App\Models\ImportData\VariantPrintingColor, $this> */
     public function printing(): BelongsTo
     {
-        return $this->belongsTo(\App\Models\ImportData\VariantPrinting::class, 'printing_variant_color_id');
+        return $this->belongsTo(\App\Models\ImportData\VariantPrintingColor::class, 'printing_variant_color_id');
     }
 }

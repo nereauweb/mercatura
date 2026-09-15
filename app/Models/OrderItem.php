@@ -6,6 +6,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * @property float|null $unit_price  item price / quantity, stored by the checkout since v2c.0
+ */
 class OrderItem extends Model
 {
     protected $table = 'order_items';
@@ -18,6 +21,7 @@ class OrderItem extends Model
         'product_image_url',
         'quantity',
         'price',
+        'unit_price',
     ];
 
     public function product(): BelongsTo

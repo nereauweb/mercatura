@@ -403,16 +403,6 @@ class FrontendProductController extends Controller
         ]);
     }
 
-    public function get_printing_sizes_by_position(Request $request)
-    {
-        $printing = VariantPrinting::find($request->printing_id);
-        if (! PrintingPipeline::printingIsLive($printing)) {
-            return response()->json([], 404);
-        }
-
-        return response()->json($printing->printing_sizes->toArray());
-    }
-
     public function get_printing_colors_by_size(Request $request)
     {
         $printing_size = VariantPrintingSize::find($request->printing_size_id);
@@ -421,16 +411,6 @@ class FrontendProductController extends Controller
         }
 
         return response()->json($printing_size->printing_colors->toArray());
-    }
-
-    public function get_printing_price_for_selection(Request $request)
-    {
-        $printing_color = VariantPrintingColor::find($request->printing_color_id);
-        if (! PrintingPipeline::colorIsLive($printing_color)) {
-            return response()->json([], 404);
-        }
-
-        return response()->json($printing_color->calculate_print_price($request->quantity));
     }
 
     protected function logProductNavFailure(string $event, array $context, ?\Throwable $e = null): void

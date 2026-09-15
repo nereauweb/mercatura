@@ -4,7 +4,6 @@ namespace App\Models\ImportData;
 
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
@@ -53,11 +52,6 @@ class NormalizedProduct extends Model
     public function size_variants(): HasMany
     {
         return $this->hasMany(NormalizedProductVariant::class, 'product_id')->groupBy('size');
-    }
-
-    public function printing_positions(): BelongsToMany
-    {
-        return $this->belongsToMany(NormalizedPrintingPosition::class)->using(NormalizedProductPrintingPosition::class)->withPivot('image', 'ref', 'is_default');
     }
 
     public function printings(): HasMany

@@ -1,6 +1,6 @@
 # v2c — Customizations (printing → generic product customization)
 
-Status: **analysis and plan, awaiting approval (2026-09-15). Nothing implemented.**
+Status: **approved 2026-09-15 (decisions §3 as revised on real data). v2c.0 done (2026-09-15); v2c.1 next.**
 Written after the connector extraction and the repository split, from a
 full read of the printing domain in the core, the demo seeders and the two
 supplier packages. Decisions marked *(proposed)* need approval before v2c
@@ -589,7 +589,18 @@ as in `02_V2B_ADMIN.md`.
 
 ## 8. Deviations recorded during execution
 
-(none yet)
+**v2c.0 (2026-09-15).** Characterisation tests in `tests/Feature/Customizations/`
+(`LinePricingTest`, `SiblingLookupTest`, `CartToOrderTest`,
+`ConfiguratorEndpointsTest`) on `Tests\Support\CustomizationFixture`; the
+hand-computed totals matched the current code at the first run. Defects
+1–6 and 8–9 fixed; 7 pinned by a test as the documented asymmetry; 10
+confirmed on the migrated fixture (`order_items.unit_price` never existed,
+the write was silently dropped by mass assignment) and resolved by adding
+the column and storing the value — the only data the phase adds.
+`product_markups` dropped (decision: nothing read it). The two dead
+routes removed. PF Concept package: the write of the nonexistent
+`last_seen_in_feed` column removed (`v1.0.1`). No behaviour change in any
+total or page.
 
 ## 9. What needs approval before v2c starts
 

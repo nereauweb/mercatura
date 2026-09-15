@@ -55,7 +55,6 @@ final class ProductPageTest extends TestCase
     {
         $this->postJson('/prodotti/personalizzazione/immagine_dimensioni', ['printing_id' => 999999999])->assertNotFound();
         $this->postJson('/prodotti/personalizzazione/colori', ['printing_size_id' => 999999999])->assertNotFound();
-        $this->postJson('/prodotti/personalizzazione/setup', ['printing_color_id' => 999999999])->assertNotFound();
     }
 
     public function test_catalog_attribute_ids_and_conversion_labels_are_configurable(): void

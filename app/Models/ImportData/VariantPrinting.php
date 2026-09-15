@@ -59,28 +59,6 @@ class VariantPrinting extends Model
         return $this->BelongsTo(NormalizedProductVariant::class, 'normalized_variant_id');
     }
 
-    public function price_per_quantity($quantity)
-    {
-        $print_size = $this->printing_sizes()->first();
-        $print_color = $print_size->printing_colors()->first();
-        $price = 0;
-        foreach ($print_color->printing_prices()->orderBy('from_quantity', 'desc')->get() as $printing_price) {
-            if ($printing_price->from_quantity <= $quantity) {
-                $price = $printing_price->price;
-            }
-        }
-
-        return $price;
-    }
-
-    public function default_setup_per_unit($quantity)
-    {
-        $print_size = $this->printing_sizes()->first();
-        $print_color = $print_size->printing_colors()->first();
-
-        return $print_color->setup / $quantity;
-    }
-
     public function max_colours()
     {
         if (! $this->max_colors) {

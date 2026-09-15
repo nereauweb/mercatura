@@ -80,10 +80,6 @@ class Product extends Model
         'isBestseller', // boolean
     ];
 
-    public $saved_printing_techniques_positions = [];
-
-    public $saved_default_printing_position = null;
-
     public function searchableAs(): string
     {
         return 'products';
@@ -429,48 +425,6 @@ class Product extends Model
     {
         return (bool) ($this->attributes['isPromo'] ?? false);
     }
-
-    /*
-    public function printing_positions(): BelongsToMany
-    {
-        return $this->belongsToMany(\App\Models\ImportData\NormalizedPrintingPosition::class)->using(NormalizedPrintingPositionProduct::class)->withPivot('image', 'ref', 'is_default')->orderByPivot('is_default', 'desc');
-    }
-    */
-
-    public function default_printing_position()
-    {
-        $default_printing_position = $this->default_printing_position();
-        if ($default_printing_position) {
-            return $default_printing_position;
-        }
-
-        return null;
-    }
-
-    public function default_printing_position_technique_label()
-    {
-        $default_printing_position = $this->default_printing_position();
-        if ($default_printing_position) {
-            return $default_printing_position->printing_technique->label;
-        }
-
-        return '';
-    }
-
-    public function printing_techniques_positions()
-    {
-        if (empty($this->saved_printing_techniques_positions)) {
-            $data = [];
-            foreach ($this->printing_positions()->orderBy('label')->get() as $printing_position) {
-                $data[$printing_position->printing_technique->label][$printing_position->label] = $printing_position->pivot->image ?? '';
-            }
-            $this->saved_printing_techniques_positions = $data;
-        }
-
-        return $this->saved_printing_techniques_positions;
-    }
-
-    //
 
     /** @return HasMany<\App\Models\ImportData\VariantPrinting, $this> */
     public function printings(): HasMany

@@ -21,8 +21,8 @@ class QuotationItem extends Model
         'notes',
     ];
 
-    public function quotation(): belongsTo
+    public function quotation(): BelongsTo
     {
-        return $this->belongsTo(Order::class, 'quotation_id');
+        return $this->belongsTo(Quotation::class, 'quotation_id');
     }
 }

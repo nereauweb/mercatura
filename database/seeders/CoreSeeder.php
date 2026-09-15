@@ -89,9 +89,6 @@ class CoreSeeder extends Seeder
             }
             DB::table('normalized_rules_pricing_products')->insert($rows);
         }
-        if (DB::table('product_markups')->count() === 0) {
-            DB::table('product_markups')->insert(array_map(fn ($band) => ['starting_from_value' => $band[0], 'markup_percent' => $band[2], 'created_at' => now()], self::MARKUP_BANDS));
-        }
     }
 
     /** Markup percent for an order value (quantity × unit cost), as the pricing helpers compute it. */
