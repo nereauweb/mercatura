@@ -352,7 +352,7 @@ final class FrontendProductList extends Component
             ->when($this->brands !== [], fn ($q) => $q->whereIn('brand', $this->brands))
             ->when($this->colors !== [], fn ($q) => $q->whereHas('variants', fn ($sq) => $sq->whereIn('color_id', $this->colors)))
             ->when($this->print_techniques !== [], function ($q) {
-                return $q->whereHas('printings', function ($sq) {
+                return $q->whereHas('customizations', function ($sq) {
                     $sq->where(function ($inner) {
                         foreach ($this->print_techniques as $index => $technique) {
                             $method = $index === 0 ? 'whereRaw' : 'orWhereRaw';

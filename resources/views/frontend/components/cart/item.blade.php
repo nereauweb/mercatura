@@ -24,7 +24,7 @@
                         @if(!empty($item['printings']))
                         <tr class="bg-surface-muted"><th colspan="4" class="px-2 py-1 text-left">{{ __('frontend.cart.printing') }}</th></tr>
                         @foreach($item['printings'] as $printing)
-                        <tr class="border-t border-border-muted"><td colspan="4" class="px-2 py-1">{{ $printing->printing_label() }}</td></tr>
+                        <tr class="border-t border-border-muted"><td colspan="4" class="px-2 py-1">{{ $printing->fullLabel() }}</td></tr>
                         @endforeach
                         @if($item['has_packaging'])<tr class="border-t border-border-muted"><td colspan="4" class="px-2 py-1">{{ __('frontend.cart.packaging') }}</td></tr>@endif
                         @endif

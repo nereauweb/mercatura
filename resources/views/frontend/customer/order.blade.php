@@ -25,22 +25,22 @@
 									<thead><tr class="bg-surface-muted text-left"><th class="px-2 py-1">{{ __('frontend.cart.article') }}</th><th class="px-2 py-1">{{ __('frontend.cart.quantity') }}</th><th class="px-2 py-1">{{ __('frontend.cart.size') }}</th><th class="px-2 py-1">{{ __('frontend.cart.color') }}</th></tr></thead>
 									<tbody>
 										@foreach($item->articles as $line)<tr class="border-t border-border-muted"><td class="px-2 py-1">{{ $line->article_sku }}</td><td class="px-2 py-1">{{ $line->quantity }}</td><td class="px-2 py-1">{{ $line->article_size_label }}</td><td class="px-2 py-1">{{ $line->article_color_label }}</td></tr>@endforeach
-										@if($item->printings->count())
+										@if($item->customizations->count())
 											<tr class="bg-surface-muted"><th colspan="4" class="px-2 py-1 text-left">{{ __('frontend.cart.printing') }}</th></tr>
-											@foreach($item->printings as $printing)<tr class="border-t border-border-muted"><td colspan="4" class="px-2 py-1">{{ $printing->printing_label }}</td></tr>@endforeach
+											@foreach($item->customizations as $printing)<tr class="border-t border-border-muted"><td colspan="4" class="px-2 py-1">{{ $printing->label }}</td></tr>@endforeach
 										@endif
 									</tbody>
 								</table>
 							</div>
-							@if($item->printings->count())
+							@if($item->customizations->count())
 							<div class="mt-3 rounded bg-danger-soft p-3 text-sm">
 								<p class="font-semibold text-accent-strong">{{ __('frontend.account.print_file_missing') }}</p>
 								<div class="mt-2 grid gap-3 sm:grid-cols-2">
-									@foreach($item->printings as $printing)
+									@foreach($item->customizations as $printing)
 									<form action="{{ route('customer.order.printings.upload-image', $printing->id) }}" method="POST" enctype="multipart/form-data" class="rounded border border-border-muted bg-surface p-3">
 										@method('PUT')@csrf
-										<p class="text-xs font-semibold">{{ $printing->printing_label }}</p>
-										@if($printing->print_file)<p class="text-xs text-text-muted">{{ __('frontend.account.current_file') }}: <a href="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($printing->print_file) }}" target="_blank" rel="noopener" class="text-accent underline">{{ __('frontend.account.download') }}</a></p>@endif
+										<p class="text-xs font-semibold">{{ $printing->label }}</p>
+										@if($printing->file)<p class="text-xs text-text-muted">{{ __('frontend.account.current_file') }}: <a href="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($printing->file) }}" target="_blank" rel="noopener" class="text-accent underline">{{ __('frontend.account.download') }}</a></p>@endif
 										<input type="file" name="variant_image" accept=".jpg,.jpeg,.png,.svg,.webp,.pdf,.ai,.eps,.tif,.tiff" class="mt-2 block w-full text-xs file:mr-2 file:rounded file:border-0 file:bg-surface-muted file:px-2 file:py-1" aria-label="{{ __('frontend.account.choose_file') }}">
 										@error('variant_image')<p class="mt-1 text-xs text-danger">{{ $message }}</p>@enderror
 										<button type="submit" class="mt-2 rounded bg-primary px-3 py-1 text-xs font-bold uppercase text-on-primary">{{ __('frontend.account.upload') }}</button>

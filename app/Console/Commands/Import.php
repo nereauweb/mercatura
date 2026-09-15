@@ -85,7 +85,7 @@ class Import extends ImportCommand
         }
         if ($this->process_print_data) {
             $this->runConnectorStage(ImportConnector::STAGE_PRINTINGS);
-            $this->call('cleanup:printing_variants');
+            $this->call('cleanup:customizations');
             ImportStageCompleted::dispatch((int) $this->import_id, ImportConnector::STAGE_PRINTINGS);
         }
         $this->call('app:GenerateSitemap');

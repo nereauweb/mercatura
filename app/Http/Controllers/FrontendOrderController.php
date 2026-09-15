@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Contracts\PaymentConfirmation;
 use App\Models\Order;
-use App\Models\OrderItemPrinting;
+use App\Models\OrderItemCustomization;
 use App\Services\OrderPaymentCompletion;
 use App\Support\FrontendDebugLog;
 use App\Support\PaymentGateways;
@@ -188,7 +188,7 @@ class FrontendOrderController extends Controller
 
     public function upload_printing_image(Request $request, $id)
     {
-        $printing = OrderItemPrinting::with('item.order')->findOrFail($id);
+        $printing = OrderItemCustomization::with('item.order')->findOrFail($id);
         $order = optional($printing->item)->order;
 
         if (! $order || $order->user_id !== Auth::id()) {
@@ -236,8 +236,8 @@ class FrontendOrderController extends Controller
             $path = $file->storeAs($directory, $filename, 'public');
         }
 
-        $previous = $printing->print_file;
-        $printing->update(['print_file' => $path]);
+        $previous = $printing->file;
+        $printing->update(['file' => $path]);
         if ($previous && $previous !== $path) {
             Storage::disk('public')->delete($previous);
         }

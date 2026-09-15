@@ -2,10 +2,10 @@
 
 namespace App\Console\Commands;
 
-use App\Models\ImportData\VariantPrinting;
-use App\Models\ImportData\VariantPrintingColor;
-use App\Models\ImportData\VariantPrintingPrice;
-use App\Models\ImportData\VariantPrintingSize;
+use App\Models\Customizations\Customization;
+use App\Models\Customizations\CustomizationArea;
+use App\Models\Customizations\CustomizationOption;
+use App\Models\Customizations\CustomizationTier;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
@@ -17,7 +17,7 @@ class NormalizePrintingCleanup extends Command
      *
      * @var string
      */
-    protected $signature = 'cleanup:printing_variants {--days=30 : Number of days to retain data} {--dry-run : Show what would be deleted without actually deleting}';
+    protected $signature = 'cleanup:customizations {--days=30 : Number of days to retain data} {--dry-run : Show what would be deleted without actually deleting}';
 
     /**
      * The console command description.
@@ -68,7 +68,7 @@ class NormalizePrintingCleanup extends Command
 
         // Get old printing variants
         // Only live pipelines are cleaned (each connector declares its live one).
-        $oldPrintings = \App\Support\Connectors\PrintingPipeline::apply(VariantPrinting::where('updated_at', '<', $cutoffDate))->get();
+        $oldPrintings = \App\Support\Connectors\CustomizationPipeline::apply(Customization::where('updated_at', '<', $cutoffDate))->get();
 
         if ($oldPrintings->isEmpty()) {
             $this->warn('   No old printing variants found to delete.');
@@ -106,28 +106,28 @@ class NormalizePrintingCleanup extends Command
     /**
      * Delete all data related to a printing variant
      */
-    private function deletePrintingRelatedData(VariantPrinting $printing): void
+    private function deletePrintingRelatedData(Customization $printing): void
     {
         // Get all sizes for this printing
-        $sizes = $printing->printing_sizes;
+        $sizes = $printing->areas;
 
         foreach ($sizes as $size) {
             // Get all colors for this size
-            $colors = $size->printing_colors;
+            $colors = $size->options;
 
             foreach ($colors as $color) {
                 // Delete all prices for this color
-                $color->printing_prices()->delete();
+                $color->tiers()->delete();
                 $this->line("     Deleted prices for color ID: {$color->id}");
             }
 
             // Delete all colors for this size
-            $size->printing_colors()->delete();
+            $size->options()->delete();
             $this->line("   Deleted colors for size ID: {$size->id}");
         }
 
         // Delete all sizes for this printing
-        $printing->printing_sizes()->delete();
+        $printing->areas()->delete();
         $this->line(" Deleted sizes for printing ID: {$printing->id}");
     }
 
@@ -151,10 +151,10 @@ class NormalizePrintingCleanup extends Command
     private function cleanupOrphanedSizes(): void
     {
         // Find sizes without parent printing
-        $orphanedSizes = VariantPrintingSize::whereNotExists(function ($query) {
+        $orphanedSizes = CustomizationArea::whereNotExists(function ($query) {
             $query->select(DB::raw(1))
-                ->from('printing_variants')
-                ->whereColumn('printing_variants.id', 'printing_variants_sizes.parent_id');
+                ->from('customizations')
+                ->whereColumn('customizations.id', 'customization_areas.parent_id');
         })->get();
 
         if ($orphanedSizes->isEmpty()) {
@@ -190,10 +190,10 @@ class NormalizePrintingCleanup extends Command
     private function cleanupOrphanedColors(): void
     {
         // Find colors without parent size
-        $orphanedColors = VariantPrintingColor::whereNotExists(function ($query) {
+        $orphanedColors = CustomizationOption::whereNotExists(function ($query) {
             $query->select(DB::raw(1))
-                ->from('printing_variants_sizes')
-                ->whereColumn('printing_variants_sizes.id', 'printing_variants_colors.parent_id');
+                ->from('customization_areas')
+                ->whereColumn('customization_areas.id', 'customization_options.parent_id');
         })->get();
 
         if ($orphanedColors->isEmpty()) {
@@ -215,7 +215,7 @@ class NormalizePrintingCleanup extends Command
         $deletedCount = 0;
         foreach ($orphanedColors as $color) {
             // Delete related prices first
-            $color->printing_prices()->delete();
+            $color->tiers()->delete();
             $color->delete();
             $deletedCount++;
         }
@@ -229,10 +229,10 @@ class NormalizePrintingCleanup extends Command
     private function cleanupOrphanedPrices(): void
     {
         // Find prices without parent color
-        $orphanedPrices = VariantPrintingPrice::whereNotExists(function ($query) {
+        $orphanedPrices = CustomizationTier::whereNotExists(function ($query) {
             $query->select(DB::raw(1))
-                ->from('printing_variants_colors')
-                ->whereColumn('printing_variants_colors.id', 'printing_variants_prices.parent_id');
+                ->from('customization_options')
+                ->whereColumn('customization_options.id', 'customization_tiers.parent_id');
         })->get();
 
         if ($orphanedPrices->isEmpty()) {
@@ -252,10 +252,10 @@ class NormalizePrintingCleanup extends Command
         }
 
         $deletedCount = $orphanedPrices->count();
-        VariantPrintingPrice::whereNotExists(function ($query) {
+        CustomizationTier::whereNotExists(function ($query) {
             $query->select(DB::raw(1))
-                ->from('printing_variants_colors')
-                ->whereColumn('printing_variants_colors.id', 'printing_variants_prices.parent_id');
+                ->from('customization_options')
+                ->whereColumn('customization_options.id', 'customization_tiers.parent_id');
         })->delete();
 
         $this->info("   ✅ Deleted {$deletedCount} orphaned prices.");
@@ -264,17 +264,17 @@ class NormalizePrintingCleanup extends Command
     /**
      * Delete all data related to a printing size
      */
-    private function deleteSizeRelatedData(VariantPrintingSize $size): void
+    private function deleteSizeRelatedData(CustomizationArea $size): void
     {
         // Get all colors for this size
-        $colors = $size->printing_colors;
+        $colors = $size->options;
 
         foreach ($colors as $color) {
             // Delete all prices for this color
-            $color->printing_prices()->delete();
+            $color->tiers()->delete();
         }
 
         // Delete all colors for this size
-        $size->printing_colors()->delete();
+        $size->options()->delete();
     }
 }

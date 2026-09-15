@@ -9,7 +9,7 @@ use App\Models\CustomerAddress;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\OrderItemArticle;
-use App\Models\OrderItemPrinting;
+use App\Models\OrderItemCustomization;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\Quotation;
@@ -114,8 +114,8 @@ class DemoCustomersSeeder extends Seeder
             if ($variant === null) {
                 continue;
             }
-            $printing = $variant->default_printing();
-            $printColor = $printing?->printing_sizes()->first()?->printing_colors()->first();
+            $printing = $variant->defaultCustomization();
+            $printColor = $printing?->areas()->first()?->options()->first();
             $line = app(LinePricer::class)->price([[$variant->id, $quantity]], $printColor ? [$printColor->id] : [], false);
             $unitPrice = $line->articles[0]->unitPrice;
             $linePrice = round($line->price, 2);
@@ -130,7 +130,7 @@ class DemoCustomersSeeder extends Seeder
                 'quantity' => $quantity, 'unit_price' => $unitPrice, 'price' => round($quantity * $unitPrice, 2),
             ]);
             if ($printColor) {
-                OrderItemPrinting::query()->create(['item_id' => $item->id, 'printing_variant_color_id' => $printColor->id, 'printing_label' => $printColor->printing_label(), 'print_file' => null]);
+                OrderItemCustomization::query()->create(['item_id' => $item->id, 'option_id' => $printColor->id, 'label' => $printColor->fullLabel(), 'file' => null]);
             }
             $itemsPrice += $linePrice;
         }

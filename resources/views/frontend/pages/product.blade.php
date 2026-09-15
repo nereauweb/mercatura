@@ -16,13 +16,13 @@
         $product->isSale() ? ['label' => __('frontend.product.card.badge_sale'), 'class' => 'bg-danger text-on-accent'] : null,
         $product->isNew() ? ['label' => __('frontend.product.card.badge_new'), 'class' => 'bg-primary text-on-primary'] : null,
     ]);
-    $defaultPrinting = $has_printing ? $article->default_printing() : null;
+    $defaultPrinting = $has_printing ? $article->defaultCustomization() : null;
     $hasPrices = $article->prices->count() > 0;
     $configuratorConfig = [
         'endpoints' => [
             'summary' => route('frontend.product.build_articles_request'),
             'sizes' => route('frontend.product.get.printing_image_and_sizes'),
-            'colors' => route('frontend.product.get.printing_colors'),
+            'colors' => route('frontend.product.get.options'),
         ],
         'csrf' => csrf_token(),
         'hasPrinting' => $page['configurator']['has_printing'],
@@ -87,8 +87,8 @@
 						<div>
 							<p>{{ __('frontend.product.recommended_technique') }}:</p>
 							<p class="font-semibold uppercase text-primary">{{ $defaultPrinting->technique_label }} {{ $defaultPrinting->position_label }}</p>
-							<p class="text-primary">{{ __('frontend.product.print_area', ['size' => $defaultPrinting->default_print_size()]) }}</p>
-							<p class="text-primary">{{ __('frontend.product.up_to_colours', ['count' => $defaultPrinting->max_colours()]) }}</p>
+							<p class="text-primary">{{ __('frontend.product.print_area', ['size' => $defaultPrinting->defaultAreaLabel()]) }}</p>
+							<p class="text-primary">{{ __('frontend.product.up_to_colours', ['count' => $defaultPrinting->maxColors()]) }}</p>
 						</div>
 					</div>
 					@endif

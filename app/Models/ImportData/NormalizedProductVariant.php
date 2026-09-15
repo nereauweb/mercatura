@@ -32,10 +32,10 @@ class NormalizedProductVariant extends Model
         'size',
         'keywords',
         'theme',
-        'printing_default_technique',
-        'printing_default_location',
-        'printing_default_dimension',
-        'printing_default_max_colors',
+        'customization_default_technique',
+        'customization_default_location',
+        'customization_default_dimension',
+        'customization_default_max_colors',
         'gender',
         'markSegment',
         'sale',
@@ -86,8 +86,8 @@ class NormalizedProductVariant extends Model
         return $this->HasOne(\App\Models\ProductVariant::class, 'source_sku', 'source_id');
     }
 
-    public function printings(): HasMany
+    public function customizations(): HasMany
     {
-        return $this->HasMany(\App\Models\ImportData\VariantPrinting::class, 'normalized_variant_id');
+        return $this->HasMany(\App\Models\Customizations\Customization::class, 'normalized_variant_id');
     }
 }

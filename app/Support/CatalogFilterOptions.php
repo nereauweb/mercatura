@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Models\Category;
-use App\Models\ImportData\VariantPrinting;
+use App\Models\Customizations\Customization;
 use App\Models\Product;
 use App\Models\ProductColor;
 use App\Models\ProductVariantPrice;
-use App\Support\Connectors\PrintingPipeline;
+use App\Support\Connectors\CustomizationPipeline;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
@@ -42,8 +42,8 @@ final class CatalogFilterOptions
             $colors = ProductColor::whereHas('variants', fn ($q) => $q->whereIn('products_variants.product_id', $productIds))->get()
                 ->map(fn (ProductColor $color) => ['id' => (int) $color->id, 'label' => (string) $color->label, 'code' => (string) $color->render_code()])->values()->all();
 
-            $prints = VariantPrinting::whereIn('product_id', $productIds)
-                ->tap(fn ($q) => PrintingPipeline::apply($q))
+            $prints = Customization::whereIn('product_id', $productIds)
+                ->tap(fn ($q) => CustomizationPipeline::apply($q))
                 ->select('technique_label', 'position_label', DB::raw('COUNT(DISTINCT product_id) as count'))
                 ->groupBy('technique_label', 'position_label')
                 ->get()

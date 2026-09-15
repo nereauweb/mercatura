@@ -85,6 +85,7 @@ class Order extends Model implements HasMedia
         'paypal' => 'Paypal',
     ];
 
+    /** @return HasMany<OrderItem, $this> */
     public function items(): HasMany
     {
         return $this->hasMany('App\Models\OrderItem', 'order_id');
@@ -127,8 +128,8 @@ class Order extends Model implements HasMedia
         $order_items = [];
         foreach ($this->items as $order_item) {
             $printings = [];
-            foreach ($order_item->printings as $printing) {
-                array_push($printings, $printing['printing_label']);
+            foreach ($order_item->customizations as $printing) {
+                array_push($printings, $printing['label']);
             }
             $quantities = [];
             foreach ($order_item->articles as $article) {
@@ -141,7 +142,7 @@ class Order extends Model implements HasMedia
                 'quantity' => $order_item->quantity,
                 'article_quantities' => implode(', ', $quantities),
                 'price' => number_format($order_item->price, 2, ',', '.'),
-                'printings' => empty($printings) ? '' : 'Personalizzazioni: '.implode(', ', $printings),
+                'printings' => empty($printings) ? '' : __('frontend.customization.order_prefix').implode(', ', $printings),
             ]);
         }
 

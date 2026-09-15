@@ -1,6 +1,6 @@
 # v2c — Customizations (printing → generic product customization)
 
-Status: **approved 2026-09-15 (decisions §3 as revised on real data). v2c.0 and v2c.1 done (2026-09-16); v2c.2 next.**
+Status: **approved 2026-09-15 (decisions §3 as revised on real data). v2c.0–v2c.2 done (2026-09-16); v2c.3 next.**
 Written after the connector extraction and the repository split, from a
 full read of the printing domain in the core, the demo seeders and the two
 supplier packages. Decisions marked *(proposed)* need approval before v2c
@@ -621,6 +621,34 @@ plan: markup bands renamed `product_markups` (`from_condition`,
 `to_condition`, `value`; the second series and the two constant columns
 dropped on the user's decision), quantity breaks `normalized_tiers_rules`,
 admin pages under Sistema → Regole di prezzo.
+
+**v2c.2 (2026-09-16).** Migration `2026_09_16_150000_customizations_schema`:
+tables renamed (`customizations`, `customization_areas`,
+`customization_options`, `customization_tiers`, `order_item_customizations`),
+`family` and the JSON `supplier_data` added (named so, not `attributes`:
+that name collides with Eloquent's internal property), the four dead
+`*_method_*` columns and the never-written `deleted_at` columns dropped,
+an index on `order_item_customizations.item_id`; columns renamed on the
+order rows (`option_id`, `label`, `file`) and on the "default print"
+denormalisations (`default_customization_*`, `customization_default_*`);
+`parent_id` kept on the three child tables. Models
+`App\Models\Customizations\{Customization, CustomizationArea,
+CustomizationOption, CustomizationTier}` and `OrderItemCustomization`;
+relations `areas/options/tiers/area/customization/option`, methods
+`equivalentFor()`, `priceFor()`, `fullLabel()`, `applyMarkup()`;
+`CustomizationPipeline` (`apply`, `isLive`, `optionIsLive`);
+`Product`/`ProductVariant` `customizations()`, `defaultCustomization()`,
+`minCustomizationQuantity()`. Labels ("1 colore", "Quadricromia", "N
+colori", the line label, setup, start, packaging, under-minimum,
+"Personalizzazioni: ") come from `frontend.customization.*`, output
+identical. Deviations: **no deprecated aliases** — the two connector
+packages were updated in the same step (they are ours and nothing is
+deployed), so the alias layer of decision 1 and §4.2 was not written; no
+forwarding methods with the old names on `Product`/`ProductVariant` either
+(no skin uses them). The connector contract names (`STAGE_PRINTINGS`,
+`printingPipelines()`, the jobs and commands) stay until v2c.5 as planned.
+Demo seeder sets `family` for Ricamo (embroidery) and Incisione laser
+(engraving) only. Schema dump regenerated.
 
 ## 9. What needs approval before v2c starts
 

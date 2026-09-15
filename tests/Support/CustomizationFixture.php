@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
-use App\Models\ImportData\VariantPrinting;
-use App\Models\ImportData\VariantPrintingColor;
-use App\Models\ImportData\VariantPrintingSize;
+use App\Models\Customizations\Customization;
+use App\Models\Customizations\CustomizationArea;
+use App\Models\Customizations\CustomizationOption;
 use App\Models\Product;
 use App\Models\ProductColor;
 use App\Models\ProductVariant;
@@ -34,22 +34,22 @@ final class CustomizationFixture
 
     public ProductVariant $b;
 
-    public VariantPrinting $screenA;
+    public Customization $screenA;
 
-    public VariantPrinting $embroideryA;
+    public Customization $embroideryA;
 
-    public VariantPrinting $screenB;
+    public Customization $screenB;
 
     /** Serigrafia, 1 colour: setup 30 × 1, start cost 5. */
-    public VariantPrintingColor $screenOneColorA;
+    public CustomizationOption $screenOneColorA;
 
     /** Serigrafia, 2 colours: setup 30 × 2, no start cost. */
-    public VariantPrintingColor $screenTwoColorsA;
+    public CustomizationOption $screenTwoColorsA;
 
     /** Ricamo "Fino a 12": setup 60 with setup_multiplier 0 (docs/03_CUSTOMIZATIONS.md §2.4 defect 7). */
-    public VariantPrintingColor $embroideryOptionA;
+    public CustomizationOption $embroideryOptionA;
 
-    public VariantPrintingColor $screenOneColorB;
+    public CustomizationOption $screenOneColorB;
 
     public static function create(): self
     {
@@ -59,7 +59,7 @@ final class CustomizationFixture
 
         $f->product = Product::query()->create([
             'sku' => 'FIX-001', 'source' => 'own', 'source_sku' => 'FIX-001', 'active' => 1, 'forced_status' => 'none',
-            'name' => 'Fixture product', 'description' => 'Fixture', 'default_print_technique' => 'Serigrafia', 'default_print_position' => 'Fronte',
+            'name' => 'Fixture product', 'description' => 'Fixture', 'default_customization_technique' => 'Serigrafia', 'default_customization_position' => 'Fronte',
         ]);
         $f->product->refresh();
         $f->product->slug();
@@ -69,16 +69,16 @@ final class CustomizationFixture
         $f->product->set_main_variant($f->a->id, true);
 
         $f->screenA = self::printing($f->product, $f->a, 'Serigrafia', 'Fronte', isDefault: true, days: 5, packaging: true);
-        $screenSizeA = VariantPrintingSize::query()->create(['parent_id' => $f->screenA->id, 'label' => '10x10', 'type' => 'rectangle', 'width_mm' => 100, 'height_mm' => 100]);
+        $screenSizeA = CustomizationArea::query()->create(['parent_id' => $f->screenA->id, 'label' => '10x10', 'type' => 'rectangle', 'width_mm' => 100, 'height_mm' => 100]);
         $f->screenOneColorA = self::option($screenSizeA, '1', 1, 1, 30.00, 5.00);
         $f->screenTwoColorsA = self::option($screenSizeA, '2', 2, 2, 30.00, 0.00);
 
         $f->embroideryA = self::printing($f->product, $f->a, 'Ricamo', 'Retro', isDefault: false, days: 6, packaging: false);
-        $embroiderySizeA = VariantPrintingSize::query()->create(['parent_id' => $f->embroideryA->id, 'label' => '8x8', 'type' => 'rectangle', 'width_mm' => 80, 'height_mm' => 80]);
+        $embroiderySizeA = CustomizationArea::query()->create(['parent_id' => $f->embroideryA->id, 'label' => '8x8', 'type' => 'rectangle', 'width_mm' => 80, 'height_mm' => 80]);
         $f->embroideryOptionA = self::option($embroiderySizeA, 'Fino a 12', 1, 0, 60.00, 0.00);
 
         $f->screenB = self::printing($f->product, $f->b, 'Serigrafia', 'Fronte', isDefault: true, days: 5, packaging: true);
-        $screenSizeB = VariantPrintingSize::query()->create(['parent_id' => $f->screenB->id, 'label' => '10x10', 'type' => 'rectangle', 'width_mm' => 100, 'height_mm' => 100]);
+        $screenSizeB = CustomizationArea::query()->create(['parent_id' => $f->screenB->id, 'label' => '10x10', 'type' => 'rectangle', 'width_mm' => 100, 'height_mm' => 100]);
         $f->screenOneColorB = self::option($screenSizeB, '1', 1, 1, 30.00, 5.00);
         self::option($screenSizeB, '2', 2, 2, 30.00, 0.00);
 
@@ -101,9 +101,9 @@ final class CustomizationFixture
         return $variant->refresh();
     }
 
-    private static function printing(Product $product, ProductVariant $variant, string $technique, string $position, bool $isDefault, int $days, bool $packaging): VariantPrinting
+    private static function printing(Product $product, ProductVariant $variant, string $technique, string $position, bool $isDefault, int $days, bool $packaging): Customization
     {
-        return VariantPrinting::query()->create([
+        return Customization::query()->create([
             'source' => 'own', 'pipeline' => 'own', 'source_product_sku' => $product->sku, 'source_variant_sku' => $variant->sku,
             'product_id' => $product->id, 'variant_id' => $variant->id, 'technique_label' => $technique, 'position_label' => $position,
             'position_code' => strtoupper(substr($position, 0, 3)), 'technique_main_code' => strtoupper(substr($technique, 0, 3)),
@@ -112,9 +112,9 @@ final class CustomizationFixture
         ]);
     }
 
-    private static function option(VariantPrintingSize $size, string $label, int $numberOfColors, int $multiplier, float $setup, float $start): VariantPrintingColor
+    private static function option(CustomizationArea $size, string $label, int $numberOfColors, int $multiplier, float $setup, float $start): CustomizationOption
     {
-        $option = VariantPrintingColor::query()->create([
+        $option = CustomizationOption::query()->create([
             'parent_id' => $size->id, 'label' => $label, 'number_of_colors' => $numberOfColors, 'setup_multiplier' => $multiplier,
             'setup' => $setup, 'original_setup' => round($setup / 1.2, 2), 'start_cost' => $start, 'original_start_cost' => $start,
         ]);
@@ -123,11 +123,11 @@ final class CustomizationFixture
             // `price` is deliberately wrong (9.99): the storefront must recompute from original_price with the article markup.
             $rows[] = [
                 'parent_id' => $option->id, 'from_quantity' => $quantity, 'price' => 9.99, 'original_price' => $cost,
-                'price_method_1' => 0, 'price_method_2' => 0, 'packaging_price' => $packagingPrice, 'packaging_original_price' => $packagingCost,
-                'packaging_price_method_1' => 0, 'packaging_price_method_2' => 0, 'created_at' => now(), 'updated_at' => now(),
+                'packaging_price' => $packagingPrice, 'packaging_original_price' => $packagingCost,
+                'created_at' => now(), 'updated_at' => now(),
             ];
         }
-        DB::table('printing_variants_prices')->insert($rows);
+        DB::table('customization_tiers')->insert($rows);
 
         return $option;
     }

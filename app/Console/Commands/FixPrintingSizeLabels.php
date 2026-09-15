@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\Models\ImportData\VariantPrintingSize;
+use App\Models\Customizations\CustomizationArea;
 use Illuminate\Console\Command;
 
 class FixPrintingSizeLabels extends ImportCommand
@@ -29,23 +29,23 @@ class FixPrintingSizeLabels extends ImportCommand
     public function handle(): void
     {
         $this->info('Process started');
-        $total = VariantPrintingSize::count();
+        $total = CustomizationArea::count();
         $this->line("Total sizes: $total");
-        VariantPrintingSize::chunk(500, function ($printing_sizes) use ($total) {
-            foreach ($printing_sizes as $printing_size) {
+        CustomizationArea::chunk(500, function ($areas) use ($total) {
+            foreach ($areas as $area) {
                 $this->count++;
                 $this->line('Processing: '.$this->count."/$total");
-                if ($printing_size->height_mm == 0) {
-                    $printing_size->type = 'circle';
-                    $printing_size->label = round($printing_size->width_mm / 10, 1).'cm diametro';
-                    $printing_size->save();
-                } elseif ($printing_size->label == '0 cm2') {
-                    $printing_size->label = round($printing_size->width_mm / 10, 1).'cm x '.round($printing_size->height_mm / 10, 1).'cm';
-                    $printing_size->save();
+                if ($area->height_mm == 0) {
+                    $area->type = 'circle';
+                    $area->label = round($area->width_mm / 10, 1).'cm diametro';
+                    $area->save();
+                } elseif ($area->label == '0 cm2') {
+                    $area->label = round($area->width_mm / 10, 1).'cm x '.round($area->height_mm / 10, 1).'cm';
+                    $area->save();
                 } else {
-                    $printing_size->type = 'rectangle';
-                    $printing_size->label = round($printing_size->width_mm / 10, 1).'cm x '.round($printing_size->height_mm / 10, 1).'cm';
-                    $printing_size->save();
+                    $area->type = 'rectangle';
+                    $area->label = round($area->width_mm / 10, 1).'cm x '.round($area->height_mm / 10, 1).'cm';
+                    $area->save();
                 }
 
             }

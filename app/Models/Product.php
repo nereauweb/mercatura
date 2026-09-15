@@ -6,7 +6,7 @@ use App\Models\Concerns\HasSeoFields;
 use App\Models\Concerns\RedirectsOldSlugs;
 use App\Support\CanonicalUrl;
 use App\Support\CaughtExceptionLogger;
-use App\Support\Connectors\PrintingPipeline;
+use App\Support\Connectors\CustomizationPipeline;
 use App\Support\ImportConnectors;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -19,6 +19,10 @@ use Laravel\Scout\Attributes\SearchUsingFullText;
 use Laravel\Scout\Attributes\SearchUsingPrefix;
 use Laravel\Scout\Searchable;
 
+/**
+ * @property string|null $default_customization_technique
+ * @property string|null $default_customization_position
+ */
 class Product extends Model
 {
     use HasSeoFields;
@@ -72,8 +76,8 @@ class Product extends Model
         'og_description',
         'og_image',
         'supplier_info', // text
-        'default_print_technique',
-        'default_print_position',
+        'default_customization_technique',
+        'default_customization_position',
         'full_update',
         'isGreen', // boolean
         'isPromo', // boolean
@@ -426,23 +430,23 @@ class Product extends Model
         return (bool) ($this->attributes['isPromo'] ?? false);
     }
 
-    /** @return HasMany<\App\Models\ImportData\VariantPrinting, $this> */
-    public function printings(): HasMany
+    /** @return HasMany<\App\Models\Customizations\Customization, $this> */
+    public function customizations(): HasMany
     {
-        $relation = $this->HasMany(\App\Models\ImportData\VariantPrinting::class, 'product_id');
-        PrintingPipeline::apply($relation->getQuery());
+        $relation = $this->HasMany(\App\Models\Customizations\Customization::class, 'product_id');
+        CustomizationPipeline::apply($relation->getQuery());
 
         return $relation;
     }
 
-    public function default_printing()
+    public function defaultCustomization()
     {
-        return $this->printings()->where('is_default', true)->first();
+        return $this->customizations()->where('is_default', true)->first();
     }
 
-    public function default_printing_technique_label()
+    public function defaultCustomizationTechniqueLabel()
     {
-        return $this->default_printing() ? $this->default_printing()->technique_label : false;
+        return $this->defaultCustomization() ? $this->defaultCustomization()->technique_label : false;
     }
 
     /** Delivery days: the source connector's rule (or 7) plus the default printing's days. */
@@ -450,8 +454,8 @@ class Product extends Model
     {
         $connector = app(ImportConnectors::class)->forSource($this->source);
         $processing_days = $connector ? $connector->processingDays($this) : \App\Support\Connectors\BaseConnector::DEFAULT_PROCESSING_DAYS;
-        if ($this->default_printing() && $printing == 'default') {
-            $processing_days += $this->default_printing()->processing_days;
+        if ($this->defaultCustomization() && $printing == 'default') {
+            $processing_days += $this->defaultCustomization()->processing_days;
         }
 
         return $processing_days;

@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Database\Seeders\Demo;
 
 use App\Models\Category;
-use App\Models\ImportData\VariantPrinting;
-use App\Models\ImportData\VariantPrintingColor;
-use App\Models\ImportData\VariantPrintingSize;
+use App\Models\Customizations\Customization;
+use App\Models\Customizations\CustomizationArea;
+use App\Models\Customizations\CustomizationOption;
 use App\Models\Product;
 use App\Models\ProductColor;
 use App\Models\ProductSize;
@@ -88,7 +88,7 @@ class DemoCatalogSeeder extends Seeder
         $product = Product::query()->create([
             'sku' => $sku, 'source' => self::SOURCE, 'source_sku' => $sku, 'active' => 1, 'forced_status' => 'none',
             'name' => $d['name'], 'description' => $d['description'], 'brand' => $d['brand'],
-            'default_print_technique' => array_values($d['positions'])[0][0], 'default_print_position' => array_key_first($d['positions']),
+            'default_customization_technique' => array_values($d['positions'])[0][0], 'default_customization_position' => array_key_first($d['positions']),
             'isGreen' => in_array('green', $d['flags'], true) ? 1 : 0,
             'isPromo' => in_array('promo', $d['flags'], true) ? 1 : 0,
             'isBestseller' => in_array('bestseller', $d['flags'], true) ? 1 : 0,
@@ -192,8 +192,8 @@ class DemoCatalogSeeder extends Seeder
             [$sizeLabel, $width, $height] = Catalog::POSITIONS[$positionLabel];
             foreach ($techniques as $technique) {
                 [$colorOptions, $days] = Catalog::TECHNIQUES[$technique];
-                $printing = VariantPrinting::query()->create([
-                    'source' => self::SOURCE, 'pipeline' => self::SOURCE, 'source_product_sku' => $product->sku, 'source_variant_sku' => $variant->sku,
+                $printing = Customization::query()->create([
+                    'source' => self::SOURCE, 'pipeline' => self::SOURCE, 'family' => Catalog::FAMILIES[$technique] ?? null, 'source_product_sku' => $product->sku, 'source_variant_sku' => $variant->sku,
                     'product_id' => $product->id, 'variant_id' => $variant->id,
                     'technique_label' => $technique, 'position_label' => $positionLabel,
                     'position_code' => strtoupper(substr(str($positionLabel)->slug()->toString(), 0, 3)),
@@ -202,9 +202,9 @@ class DemoCatalogSeeder extends Seeder
                     'minimum_quantity' => max(1, (int) $d['min']), 'max_colors' => (string) count($colorOptions), 'max_print_position' => count($d['positions']),
                 ]);
                 $isDefault = false;
-                $size = VariantPrintingSize::query()->create(['parent_id' => $printing->id, 'label' => $sizeLabel, 'type' => 'rectangle', 'width_mm' => $width, 'height_mm' => $height]);
+                $size = CustomizationArea::query()->create(['parent_id' => $printing->id, 'label' => $sizeLabel, 'type' => 'rectangle', 'width_mm' => $width, 'height_mm' => $height]);
                 foreach ($colorOptions as [$label, $numberOfColors, $multiplier, $setup]) {
-                    $color = VariantPrintingColor::query()->create([
+                    $color = CustomizationOption::query()->create([
                         'parent_id' => $size->id, 'label' => $label, 'number_of_colors' => $numberOfColors, 'setup_multiplier' => 1,
                         'setup' => round($setup * 1.2, 2), 'original_setup' => $setup, 'start_cost' => 0, 'original_start_cost' => 0,
                     ]);
@@ -214,12 +214,12 @@ class DemoCatalogSeeder extends Seeder
                         $markup = CoreSeeder::markupPercent($quantity * (float) $d['cost']);
                         $prices[] = [
                             'parent_id' => $color->id, 'from_quantity' => $quantity, 'price' => round($cost * (1 + $markup / 100), 2),
-                            'price_method_1' => 0, 'price_method_2' => 0, 'original_price' => $cost,
-                            'packaging_price' => 0, 'packaging_price_method_1' => 0, 'packaging_price_method_2' => 0, 'packaging_original_price' => 0,
+                            'original_price' => $cost,
+                            'packaging_price' => 0, 'packaging_original_price' => 0,
                             'created_at' => now(), 'updated_at' => now(),
                         ];
                     }
-                    DB::table('printing_variants_prices')->insert($prices);
+                    DB::table('customization_tiers')->insert($prices);
                 }
             }
         }

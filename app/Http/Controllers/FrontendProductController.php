@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\ImportData\VariantPrinting;
-use App\Models\ImportData\VariantPrintingSize;
+use App\Models\Customizations\Customization;
+use App\Models\Customizations\CustomizationArea;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Support\CaughtExceptionLogger;
-use App\Support\Connectors\PrintingPipeline;
+use App\Support\Connectors\CustomizationPipeline;
 use App\Support\Customizations\LinePricer;
 use App\Support\FrontendDebugLog;
 use App\Support\ProductPageData;
@@ -24,7 +24,7 @@ class FrontendProductController extends Controller
             'product_id' => $id,
         ]);
         try {
-            $product = Product::with('printings')->where('id', $id)->firstOrFail();
+            $product = Product::with('customizations')->where('id', $id)->firstOrFail();
         } catch (ModelNotFoundException $e) {
             $this->logProductNavFailure('show_by_id:product_not_found', [
                 'reason' => 'product_not_found',
@@ -54,7 +54,7 @@ class FrontendProductController extends Controller
             'slug' => $slug,
         ]);
         try {
-            $product = Product::with('printings')->where('slug', $slug)->firstOrFail();
+            $product = Product::with('customizations')->where('slug', $slug)->firstOrFail();
         } catch (ModelNotFoundException $e) {
             $this->logProductNavFailure('show_by_slug:product_not_found', [
                 'reason' => 'product_not_found',
@@ -94,7 +94,7 @@ class FrontendProductController extends Controller
             ]);
             abort(404);
         }
-        $product = $article->product()->with('printings')->first();
+        $product = $article->product()->with('customizations')->first();
         if (! $product) {
             $this->logProductNavFailure('show_variant_by_slug:orphan_variant', [
                 'reason' => 'orphan_variant',
@@ -125,9 +125,9 @@ class FrontendProductController extends Controller
         }
         $has_printing = false;
         $has_packaging = false;
-        if ($article->printings()->count() > 0) {
+        if ($article->customizations()->count() > 0) {
             $has_printing = true;
-            if ($article->printings()->where('has_packaging', 1)->count() > 0) {
+            if ($article->customizations()->where('has_packaging', 1)->count() > 0) {
                 $has_packaging = true;
             }
         }
@@ -176,12 +176,12 @@ class FrontendProductController extends Controller
         FrontendDebugLog::prodottoNavigazione('get_configurator', [
             'article_id' => $request->article_id,
         ]);
-        $article = ProductVariant::with('product')->with('printings')->where('id', $request->article_id)->first();
+        $article = ProductVariant::with('product')->with('customizations')->where('id', $request->article_id)->first();
         $has_printing = false;
         $has_packaging = false;
-        if ($article->printings()->count() > 0) {
+        if ($article->customizations()->count() > 0) {
             $has_printing = true;
-            if ($article->printings()->where('has_packaging', 1)->count() > 0) {
+            if ($article->customizations()->where('has_packaging', 1)->count() > 0) {
                 $has_packaging = true;
             }
         }
@@ -236,7 +236,7 @@ class FrontendProductController extends Controller
                 if ($line->packaging) {
                     $lines[] = [
                         'column_1_style' => 'padding-left:20px;',
-                        'column_1' => 'Confezionamento',
+                        'column_1' => __('frontend.customization.packaging'),
                         'column_2' => $customization->quantity.'x'.number_format((float) $customization->packagingUnitPrice, 2, ',', '.').'&nbsp;&euro;',
                         'column_3' => number_format($customization->packagingPrice, 2, ',', '.').'&nbsp;&euro;',
                     ];
@@ -246,7 +246,7 @@ class FrontendProductController extends Controller
         if ($line->underMinimum()) {
             $lines[] = [
                 'column_1_style' => '',
-                'column_1' => 'Sotto soglia minima ('.$line->minimumQuantity.' pz)',
+                'column_1' => __('frontend.customization.under_minimum', ['minimum' => $line->minimumQuantity]),
                 'column_2' => '',
                 'column_3' => number_format($line->surcharge, 2, ',', '.').'&nbsp;&euro;',
             ];
@@ -255,14 +255,14 @@ class FrontendProductController extends Controller
             if ($customization->startCost > 0) {
                 $lines[] = [
                     'column_1_style' => '',
-                    'column_1' => $customization->option->start_label(),
+                    'column_1' => $customization->option->startLabel(),
                     'column_2' => '',
                     'column_3' => number_format($customization->startCost, 2, ',', '.').'&nbsp;&euro;',
                 ];
             }
             $lines[] = [
                 'column_1_style' => '',
-                'column_1' => $customization->option->setup_label(),
+                'column_1' => $customization->option->setupLabel(),
                 'column_2' => number_format($customization->setupMultiplier, 0).'x'.number_format($customization->setup, 2, ',', '.'),
                 'column_3' => number_format($customization->setupPrice, 2, ',', '.').'&nbsp;&euro;',
             ];
@@ -302,25 +302,25 @@ class FrontendProductController extends Controller
 
     public function get_printing_image_and_sizes(Request $request)
     {
-        $printing = VariantPrinting::find($request->printing_id);
-        if (! PrintingPipeline::printingIsLive($printing)) {
+        $printing = Customization::find($request->printing_id);
+        if (! CustomizationPipeline::isLive($printing)) {
             return response()->json(['sizes' => [], 'image' => null], 404);
         }
 
         return response()->json([
-            'sizes' => $printing->printing_sizes->toArray(),
+            'sizes' => $printing->areas->toArray(),
             'image' => $printing->image,
         ]);
     }
 
     public function get_printing_colors_by_size(Request $request)
     {
-        $printing_size = VariantPrintingSize::find($request->printing_size_id);
-        if (! $printing_size || ! PrintingPipeline::printingIsLive($printing_size->printing)) {
+        $area = CustomizationArea::find($request->printing_size_id);
+        if (! $area || ! CustomizationPipeline::isLive($area->customization)) {
             return response()->json([], 404);
         }
 
-        return response()->json($printing_size->printing_colors->toArray());
+        return response()->json($area->options->toArray());
     }
 
     protected function logProductNavFailure(string $event, array $context, ?\Throwable $e = null): void

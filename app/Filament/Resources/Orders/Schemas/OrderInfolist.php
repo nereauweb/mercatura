@@ -92,11 +92,11 @@ final class OrderInfolist
                                         TextEntry::make('quantity')->label(__('admin.order.quantity')),
                                         TextEntry::make('unit_price')->label(__('admin.order.unit_price'))->money('EUR'),
                                     ]),
-                                RepeatableEntry::make('printings')
+                                RepeatableEntry::make('customizations')
                                     ->label(__('admin.order.printings'))
                                     ->columnSpanFull()
                                     ->components([
-                                        TextEntry::make('printing_label')->hiddenLabel(),
+                                        TextEntry::make('label')->hiddenLabel(),
                                     ]),
                             ]),
                     ]),

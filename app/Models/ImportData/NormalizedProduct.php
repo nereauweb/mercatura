@@ -7,6 +7,12 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
+/**
+ * @property string|null $default_customization_technique
+ * @property string|null $default_customization_position
+ * @property string|null $default_customization_dimension
+ * @property string|null $default_customization_max_colors
+ */
 class NormalizedProduct extends Model
 {
     protected $table = 'normalized_products';
@@ -21,10 +27,10 @@ class NormalizedProduct extends Model
         'source_id',
         'parent_category',
         'category',
-        'default_print_technique',
-        'default_print_position',
-        'default_print_dimension',
-        'default_print_max_colors',
+        'default_customization_technique',
+        'default_customization_position',
+        'default_customization_dimension',
+        'default_customization_max_colors',
         'main_variant_id',
         'supplier_info', // text
         'isGreen', // boolean
@@ -54,9 +60,9 @@ class NormalizedProduct extends Model
         return $this->hasMany(NormalizedProductVariant::class, 'product_id')->groupBy('size');
     }
 
-    public function printings(): HasMany
+    public function customizations(): HasMany
     {
-        return $this->HasMany(\App\Models\ImportData\VariantPrinting::class, 'normalized_product_id');
+        return $this->HasMany(\App\Models\Customizations\Customization::class, 'normalized_product_id');
     }
 
     public function app_product(): HasOne

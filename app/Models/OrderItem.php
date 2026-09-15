@@ -34,14 +34,16 @@ class OrderItem extends Model
         return $this->belongsTo(Order::class, 'order_id');
     }
 
+    /** @return HasMany<OrderItemArticle, $this> */
     public function articles(): HasMany
     {
         return $this->hasMany('App\Models\OrderItemArticle', 'item_id');
     }
 
-    public function printings(): HasMany
+    /** @return HasMany<OrderItemCustomization, $this> */
+    public function customizations(): HasMany
     {
-        return $this->hasMany('App\Models\OrderItemPrinting', 'item_id');
+        return $this->hasMany('App\Models\OrderItemCustomization', 'item_id');
     }
 
     public function extras(): HasMany

@@ -430,10 +430,10 @@ class FrontendCartController extends Controller
                     'price' => $cart_item_article['quantity_price'],
                 ]);
             }
-            foreach ($cart_item['printings'] as $printing_color) {
-                $order_item->printings()->create([
-                    'printing_variant_color_id' => $printing_color->id,
-                    'printing_label' => $printing_color->printing_label(),
+            foreach ($cart_item['printings'] as $option) {
+                $order_item->customizations()->create([
+                    'option_id' => $option->id,
+                    'label' => $option->fullLabel(),
                 ]);
             }
         }

@@ -439,7 +439,7 @@ non-200; sitemap includes the area's entities.
 
 A connector is the code that turns one supplier's feeds into the normalized
 layer. The normalized layer (`normalized_products`, `normalized_products_variants`
-with colours, images, prices and future stocks, `printing_variants*`,
+with colours, images, prices and future stocks, `customizations*`,
 `normalized_rules_*`) is the contract: the core knows nothing before it and
 everything after it (`app:ProcessNormalizedProductData` → products, variants,
 prices, attributes, media, categories).
@@ -458,7 +458,7 @@ prices, attributes, media, categories).
   and the runtime hooks the storefront and the pricing need:
   `processingDays()`, `variantDimensions()`, `markupPercent()` and
   `appliesMarkupToSingleTier()` (through `MarkupRules`), `printingPipelines()`
-  (through `PrintingPipeline`), `shouldDeactivateVariant()`, `rawProductData()`
+  (through `CustomizationPipeline`), `shouldDeactivateVariant()`, `rawProductData()`
   / `rawVariantData()`, `catalogFilterLabel()`, `adminPlugin()`.
 - **Registration.** The package's service provider merges its config, loads
   its migrations (raw tables), translations, views and commands, and

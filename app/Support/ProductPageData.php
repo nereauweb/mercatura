@@ -22,7 +22,7 @@ final class ProductPageData
      *   gallery: list<array{full: string, thumb: string}>,
      *   colors: list<array{variant_id: int, sku: string, label: string, code: string, url: string, current: bool}>,
      *   configurator: array{colors: list<array<string, mixed>>, positions: list<array<string, mixed>>, has_printing: bool, has_packaging: bool, min_quantity: int},
-     *   price_table: array{mode: string, columns: list<string>, rows: list<array{label: string, cells: list<string>}>, printed_columns: list<string>, printed_rows: list<array{label: string, cells: list<string>}>, printed_note: string|null, min_print_quantity: int},
+     *   price_table: array{mode: string, columns: list<string>, rows: list<array{label: string, cells: list<string>}>, printed_columns: list<string>, printed_rows: list<array{label: string, cells: list<string>}>, printed_note: string|null, minCustomizationQuantity: int},
      *   details: list<array{label: string, value: string}>,
      *   packaging: list<array{label: string, value: string}>,
      *   related: Collection<int, Product>
@@ -113,7 +113,7 @@ final class ProductPageData
 
         $positions = [];
         if ($hasPrinting) {
-            $printings = $article->printings()->get();
+            $printings = $article->customizations()->get();
             foreach ($printings->groupBy('position_label')->sortKeys() as $label => $group) {
                 $positions[] = [
                     'id' => (int) $group->first()->id,
@@ -133,14 +133,14 @@ final class ProductPageData
         ];
     }
 
-    /** @return array{mode: string, columns: list<string>, rows: list<array{label: string, cells: list<string>}>, printed_columns: list<string>, printed_rows: list<array{label: string, cells: list<string>}>, printed_note: string|null, min_print_quantity: int} */
+    /** @return array{mode: string, columns: list<string>, rows: list<array{label: string, cells: list<string>}>, printed_columns: list<string>, printed_rows: list<array{label: string, cells: list<string>}>, printed_note: string|null, minCustomizationQuantity: int} */
     private static function priceTable(Product $product, ProductVariant $article): array
     {
         $format = fn ($value) => number_format((float) $value, 2, ',', '').'&nbsp;€';
         $perSizeCategories = (array) config('mercatura.catalog.per_size_price_table_categories', []);
         $perSize = $perSizeCategories !== [] && $product->categories->pluck('id')->intersect($perSizeCategories)->isNotEmpty() && $product->size_variants_count() > 1;
-        $defaultPrinting = $article->default_printing();
-        $minPrint = (int) $article->min_print_quantity();
+        $defaultPrinting = $article->defaultCustomization();
+        $minPrint = (int) $article->minCustomizationQuantity();
         $prices = $article->ordered_prices();
         $single = $article->prices->count() === 1;
 
@@ -200,7 +200,7 @@ final class ProductPageData
                 $cells = [];
                 $lastFrom = 0;
                 $count = 0;
-                $sizeMin = (int) $sizeVariant->min_print_quantity();
+                $sizeMin = (int) $sizeVariant->minCustomizationQuantity();
                 foreach ($sizeVariant->ordered_prices() as $price) {
                     if ($count >= 4) {
                         break;
@@ -226,7 +226,7 @@ final class ProductPageData
             'printed_columns' => $printedColumns,
             'printed_rows' => $defaultPrinting ? $printedRows : [],
             'printed_note' => $defaultPrinting ? __('frontend.product.price_printed_note', ['technique' => $defaultPrinting->technique_label, 'position' => $defaultPrinting->position_label]) : null,
-            'min_print_quantity' => $minPrint,
+            'minCustomizationQuantity' => $minPrint,
         ];
     }
 
@@ -252,8 +252,8 @@ final class ProductPageData
         if ($article->min_quantity() > 1) {
             $rows[] = ['label' => __('frontend.product.min_order'), 'value' => __('frontend.product.pieces', ['count' => $article->min_quantity()])];
         }
-        if ($hasPrinting && $article->max_print_minimum_quantity() > 1) {
-            $rows[] = ['label' => __('frontend.product.min_print'), 'value' => __('frontend.product.pieces', ['count' => $article->min_print_quantity()])];
+        if ($hasPrinting && $article->maxCustomizationMinimumQuantity() > 1) {
+            $rows[] = ['label' => __('frontend.product.min_print'), 'value' => __('frontend.product.pieces', ['count' => $article->minCustomizationQuantity()])];
         }
 
         return $rows;

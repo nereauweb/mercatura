@@ -521,8 +521,8 @@ class ProcessNormalizedProductData extends ImportCommand
                 $product->variants_colors = json_encode($variants_colors);
                 $product->brand = $brand;
                 $product->brand_image = $brand_image;
-                $product->default_print_technique = $normalized_product->default_print_technique;
-                $product->default_print_position = $normalized_product->default_print_position;
+                $product->default_customization_technique = $normalized_product->default_customization_technique;
+                $product->default_customization_position = $normalized_product->default_customization_position;
 
                 // CONDIZIONE DISATTIVAZIONE PRODOTTO: Nessuna variante principale
                 if (! $main_variant_id) {

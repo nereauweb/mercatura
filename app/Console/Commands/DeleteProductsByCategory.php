@@ -142,9 +142,9 @@ class DeleteProductsByCategory extends Command
             foreach ($products as $product) {
                 $variantIds = $product->variants()->pluck('id')->all();
 
-                // printing_variants (per prodotto e per variante).
-                // La catena printing_variants_sizes/_colors/_prices ha cascade interno.
-                DB::table('printing_variants')
+                // customizations (per prodotto e per variante).
+                // La catena customization_areas/_colors/_prices ha cascade interno.
+                DB::table('customizations')
                     ->where('product_id', $product->id)
                     ->orWhereIn('variant_id', $variantIds ?: [0])
                     ->delete();
@@ -202,7 +202,7 @@ class DeleteProductsByCategory extends Command
                     DB::table('normalized_products_variants_prices')->whereIn('variant_id', $variantIds)->delete();
                 }
 
-                DB::table('printing_variants')
+                DB::table('customizations')
                     ->where('normalized_product_id', $np->id)
                     ->orWhereIn('normalized_variant_id', $variantIds ?: [0])
                     ->delete();

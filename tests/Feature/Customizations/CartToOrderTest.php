@@ -10,7 +10,7 @@ use App\Models\CustomerAddress;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\OrderItemArticle;
-use App\Models\OrderItemPrinting;
+use App\Models\OrderItemCustomization;
 use App\Models\User;
 use Database\Seeders\CoreSeeder;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
@@ -58,12 +58,12 @@ final class CartToOrderTest extends TestCase
         $articles = OrderItemArticle::query()->where('item_id', $item->id)->orderBy('id')->get();
         $this->assertSame([[$f->a->sku, 60, 10.4, 624.0], [$f->b->sku, 40, 10.4, 416.0]], $articles->map(fn (OrderItemArticle $a) => [$a->article_sku, (int) $a->quantity, (float) $a->unit_price, (float) $a->price])->all());
 
-        $this->assertSame(1, OrderItemPrinting::query()->where('item_id', $item->id)->count(), 'one row per option chosen, not per article');
-        $printing = OrderItemPrinting::query()->where('item_id', $item->id)->firstOrFail();
-        $this->assertSame($f->screenOneColorA->id, (int) $printing->printing_variant_color_id);
-        $this->assertSame('FRONTE - Serigrafia  10x10 1 colore', $printing->printing_label);
-        $this->assertNull($printing->print_file);
-        $this->assertInstanceOf(\App\Models\ImportData\VariantPrintingColor::class, $printing->printing()->first(), 'relation fixed in v2c.0 (docs/03 defect 2)');
+        $this->assertSame(1, OrderItemCustomization::query()->where('item_id', $item->id)->count(), 'one row per option chosen, not per article');
+        $printing = OrderItemCustomization::query()->where('item_id', $item->id)->firstOrFail();
+        $this->assertSame($f->screenOneColorA->id, (int) $printing->option_id);
+        $this->assertSame('FRONTE - Serigrafia  10x10 1 colore', $printing->label);
+        $this->assertNull($printing->file);
+        $this->assertInstanceOf(\App\Models\Customizations\CustomizationOption::class, $printing->option()->first(), 'relation fixed in v2c.0 (docs/03 defect 2)');
 
         $this->assertSame('Personalizzazioni: FRONTE - Serigrafia  10x10 1 colore', $order->mail_export_items()[0]['printings']);
     }

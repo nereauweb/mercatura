@@ -211,6 +211,104 @@ CREATE TABLE `customers` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `customization_areas`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `customization_areas` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `parent_id` bigint(20) unsigned NOT NULL,
+  `label` varchar(128) NOT NULL,
+  `type` varchar(32) DEFAULT NULL,
+  `width_mm` int(4) DEFAULT NULL,
+  `height_mm` int(4) DEFAULT NULL,
+  `attributes` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`attributes`)),
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `parent_id_index` (`parent_id`),
+  CONSTRAINT `fk_print_sizes_parent_id` FOREIGN KEY (`parent_id`) REFERENCES `customizations` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `customization_options`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `customization_options` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `parent_id` bigint(20) unsigned NOT NULL COMMENT 'parent: sizes',
+  `label` varchar(32) NOT NULL,
+  `number_of_colors` int(2) NOT NULL DEFAULT 0,
+  `setup_multiplier` int(2) NOT NULL DEFAULT 1,
+  `setup` decimal(6,2) NOT NULL DEFAULT 0.00,
+  `original_setup` decimal(6,2) NOT NULL DEFAULT 0.00,
+  `start_cost` decimal(6,2) NOT NULL DEFAULT 0.00,
+  `original_start_cost` decimal(6,2) NOT NULL DEFAULT 0.00,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `label_parent_index` (`parent_id`,`label`),
+  KEY `parent_id_index` (`parent_id`),
+  KEY `label_index` (`label`),
+  CONSTRAINT `fk_print_colors_parent_id` FOREIGN KEY (`parent_id`) REFERENCES `customization_areas` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `customization_tiers`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `customization_tiers` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `parent_id` bigint(20) unsigned NOT NULL COMMENT 'parent:colors',
+  `from_quantity` int(11) NOT NULL,
+  `price` decimal(6,2) NOT NULL,
+  `original_price` decimal(6,2) NOT NULL,
+  `packaging_price` decimal(6,2) DEFAULT NULL,
+  `packaging_original_price` decimal(6,2) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `parent_id_index` (`parent_id`),
+  CONSTRAINT `fk_print_prices_parent_id` FOREIGN KEY (`parent_id`) REFERENCES `customization_options` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `customizations`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `customizations` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `source` varchar(16) NOT NULL DEFAULT 'own',
+  `pipeline` varchar(32) DEFAULT NULL,
+  `family` varchar(32) DEFAULT NULL,
+  `source_product_sku` varchar(16) DEFAULT NULL,
+  `source_variant_sku` varchar(16) DEFAULT NULL,
+  `product_id` bigint(20) unsigned DEFAULT NULL,
+  `variant_id` bigint(20) unsigned DEFAULT NULL,
+  `normalized_variant_id` bigint(20) unsigned DEFAULT NULL,
+  `normalized_product_id` bigint(20) unsigned DEFAULT NULL,
+  `technique_label` varchar(512) NOT NULL,
+  `position_label` varchar(512) NOT NULL,
+  `position_code` varchar(16) DEFAULT NULL,
+  `technique_main_code` varchar(16) DEFAULT NULL,
+  `image` varchar(1024) DEFAULT NULL,
+  `is_default` tinyint(1) NOT NULL DEFAULT 0,
+  `processing_days` int(11) NOT NULL DEFAULT 0,
+  `has_packaging` tinyint(1) NOT NULL DEFAULT 0,
+  `minimum_quantity` int(11) NOT NULL DEFAULT 0,
+  `max_colors` varchar(16) DEFAULT NULL,
+  `max_print_position` tinyint(3) unsigned DEFAULT NULL,
+  `packaging_code` varchar(16) DEFAULT NULL,
+  `attributes` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`attributes`)),
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `process_v2_index` (`source`,`pipeline`,`source_product_sku`,`source_variant_sku`,`technique_label`,`position_label`) USING HASH,
+  KEY `product_id_index` (`product_id`),
+  KEY `normalized_product_id_index` (`normalized_product_id`),
+  KEY `normalized_variant_id_index` (`normalized_variant_id`),
+  KEY `technique_label_index` (`technique_label`),
+  KEY `printing_variants_source_pipeline_idx` (`source`,`pipeline`),
+  KEY `variant_id_index` (`variant_id`),
+  KEY `customizations_family_index` (`family`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `failed_jobs`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
@@ -428,10 +526,10 @@ CREATE TABLE `normalized_products` (
   `parent_category` varchar(64) DEFAULT NULL,
   `category` varchar(64) DEFAULT NULL,
   `main_variant_id` bigint(20) unsigned NOT NULL DEFAULT 0,
-  `default_print_technique` varchar(1024) DEFAULT NULL,
-  `default_print_position` varchar(1024) DEFAULT NULL,
-  `default_print_dimension` varchar(1024) DEFAULT NULL,
-  `default_print_max_colors` varchar(256) DEFAULT NULL,
+  `default_customization_technique` varchar(1024) DEFAULT NULL,
+  `default_customization_position` varchar(1024) DEFAULT NULL,
+  `default_customization_dimension` varchar(1024) DEFAULT NULL,
+  `default_customization_max_colors` varchar(256) DEFAULT NULL,
   `supplier_info` text DEFAULT NULL,
   `isGreen` tinyint(1) DEFAULT 0,
   `isPromo` tinyint(1) NOT NULL DEFAULT 0,
@@ -469,10 +567,10 @@ CREATE TABLE `normalized_products_variants` (
   `size` varchar(64) DEFAULT NULL,
   `keywords` text DEFAULT NULL,
   `theme` text DEFAULT NULL,
-  `printing_default_technique` text DEFAULT NULL,
-  `printing_default_location` text DEFAULT NULL,
-  `printing_default_dimension` text DEFAULT NULL,
-  `printing_default_max_colors` text DEFAULT NULL,
+  `customization_default_technique` text DEFAULT NULL,
+  `customization_default_location` text DEFAULT NULL,
+  `customization_default_dimension` text DEFAULT NULL,
+  `customization_default_max_colors` text DEFAULT NULL,
   `gender` text DEFAULT NULL,
   `markSegment` text DEFAULT NULL,
   `sale` tinyint(1) DEFAULT 0,
@@ -547,10 +645,10 @@ CREATE TABLE `normalized_products_variants_prices` (
   KEY `variant_id_index` (`variant_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `normalized_rules_price_tiers`;
+DROP TABLE IF EXISTS `normalized_tiers_rules`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
-CREATE TABLE `normalized_rules_price_tiers` (
+CREATE TABLE `normalized_tiers_rules` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `from_price` decimal(10,2) NOT NULL,
   `to_price` decimal(10,2) NOT NULL,
@@ -562,22 +660,6 @@ CREATE TABLE `normalized_rules_price_tiers` (
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `normalized_rules_pricing_products`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8mb4 */;
-CREATE TABLE `normalized_rules_pricing_products` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `condition_type` int(11) NOT NULL,
-  `condition_1` int(11) NOT NULL,
-  `condition_2` int(11) DEFAULT NULL,
-  `condition_3` int(11) DEFAULT NULL,
-  `delta_type` int(11) NOT NULL,
-  `value` decimal(10,2) NOT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `updated_at` timestamp NULL DEFAULT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_roman_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `order_item_articles`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -598,6 +680,21 @@ CREATE TABLE `order_item_articles` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `order_item_customizations`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `order_item_customizations` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `item_id` bigint(20) unsigned NOT NULL,
+  `option_id` bigint(20) unsigned NOT NULL,
+  `label` varchar(256) DEFAULT NULL,
+  `file` text DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `order_item_customizations_item_id_index` (`item_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `order_item_extras`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
@@ -606,20 +703,6 @@ CREATE TABLE `order_item_extras` (
   `item_id` bigint(20) unsigned NOT NULL,
   `label` text NOT NULL,
   `price` decimal(8,2) NOT NULL DEFAULT 0.00,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `updated_at` timestamp NULL DEFAULT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `order_item_printings`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8mb4 */;
-CREATE TABLE `order_item_printings` (
-  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-  `item_id` bigint(20) unsigned NOT NULL,
-  `printing_variant_color_id` bigint(20) unsigned NOT NULL,
-  `printing_label` varchar(256) DEFAULT NULL,
-  `print_file` text DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`)
@@ -637,6 +720,7 @@ CREATE TABLE `order_items` (
   `product_image_url` varchar(256) DEFAULT NULL,
   `quantity` int(11) NOT NULL DEFAULT 0,
   `price` decimal(8,2) NOT NULL DEFAULT 0.00,
+  `unit_price` decimal(8,2) DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`)
@@ -759,107 +843,6 @@ CREATE TABLE `personal_access_tokens` (
   KEY `personal_access_tokens_tokenable_type_tokenable_id_index` (`tokenable_type`,`tokenable_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `printing_variants`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8mb4 */;
-CREATE TABLE `printing_variants` (
-  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-  `source` varchar(16) NOT NULL DEFAULT 'own',
-  `pipeline` varchar(32) DEFAULT NULL,
-  `source_product_sku` varchar(16) DEFAULT NULL,
-  `source_variant_sku` varchar(16) DEFAULT NULL,
-  `product_id` bigint(20) unsigned DEFAULT NULL,
-  `variant_id` bigint(20) unsigned DEFAULT NULL,
-  `normalized_variant_id` bigint(20) unsigned DEFAULT NULL,
-  `normalized_product_id` bigint(20) unsigned DEFAULT NULL,
-  `technique_label` varchar(512) NOT NULL,
-  `position_label` varchar(512) NOT NULL,
-  `position_code` varchar(16) DEFAULT NULL,
-  `technique_main_code` varchar(16) DEFAULT NULL,
-  `image` varchar(1024) DEFAULT NULL,
-  `is_default` tinyint(1) NOT NULL DEFAULT 0,
-  `processing_days` int(11) NOT NULL DEFAULT 0,
-  `has_packaging` tinyint(1) NOT NULL DEFAULT 0,
-  `minimum_quantity` int(11) NOT NULL DEFAULT 0,
-  `max_colors` varchar(16) DEFAULT NULL,
-  `max_print_position` tinyint(3) unsigned DEFAULT NULL,
-  `packaging_code` varchar(16) DEFAULT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `updated_at` timestamp NULL DEFAULT NULL,
-  `deleted_at` timestamp NULL DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `process_v2_index` (`source`,`pipeline`,`source_product_sku`,`source_variant_sku`,`technique_label`,`position_label`) USING HASH,
-  KEY `product_id_index` (`product_id`),
-  KEY `normalized_product_id_index` (`normalized_product_id`),
-  KEY `normalized_variant_id_index` (`normalized_variant_id`),
-  KEY `variant_id_index` (`id`) USING BTREE,
-  KEY `technique_label_index` (`technique_label`),
-  KEY `printing_variants_source_pipeline_idx` (`source`,`pipeline`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `printing_variants_colors`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8mb4 */;
-CREATE TABLE `printing_variants_colors` (
-  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-  `parent_id` bigint(20) unsigned NOT NULL COMMENT 'parent: sizes',
-  `label` varchar(32) NOT NULL,
-  `number_of_colors` int(2) NOT NULL DEFAULT 0,
-  `setup_multiplier` int(2) NOT NULL DEFAULT 1,
-  `setup` decimal(6,2) NOT NULL DEFAULT 0.00,
-  `original_setup` decimal(6,2) NOT NULL DEFAULT 0.00,
-  `start_cost` decimal(6,2) NOT NULL DEFAULT 0.00,
-  `original_start_cost` decimal(6,2) NOT NULL DEFAULT 0.00,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `updated_at` timestamp NULL DEFAULT NULL,
-  `deleted_at` timestamp NULL DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `label_parent_index` (`parent_id`,`label`),
-  KEY `parent_id_index` (`parent_id`),
-  KEY `label_index` (`label`),
-  CONSTRAINT `fk_print_colors_parent_id` FOREIGN KEY (`parent_id`) REFERENCES `printing_variants_sizes` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `printing_variants_prices`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8mb4 */;
-CREATE TABLE `printing_variants_prices` (
-  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-  `parent_id` bigint(20) unsigned NOT NULL COMMENT 'parent:colors',
-  `from_quantity` int(11) NOT NULL,
-  `price` decimal(6,2) NOT NULL,
-  `price_method_1` decimal(6,2) NOT NULL DEFAULT 0.00,
-  `price_method_2` decimal(6,2) NOT NULL DEFAULT 0.00,
-  `original_price` decimal(6,2) NOT NULL,
-  `packaging_price` decimal(6,2) DEFAULT NULL,
-  `packaging_price_method_1` decimal(6,2) NOT NULL DEFAULT 0.00,
-  `packaging_price_method_2` decimal(6,2) NOT NULL DEFAULT 0.00,
-  `packaging_original_price` decimal(6,2) DEFAULT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `updated_at` timestamp NULL DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `parent_id_index` (`parent_id`),
-  CONSTRAINT `fk_print_prices_parent_id` FOREIGN KEY (`parent_id`) REFERENCES `printing_variants_colors` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `printing_variants_sizes`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8mb4 */;
-CREATE TABLE `printing_variants_sizes` (
-  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-  `parent_id` bigint(20) unsigned NOT NULL,
-  `label` varchar(128) NOT NULL,
-  `type` varchar(32) DEFAULT NULL,
-  `width_mm` int(4) DEFAULT NULL,
-  `height_mm` int(4) DEFAULT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `updated_at` timestamp NULL DEFAULT NULL,
-  `deleted_at` timestamp NULL DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `parent_id_index` (`parent_id`),
-  CONSTRAINT `fk_print_sizes_parent_id` FOREIGN KEY (`parent_id`) REFERENCES `printing_variants` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `product_attributes`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
@@ -906,8 +889,9 @@ DROP TABLE IF EXISTS `product_markups`;
 /*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `product_markups` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `starting_from_value` int(11) NOT NULL,
-  `markup_percent` decimal(10,2) NOT NULL,
+  `from_condition` int(11) NOT NULL,
+  `to_condition` int(11) DEFAULT NULL,
+  `value` decimal(10,2) NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`)
@@ -969,8 +953,8 @@ CREATE TABLE `products` (
   `brand` varchar(64) DEFAULT NULL,
   `brand_id` bigint(20) unsigned DEFAULT NULL,
   `brand_image` varchar(64) DEFAULT NULL,
-  `default_print_technique` varchar(512) DEFAULT NULL,
-  `default_print_position` varchar(1024) DEFAULT NULL,
+  `default_customization_technique` varchar(512) DEFAULT NULL,
+  `default_customization_position` varchar(1024) DEFAULT NULL,
   `supplier_info` text DEFAULT NULL,
   `isGreen` tinyint(1) NOT NULL DEFAULT 0,
   `isPromo` tinyint(1) NOT NULL DEFAULT 0,
@@ -1201,3 +1185,10 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (18,'2026_09_13_100
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (19,'2026_09_13_100100_add_seo_fields',12);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (20,'2026_09_13_100200_create_legacy_redirects_table',12);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (21,'2026_09_14_110000_widen_normalized_source_columns',12);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (22,'2026_09_15_120000_fix_printing_index_order_unit_price_drop_product_markups',13);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (23,'2026_09_16_100000_rename_markup_bands_to_product_markups',13);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (24,'2026_09_16_110000_rename_price_tiers_to_normalized_tiers_rules',13);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (25,'2026_09_16_120000_drop_markup_series',13);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (26,'2026_09_16_130000_drop_unused_markup_columns',13);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (27,'2026_09_16_140000_rename_markup_band_columns',13);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (28,'2026_09_16_150000_customizations_schema',13);

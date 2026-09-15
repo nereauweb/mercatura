@@ -183,6 +183,19 @@ return [
         'save' => 'Salva',
     ],
 
+    // Customization labels (App\Models\Customizations\CustomizationOption, LinePricer lines, order mails).
+    'customization' => [
+        'one_colour' => '1 colore',
+        'full_colour' => 'Quadricromia',
+        'n_colours' => ':count colori',
+        'full_label' => ':position - :technique :area :option',
+        'setup' => 'Setup :technique :position',
+        'start' => 'Avviamento',
+        'packaging' => 'Confezionamento',
+        'under_minimum' => 'Sotto soglia minima (:minimum pz)',
+        'order_prefix' => 'Personalizzazioni: ',
+    ],
+
     'cart' => [
         'title' => 'Carrello',
         'summary' => 'Riepilogo',

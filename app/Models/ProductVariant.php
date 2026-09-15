@@ -3,8 +3,8 @@
 namespace App\Models;
 
 use App\Support\CaughtExceptionLogger;
+use App\Support\Connectors\CustomizationPipeline;
 use App\Support\Connectors\MarkupRules;
-use App\Support\Connectors\PrintingPipeline;
 use App\Support\ImportConnectors;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -18,6 +18,9 @@ use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
+/**
+ * @property-read \App\Models\Customizations\Customization|null $highestMinimumCustomization
+ */
 class ProductVariant extends Model implements HasMedia
 {
     use InteractsWithMedia;
@@ -148,9 +151,9 @@ class ProductVariant extends Model implements HasMedia
         return $lowestQuantity->from_quantity;
     }
 
-    public function min_print_quantity()
+    public function minCustomizationQuantity()
     {
-        $default_printing = $this->default_printing();
+        $default_printing = $this->defaultCustomization();
         if ($default_printing) {
             if ($default_printing->minimum_quantity > 0) {
                 return $default_printing->minimum_quantity;
@@ -224,7 +227,7 @@ class ProductVariant extends Model implements HasMedia
 
                 $default_print_color = null;
                 if ($with_default_printing) {
-                    $default_printing = $this->default_printing();
+                    $default_printing = $this->defaultCustomization();
                     if (! $default_printing) {
                         Log::warning('ProductVariant price_per_quantity: skipped default printing add-on', [
                             'reason' => 'no_printing',
@@ -233,8 +236,8 @@ class ProductVariant extends Model implements HasMedia
                             'quantity' => $quantity,
                         ]);
                     } else {
-                        $default_print_size = $default_printing->printing_sizes()->first();
-                        if (! $default_print_size) {
+                        $default_area = $default_printing->areas()->first();
+                        if (! $default_area) {
                             Log::warning('ProductVariant price_per_quantity: skipped default printing add-on', [
                                 'reason' => 'no_print_size',
                                 'variant_id' => $this->id,
@@ -243,21 +246,21 @@ class ProductVariant extends Model implements HasMedia
                                 'quantity' => $quantity,
                             ]);
                         } else {
-                            $default_print_color = $default_print_size->printing_colors()->first();
+                            $default_print_color = $default_area->options()->first();
                             if (! $default_print_color) {
                                 Log::warning('ProductVariant price_per_quantity: skipped default printing add-on', [
                                     'reason' => 'no_print_color',
                                     'variant_id' => $this->id,
                                     'sku' => $this->sku,
-                                    'printing_size_id' => $default_print_size->id,
+                                    'printing_size_id' => $default_area->id,
                                     'quantity' => $quantity,
                                 ]);
                             } else {
                                 try {
-                                    $default_print_costs = $default_print_color->calculate_print_price($quantity, $quantity, $with_packaging = false, $use_original_price = true);
+                                    $default_print_costs = $default_print_color->priceFor($quantity, $quantity, $with_packaging = false, $use_original_price = true);
                                     $original_price += $default_print_costs['unit_price'];
                                 } catch (\Throwable $e) {
-                                    CaughtExceptionLogger::error('ProductVariant::price_per_quantity calculate_print_price failed', $e, [
+                                    CaughtExceptionLogger::error('ProductVariant::price_per_quantity priceFor failed', $e, [
                                         'reason' => 'print_price_failed',
                                         'variant_id' => $this->id,
                                         'sku' => $this->sku,
@@ -292,34 +295,35 @@ class ProductVariant extends Model implements HasMedia
         return 0;
     }
 
-    public function default_printing()
+    public function defaultCustomization()
     {
-        $default_printing = $this->printings()->where('is_default', true)->first();
+        $default_printing = $this->customizations()->where('is_default', true)->first();
         if ($default_printing) {
             return $default_printing;
         }
 
-        return $this->printings()->first();
+        return $this->customizations()->first();
     }
 
-    /** @return HasMany<\App\Models\ImportData\VariantPrinting, $this> */
-    public function printings(): HasMany
+    /** @return HasMany<\App\Models\Customizations\Customization, $this> */
+    public function customizations(): HasMany
     {
-        $relation = $this->HasMany(\App\Models\ImportData\VariantPrinting::class, 'variant_id');
-        PrintingPipeline::apply($relation->getQuery());
+        $relation = $this->HasMany(\App\Models\Customizations\Customization::class, 'variant_id');
+        CustomizationPipeline::apply($relation->getQuery());
 
         return $relation;
     }
 
-    public function max_print_minimum_quantity()
+    public function maxCustomizationMinimumQuantity()
     {
-        return $this->highestMinPrintQuantity->minimum_quantity;
+        return $this->highestMinimumCustomization->minimum_quantity;
     }
 
-    public function highestMinPrintQuantity()
+    /** @return HasOne<\App\Models\Customizations\Customization, $this> */
+    public function highestMinimumCustomization(): HasOne
     {
-        $relation = $this->hasOne(\App\Models\ImportData\VariantPrinting::class, 'variant_id')->ofMany('minimum_quantity', 'max');
-        PrintingPipeline::apply($relation->getQuery());
+        $relation = $this->hasOne(\App\Models\Customizations\Customization::class, 'variant_id')->ofMany('minimum_quantity', 'max');
+        CustomizationPipeline::apply($relation->getQuery());
 
         return $relation;
     }

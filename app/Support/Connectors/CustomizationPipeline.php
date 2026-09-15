@@ -4,22 +4,22 @@ declare(strict_types=1);
 
 namespace App\Support\Connectors;
 
-use App\Models\ImportData\VariantPrinting;
-use App\Models\ImportData\VariantPrintingColor;
+use App\Models\Customizations\Customization;
+use App\Models\Customizations\CustomizationOption;
 use App\Support\ImportConnectors;
 use Illuminate\Database\Eloquent\Builder;
 
 /**
- * A connector may keep several printing pipelines in printing_variants
+ * A connector may keep several printing pipelines in customizations
  * (e.g. an older price list next to a new API feed) and declare which one
  * is live (ImportConnector::printingPipelines). The storefront only reads
  * live rows; sources without a declaration are always live.
  */
-final class PrintingPipeline
+final class CustomizationPipeline
 {
     /**
-     * @param  Builder<VariantPrinting>  $query
-     * @return Builder<VariantPrinting>
+     * @param  Builder<Customization>  $query
+     * @return Builder<Customization>
      */
     public static function apply(Builder $query): Builder
     {
@@ -37,7 +37,7 @@ final class PrintingPipeline
         return $query;
     }
 
-    public static function printingIsLive(?VariantPrinting $printing): bool
+    public static function isLive(?Customization $printing): bool
     {
         if (! $printing) {
             return false;
@@ -47,13 +47,13 @@ final class PrintingPipeline
         return $pipelines === null || in_array((string) $printing->pipeline, $pipelines, true);
     }
 
-    public static function colorIsLive(?VariantPrintingColor $color): bool
+    public static function optionIsLive(?CustomizationOption $color): bool
     {
         if (! $color) {
             return false;
         }
         try {
-            return self::printingIsLive($color->printing_size->printing);
+            return self::isLive($color->area->customization);
         } catch (\Throwable $e) {
             return false;
         }

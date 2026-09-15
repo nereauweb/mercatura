@@ -44,8 +44,11 @@ final class Catalog
 
     /**
      * Technique => [colour options (label, number_of_colors, unit cost multiplier, setup cost), processing days].
-     * Label "0" is full colour (VariantPrintingColor::label()).
+     * Label "0" is full colour (CustomizationOption::label()).
      */
+    /** Techniques whose family is beyond doubt in the demo (docs/03 decision 2: optional, untyped). */
+    public const FAMILIES = ['Ricamo' => 'embroidery', 'Incisione laser' => 'engraving'];
+
     public const TECHNIQUES = [
         'Serigrafia tessile' => [[['1', 1, 1.0, 25.0], ['2', 2, 1.7, 45.0]], 5],
         'Serigrafia' => [[['1', 1, 1.0, 25.0], ['2', 2, 1.7, 45.0]], 4],

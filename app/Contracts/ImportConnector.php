@@ -13,7 +13,7 @@ use Filament\Contracts\Plugin;
 /**
  * A supplier catalogue connector, shipped as its own package
  * (docs/ARCHITECTURE.md §13). The core knows the normalized layer
- * (normalized_products*, printing_variants*, normalized_rules_*) and the
+ * (normalized_products*, customizations*, normalized_rules_*) and the
  * final catalogue; a connector owns everything before it: download, raw
  * tables, normalisation, and the supplier rules the storefront needs at
  * runtime (delivery days, dimensions, markup exceptions, live printing
@@ -40,7 +40,7 @@ interface ImportConnector
 
     /**
      * Legacy spellings of this source found in existing data
-     * (products.source, normalized_products.source, printing_variants.source,
+     * (products.source, normalized_products.source, customizations.source,
      * categories_import_aliases.source), e.g. ["Acme", "ACME"].
      *
      * @return list<string>
@@ -77,7 +77,7 @@ interface ImportConnector
     /** Whether a single-tier price (no band) still gets the markup applied (supplier exception). */
     public function appliesMarkupToSingleTier(?string $sku): bool;
 
-    /** Printing pipelines currently live for this source (printing_variants.pipeline); null means all. @return list<string>|null */
+    /** Printing pipelines currently live for this source (customizations.pipeline); null means all. @return list<string>|null */
     public function printingPipelines(): ?array;
 
     /** Whether the normalized → catalogue step must deactivate this variant (supplier end-of-series flags). */

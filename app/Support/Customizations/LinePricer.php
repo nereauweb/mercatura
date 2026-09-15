@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Support\Customizations;
 
-use App\Models\ImportData\VariantPrintingColor;
+use App\Models\Customizations\CustomizationOption;
 use App\Models\ProductVariant;
-use App\Support\Connectors\PrintingPipeline;
+use App\Support\Connectors\CustomizationPipeline;
 
 /**
  * Prices a configured line (docs/03_CUSTOMIZATIONS.md §4.3): the one
@@ -27,7 +27,7 @@ final class LinePricer
 {
     /**
      * @param  list<array{0: int, 1: int}>  $articles  [variant id, quantity]
-     * @param  list<int>  $optionIds  chosen VariantPrintingColor ids
+     * @param  list<int>  $optionIds  chosen CustomizationOption ids
      */
     public function price(array $articles, array $optionIds, bool $packaging): PricedLine
     {
@@ -38,8 +38,8 @@ final class LinePricer
 
         $options = [];
         foreach ($optionIds as $optionId) {
-            $option = VariantPrintingColor::query()->find((int) $optionId);
-            if ($option instanceof VariantPrintingColor && PrintingPipeline::colorIsLive($option)) {
+            $option = CustomizationOption::query()->find((int) $optionId);
+            if ($option instanceof CustomizationOption && CustomizationPipeline::optionIsLive($option)) {
                 $options[] = $option;
             }
         }
@@ -58,12 +58,12 @@ final class LinePricer
 
             $customizations = [];
             foreach ($options as $chosen) {
-                $option = $chosen->sibling($variant->id);
-                $costs = $option->calculate_print_price($quantity, $articleQuantity, $packaging, false, $markupPercent);
+                $option = $chosen->equivalentFor($variant->id);
+                $costs = $option->priceFor($quantity, $articleQuantity, $packaging, false, $markupPercent);
                 $customizations[] = new PricedArticleCustomization(
                     chosen: $chosen,
                     option: $option,
-                    label: $option->printing_label(),
+                    label: $option->fullLabel(),
                     quantity: $articleQuantity,
                     unitPrice: (float) $costs['unit_price'],
                     price: (float) $costs['price'],
@@ -82,14 +82,14 @@ final class LinePricer
         $minimum = 0;
         $processingDays = 0;
         foreach ($options as $option) {
-            $printing = $option->printing_size->printing;
+            $printing = $option->area->customization;
             $startCost = (float) $option->start_cost > 0 ? (float) $option->start_cost : 0.0;
             $setupMultiplier = (int) $option->setup_multiplier ?: 1;
             $setupPrice = (float) $option->setup * $setupMultiplier;
             $pricedCustomizations[] = new PricedCustomization(
                 option: $option,
                 printing: $printing,
-                label: $option->printing_label(),
+                label: $option->fullLabel(),
                 startCost: $startCost,
                 setup: (float) $option->setup,
                 setupMultiplier: $setupMultiplier,

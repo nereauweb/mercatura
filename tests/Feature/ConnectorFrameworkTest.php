@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace Tests\Feature;
 
 use App\Contracts\ImportConnector;
-use App\Models\ImportData\VariantPrinting;
+use App\Models\Customizations\Customization;
 use App\Models\Product;
 use App\Models\ProductMarkup;
 use App\Support\Connectors\BaseConnector;
+use App\Support\Connectors\CustomizationPipeline;
 use App\Support\Connectors\MarkupRules;
-use App\Support\Connectors\PrintingPipeline;
 use App\Support\ImportConnectors;
 use Tests\TestCase;
 
@@ -95,12 +95,12 @@ class ConnectorFrameworkTest extends TestCase
         $registry = $this->app->make(ImportConnectors::class);
         $registry->register($this->fake());
 
-        $sql = PrintingPipeline::apply(VariantPrinting::query())->toSql();
+        $sql = CustomizationPipeline::apply(Customization::query())->toSql();
         $this->assertStringContainsString('`source` not in', $sql);
         $this->assertStringContainsString('`pipeline` in', $sql);
-        $this->assertTrue(PrintingPipeline::printingIsLive(new VariantPrinting(['source' => 'own', 'pipeline' => 'anything'])));
-        $this->assertTrue(PrintingPipeline::printingIsLive(new VariantPrinting(['source' => 'acme', 'pipeline' => 'v2'])));
-        $this->assertFalse(PrintingPipeline::printingIsLive(new VariantPrinting(['source' => 'Acme', 'pipeline' => 'v1'])));
+        $this->assertTrue(CustomizationPipeline::isLive(new Customization(['source' => 'own', 'pipeline' => 'anything'])));
+        $this->assertTrue(CustomizationPipeline::isLive(new Customization(['source' => 'acme', 'pipeline' => 'v2'])));
+        $this->assertFalse(CustomizationPipeline::isLive(new Customization(['source' => 'Acme', 'pipeline' => 'v1'])));
     }
 
     public function test_disabled_connectors_are_registered_but_not_enabled(): void

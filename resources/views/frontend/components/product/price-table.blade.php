@@ -25,7 +25,7 @@
     <div class="mt-4">
         <div class="flex flex-wrap items-baseline justify-between gap-2">
             <h3 class="text-sm font-semibold">{{ __('frontend.product.price_printed') }}</h3>
-            @if($table['min_print_quantity'] > 1)<p class="text-xs text-text-muted">{{ __('frontend.product.min_print_order', ['count' => $table['min_print_quantity']]) }}</p>@endif
+            @if($table['minCustomizationQuantity'] > 1)<p class="text-xs text-text-muted">{{ __('frontend.product.min_print_order', ['count' => $table['minCustomizationQuantity']]) }}</p>@endif
         </div>
         <div class="overflow-x-auto">
             <table class="mt-1 w-full border-collapse text-sm">

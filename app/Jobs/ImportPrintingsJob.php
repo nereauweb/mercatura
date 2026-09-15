@@ -65,7 +65,7 @@ class ImportPrintingsJob extends ImportJob
             // Process printing data
             if ($this->process_print_data) {
                 $this->runConnectorStage(ImportConnector::STAGE_PRINTINGS);
-                $this->callCommand('cleanup:printing_variants');
+                $this->callCommand('cleanup:customizations');
                 ImportStageCompleted::dispatch((int) $this->import_id, ImportConnector::STAGE_PRINTINGS, (string) $this->process_source);
             }
 
