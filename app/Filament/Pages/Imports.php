@@ -108,7 +108,7 @@ final class Imports extends Page
                     ]);
                     Notification::make()->title(__('admin.imports.dispatched'))->success()->send();
                 }),
-            Action::make('dispatchPrintings')->label(__('admin.imports.dispatch_printings'))->icon(Heroicon::OutlinedPaintBrush)->color('gray')
+            Action::make('dispatchCustomizations')->label(__('admin.imports.dispatch_printings'))->icon(Heroicon::OutlinedPaintBrush)->color('gray')
                 ->visible(fn (): bool => $this->hasEnabledConnector())
                 ->schema([
                     Select::make('process_source')->label(__('admin.imports.source'))->options(fn (): array => $this->sourceOptions())->default('all')->required()->native(false),

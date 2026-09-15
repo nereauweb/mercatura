@@ -59,7 +59,8 @@ final class ProductVariantForm
                         ]),
                 ]),
                 Section::make(__('admin.catalog.printings'))->columnSpanFull()->collapsed()->components([
-                    RepeatableEntry::make('customizations')->hiddenLabel()->columns(4)->placeholder('-')->components([
+                    RepeatableEntry::make('customizations')->hiddenLabel()->columns(5)->placeholder('-')->components([
+                        TextEntry::make('family')->label(__('admin.catalog.family'))->badge()->placeholder('-'),
                         TextEntry::make('technique_label')->label(__('admin.catalog.technique')),
                         TextEntry::make('position_label')->label(__('admin.catalog.position')),
                         TextEntry::make('minimum_quantity')->label(__('admin.catalog.from_quantity')),

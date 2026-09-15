@@ -14,7 +14,7 @@ class QuotationItem extends Model
         'sku',
         'name',
         'quantity',
-        'printing',
+        'customization',
         'image',
         'color',
         'size',

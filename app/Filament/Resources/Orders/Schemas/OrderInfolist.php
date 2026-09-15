@@ -95,8 +95,28 @@ final class OrderInfolist
                                 RepeatableEntry::make('customizations')
                                     ->label(__('admin.order.printings'))
                                     ->columnSpanFull()
+                                    ->columns(6)
                                     ->components([
+                                        TextEntry::make('technique_label')->label(__('admin.catalog.technique'))->placeholder('-'),
+                                        TextEntry::make('position_label')->label(__('admin.catalog.position'))->placeholder('-'),
+                                        TextEntry::make('area_label')->label(__('admin.order.area'))->placeholder('-'),
+                                        TextEntry::make('option_label')->label(__('admin.order.option'))->placeholder('-'),
+                                        TextEntry::make('quantity')->label(__('admin.order.quantity'))->placeholder('-'),
+                                        TextEntry::make('price')->label(__('admin.order.price'))->money('EUR')->placeholder('-'),
+                                        TextEntry::make('family')->label(__('admin.catalog.family'))->badge()->placeholder('-'),
+                                        TextEntry::make('packaging_price')->label(__('admin.order.packaging'))->money('EUR')->placeholder('-'),
+                                        TextEntry::make('label')->label(__('admin.order.sold_as'))->columnSpan(3),
+                                        TextEntry::make('file')->label(__('admin.order.artwork'))->placeholder(__('admin.order.artwork_missing'))->formatStateUsing(fn (?string $state): string => $state ? basename($state) : ''),
+                                    ]),
+                                RepeatableEntry::make('extras')
+                                    ->label(__('admin.order.extras'))
+                                    ->columnSpanFull()
+                                    ->columns(3)
+                                    ->placeholder('-')
+                                    ->components([
+                                        TextEntry::make('type')->label(__('admin.order.extra_type'))->badge()->formatStateUsing(fn (string $state): string => __('admin.order.extra_types.'.$state)),
                                         TextEntry::make('label')->hiddenLabel(),
+                                        TextEntry::make('price')->label(__('admin.order.price'))->money('EUR'),
                                     ]),
                             ]),
                     ]),

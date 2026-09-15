@@ -140,7 +140,7 @@ class FrontendQuotationController extends Controller
                 'sku' => $quotation_product['sku'],
                 'name' => $quotation_product['name'],
                 'quantity' => $quotation_product['quantity'],
-                'printing' => $quotation_product['printing'] ?? 'No',
+                'customization' => $quotation_product['printing'] ?? __('frontend.quotation.no'),
                 'image' => $quotation_product['image'] ?? '',
                 'color' => $quotation_product['color'] ?? '',
                 'size' => $quotation_product['size'] ?? '',

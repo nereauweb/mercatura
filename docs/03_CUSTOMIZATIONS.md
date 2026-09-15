@@ -1,6 +1,6 @@
 # v2c — Customizations (printing → generic product customization)
 
-Status: **approved 2026-09-15 (decisions §3 as revised on real data). v2c.0–v2c.3 done (2026-09-16); v2c.4 next.**
+Status: **approved 2026-09-15 (decisions §3 as revised on real data). v2c.0–v2c.4 done (2026-09-16); v2c.5 next.**
 Written after the connector extraction and the repository split, from a
 full read of the printing domain in the core, the demo seeders and the two
 supplier packages. Decisions marked *(proposed)* need approval before v2c
@@ -666,6 +666,14 @@ with read fallback on `printings`; the configurator request keeps
 `printings`. The areas endpoint answers `areas`, techniques carry
 `family`; the upload action is `uploadCustomizationFile` (route name and
 URL unchanged). Order totals unchanged; the cart shows the same rows.
+
+**v2c.4 (2026-09-16).** `quotations_items.printing` → `customization`
+(varchar 255, nullable, no default); the form keeps its `printing` radio
+and the mails keep reading the session payload. Admin: the order view
+shows the snapshot (technique, position, area, option, quantity, price,
+packaging, family, label as sold, artwork file) and the typed extras; the
+variant section shows the family badge; the Imports page action is
+`dispatchCustomizations` (label unchanged). `tests/Feature/Admin/OrderCustomizationsViewTest`.
 
 ## 9. What needs approval before v2c starts
 

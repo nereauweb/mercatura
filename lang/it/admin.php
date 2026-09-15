@@ -91,6 +91,15 @@ return [
     ],
 
     'order' => [
+        'area' => 'Area',
+        'option' => 'Opzione',
+        'packaging' => 'Confezionamento',
+        'sold_as' => 'Venduto come',
+        'artwork' => 'File grafico',
+        'artwork_missing' => 'non caricato',
+        'extras' => 'Costi fissi',
+        'extra_type' => 'Tipo',
+        'extra_types' => ['setup' => 'Impianto', 'start' => 'Avviamento', 'surcharge' => 'Sotto soglia', 'other' => 'Altro'],
         'label' => 'Ordine',
         'plural' => 'Ordini',
         'number' => 'Ordine n. :id',
@@ -177,6 +186,7 @@ return [
     ],
 
     'catalog' => [
+        'family' => 'Famiglia',
         'product' => 'Prodotto',
         'products' => 'Prodotti',
         'variant' => 'Variante',

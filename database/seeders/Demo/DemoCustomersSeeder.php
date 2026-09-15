@@ -80,7 +80,7 @@ class DemoCustomersSeeder extends Seeder
                 $product = $products[$index];
                 $variant = $product->main_variant_relationship;
                 $quotation->items()->create([
-                    'sku' => $product->sku, 'name' => $product->name, 'quantity' => $quantity, 'printing' => 'Sì',
+                    'sku' => $product->sku, 'name' => $product->name, 'quantity' => $quantity, 'customization' => __('frontend.quotation.yes'),
                     'image' => (string) $product->cover(true), 'color' => (string) $variant?->color?->label, 'size' => (string) $variant?->size?->shown_label(), 'notes' => 'Logo a un colore',
                 ]);
             }

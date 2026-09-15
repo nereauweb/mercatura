@@ -41,7 +41,7 @@ final class QuotationInfolist
                                 TextEntry::make('quantity')->label(__('admin.order.quantity')),
                                 TextEntry::make('color')->label(__('admin.order.color'))->placeholder('-'),
                                 TextEntry::make('size')->label(__('admin.order.size'))->placeholder('-'),
-                                TextEntry::make('printing')->label(__('admin.quotation.printing'))->placeholder('-'),
+                                TextEntry::make('customization')->label(__('admin.quotation.printing'))->placeholder('-'),
                                 TextEntry::make('notes')->label(__('admin.quotation.notes'))->placeholder('-')->columnSpan(5),
                             ]),
                     ]),
