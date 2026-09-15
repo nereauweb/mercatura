@@ -63,8 +63,8 @@ Route::post('/prodotti/configuratore/articoli', [FrontendProductController::clas
 Route::post('/prodotti/configuratore/stampa/pdf', [FrontendProductController::class, 'print_summary'])->name('frontend.product.print_summary');
 Route::get('/prodotti/configuratore/stampa/pdf', [FrontendContentController::class, 'index'])->name('frontend.product.pdf_summary');
 Route::post('/prodotti/stock', [FrontendProductController::class, 'get_product_variants_stock'])->name('frontend.product.get.variants_stock');
-Route::post('/prodotti/personalizzazione/immagine_dimensioni', [FrontendProductController::class, 'get_printing_image_and_sizes'])->name('frontend.product.get.printing_image_and_sizes');
-Route::post('/prodotti/personalizzazione/colori', [FrontendProductController::class, 'get_printing_colors_by_size'])->name('frontend.product.get.options');
+Route::post('/prodotti/personalizzazione/immagine_dimensioni', [FrontendProductController::class, 'customizationAreas'])->name('frontend.product.get.printing_image_and_sizes');
+Route::post('/prodotti/personalizzazione/colori', [FrontendProductController::class, 'customizationOptions'])->name('frontend.product.get.options');
 // PREVENTIVO
 Route::get('/preventivo/', [FrontendQuotationController::class, 'show'])->name('frontend.quotation.show');
 Route::get('/preventivo/{id}/configura', [FrontendQuotationController::class, 'configure'])->name('frontend.quotation.configure');

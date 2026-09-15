@@ -19,7 +19,7 @@ class Import extends ImportCommand
 		{--process-product-data= : Override process_product_data flag (true/false, 1/0)}
 		{--full-products-update= : Override full_products_update flag (true/false, 1/0)}
 		{--update-categories= : Override update_categories flag (true/false, 1/0)}
-		{--process-print-data= : Override process_print_data flag (true/false, 1/0)}';
+		{--process-customization-data= : Override process_customization_data flag (true/false, 1/0)}';
 
     /**
      * The console command description.
@@ -69,7 +69,7 @@ class Import extends ImportCommand
         if ($this->full_products_update) {
             $flags_output .= '"Forzatura aggiornamento prodotti" ';
         }
-        if ($this->process_print_data) {
+        if ($this->process_customization_data) {
             $flags_output .= '"Processazione dati stampa" ';
         }
 
@@ -83,10 +83,10 @@ class Import extends ImportCommand
             $this->call('scout:import', ['model' => 'App\Models\Product']);
             ImportStageCompleted::dispatch((int) $this->import_id, ImportConnector::STAGE_PRODUCTS);
         }
-        if ($this->process_print_data) {
-            $this->runConnectorStage(ImportConnector::STAGE_PRINTINGS);
+        if ($this->process_customization_data) {
+            $this->runConnectorStage(ImportConnector::STAGE_CUSTOMIZATIONS);
             $this->call('cleanup:customizations');
-            ImportStageCompleted::dispatch((int) $this->import_id, ImportConnector::STAGE_PRINTINGS);
+            ImportStageCompleted::dispatch((int) $this->import_id, ImportConnector::STAGE_CUSTOMIZATIONS);
         }
         $this->call('app:GenerateSitemap');
         $time_elapsed_secs = microtime(true) - $start;
@@ -102,7 +102,7 @@ class Import extends ImportCommand
             'process-product-data' => 'process_product_data',
             'full-products-update' => 'full_products_update',
             'update-categories' => 'update_categories',
-            'process-print-data' => 'process_print_data',
+            'process-customization-data' => 'process_customization_data',
         ];
 
         foreach ($optionToProperty as $option => $property) {

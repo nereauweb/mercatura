@@ -58,7 +58,7 @@ class ConnectorFrameworkTest extends TestCase
                 return max($percent, 42.0);
             }
 
-            public function printingPipelines(): array
+            public function customizationPipelines(): array
             {
                 return ['v2'];
             }

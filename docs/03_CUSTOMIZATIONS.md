@@ -1,6 +1,6 @@
 # v2c — Customizations (printing → generic product customization)
 
-Status: **approved 2026-09-15 (decisions §3 as revised on real data). v2c.0–v2c.4 done (2026-09-16); v2c.5 next.**
+Status: **complete: v2c.0–v2c.5 done (2026-09-16), core v2.2.0. v2c.6 (admin editing) is optional and needs its own approval.**
 Written after the connector extraction and the repository split, from a
 full read of the printing domain in the core, the demo seeders and the two
 supplier packages. Decisions marked *(proposed)* need approval before v2c
@@ -674,6 +674,20 @@ shows the snapshot (technique, position, area, option, quantity, price,
 packaging, family, label as sold, artwork file) and the typed extras; the
 variant section shows the family badge; the Imports page action is
 `dispatchCustomizations` (label unchanged). `tests/Feature/Admin/OrderCustomizationsViewTest`.
+
+**v2c.5 (2026-09-16).** Contract: `ImportConnector::STAGE_CUSTOMIZATIONS`
+(`'customizations'`), `customizationPipelines()`; jobs and commands
+`ImportCustomizationsJob`, `app:import_customizations`,
+`job:import-customizations`, `cleanup:customizations` (rewritten: chunked,
+foreign keys do the cascading), flag `process_customization_data`
+(`--process-customization-data`); controller actions `customizationAreas`
+/ `customizationOptions` (routes unchanged); `ImportStageCompleted::isCustomizations()`.
+**No aliases** (deviation from decision 12, same reason as v2c.2): the
+packages were updated in lockstep — Sipec `v1.2.0`, PF Concept `v1.2.0`,
+Promo84 feed `v1.1.0`, all requiring core `^2.2`; core tagged `v2.2.0`.
+The `import_logs.context` values (`job_import_printings`,
+`import_printings`) are data and stay. Lang keys stay (decision 10).
+ARCHITECTURE §13 updated.
 
 ## 9. What needs approval before v2c starts
 

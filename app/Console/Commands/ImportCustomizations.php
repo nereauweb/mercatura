@@ -6,14 +6,14 @@ use App\Contracts\ImportConnector;
 use App\Support\ImportConnectors;
 use Illuminate\Console\Command;
 
-class ImportPrintings extends ImportCommand
+class ImportCustomizations extends ImportCommand
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'app:import_printings';
+    protected $signature = 'app:import_customizations';
 
     /**
      * The console command description.
@@ -42,7 +42,7 @@ class ImportPrintings extends ImportCommand
 
                 continue;
             }
-            foreach ($connector->commands(ImportConnector::STAGE_PRINTINGS) as $command) {
+            foreach ($connector->commands(ImportConnector::STAGE_CUSTOMIZATIONS) as $command) {
                 $this->call($command, ['import_id' => $this->import_id]);
             }
         }

@@ -300,7 +300,7 @@ class FrontendProductController extends Controller
             ->sum('stock');
     }
 
-    public function get_printing_image_and_sizes(Request $request)
+    public function customizationAreas(Request $request)
     {
         $printing = Customization::find($request->printing_id);
         if (! CustomizationPipeline::isLive($printing)) {
@@ -313,7 +313,7 @@ class FrontendProductController extends Controller
         ]);
     }
 
-    public function get_printing_colors_by_size(Request $request)
+    public function customizationOptions(Request $request)
     {
         $area = CustomizationArea::find($request->printing_size_id);
         if (! $area || ! CustomizationPipeline::isLive($area->customization)) {

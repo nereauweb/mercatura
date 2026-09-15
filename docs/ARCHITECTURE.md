@@ -454,10 +454,10 @@ prices, attributes, media, categories).
 - **Contract.** `App\Contracts\ImportConnector`, implemented by extending
   `App\Support\Connectors\BaseConnector` (neutral defaults): `key()`,
   `label()`, `sourceAliases()` (legacy spellings of the source in existing
-  data), `commands($stage)` for the download / products / printings stages,
+  data), `commands($stage)` for the download / products / customizations stages,
   and the runtime hooks the storefront and the pricing need:
   `processingDays()`, `variantDimensions()`, `markupPercent()` and
-  `appliesMarkupToSingleTier()` (through `MarkupRules`), `printingPipelines()`
+  `appliesMarkupToSingleTier()` (through `MarkupRules`), `customizationPipelines()`
   (through `CustomizationPipeline`), `shouldDeactivateVariant()`, `rawProductData()`
   / `rawVariantData()`, `catalogFilterLabel()`, `adminPlugin()`.
 - **Registration.** The package's service provider merges its config, loads

@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Builder;
 /**
  * A connector may keep several printing pipelines in customizations
  * (e.g. an older price list next to a new API feed) and declare which one
- * is live (ImportConnector::printingPipelines). The storefront only reads
+ * is live (ImportConnector::customizationPipelines). The storefront only reads
  * live rows; sources without a declaration are always live.
  */
 final class CustomizationPipeline
@@ -24,7 +24,7 @@ final class CustomizationPipeline
     public static function apply(Builder $query): Builder
     {
         foreach (app(ImportConnectors::class)->all() as $connector) {
-            $pipelines = $connector->printingPipelines();
+            $pipelines = $connector->customizationPipelines();
             if ($pipelines === null) {
                 continue;
             }
@@ -42,7 +42,7 @@ final class CustomizationPipeline
         if (! $printing) {
             return false;
         }
-        $pipelines = app(ImportConnectors::class)->forSource($printing->source)?->printingPipelines();
+        $pipelines = app(ImportConnectors::class)->forSource($printing->source)?->customizationPipelines();
 
         return $pipelines === null || in_array((string) $printing->pipeline, $pipelines, true);
     }

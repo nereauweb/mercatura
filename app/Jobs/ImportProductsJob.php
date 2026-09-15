@@ -21,7 +21,7 @@ class ImportProductsJob extends ImportJob
 
     protected $update_categories = false;
 
-    protected $process_print_data = false;
+    protected $process_customization_data = false;
 
     protected $process_source = 'all';
 

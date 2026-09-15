@@ -30,7 +30,7 @@ interface ImportConnector
 
     public const STAGE_PRODUCTS = 'products';
 
-    public const STAGE_PRINTINGS = 'printings';
+    public const STAGE_CUSTOMIZATIONS = 'customizations';
 
     /** Feature flag key and canonical source value, e.g. "acme". */
     public function key(): string;
@@ -78,7 +78,7 @@ interface ImportConnector
     public function appliesMarkupToSingleTier(?string $sku): bool;
 
     /** Printing pipelines currently live for this source (customizations.pipeline); null means all. @return list<string>|null */
-    public function printingPipelines(): ?array;
+    public function customizationPipelines(): ?array;
 
     /** Whether the normalized → catalogue step must deactivate this variant (supplier end-of-series flags). */
     public function shouldDeactivateVariant(NormalizedProductVariant $variant): bool;

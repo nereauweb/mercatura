@@ -6,7 +6,7 @@ namespace App\Filament\Pages;
 
 use App\Contracts\ImportConnector;
 use App\Filament\Widgets\ImportRunsWidget;
-use App\Jobs\ImportPrintingsJob;
+use App\Jobs\ImportCustomizationsJob;
 use App\Jobs\ImportProductsJob;
 use App\Support\ImportConnectors;
 use BackedEnum;
@@ -114,12 +114,12 @@ final class Imports extends Page
                     Select::make('process_source')->label(__('admin.imports.source'))->options(fn (): array => $this->sourceOptions())->default('all')->required()->native(false),
                     Toggle::make('download_data')->label(__('admin.imports.flags.download_data'))->default(true),
                     Toggle::make('update_live')->label(__('admin.imports.flags.update_live'))->default(true),
-                    Toggle::make('process_print_data')->label(__('admin.imports.flags.process_print_data'))->default(true),
+                    Toggle::make('process_customization_data')->label(__('admin.imports.flags.process_print_data'))->default(true),
                 ])
                 ->action(function (array $data): void {
-                    ImportPrintingsJob::dispatch([
+                    ImportCustomizationsJob::dispatch([
                         'download_data' => (bool) $data['download_data'], 'update_live' => (bool) $data['update_live'],
-                        'process_print_data' => (bool) $data['process_print_data'], 'process_source' => (string) $data['process_source'],
+                        'process_customization_data' => (bool) $data['process_customization_data'], 'process_source' => (string) $data['process_source'],
                     ]);
                     Notification::make()->title(__('admin.imports.dispatched'))->success()->send();
                 }),

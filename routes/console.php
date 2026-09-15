@@ -13,7 +13,7 @@ Schedule::command('app:import')
     ->days([1, 2, 3, 4, 5, 6])
     ->withoutOverlapping();
 
-Schedule::command('app:import --process-print-data=true')
+Schedule::command('app:import --process-customization-data=true')
     ->weeklyOn(6, '21:00')
     ->withoutOverlapping();
 

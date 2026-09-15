@@ -2,15 +2,15 @@
 
 namespace App\Console\Commands;
 
-use App\Jobs\ImportPrintingsJob;
+use App\Jobs\ImportCustomizationsJob;
 use Illuminate\Console\Command;
 
-class DispatchImportPrintingsJob extends Command
+class DispatchImportCustomizationsJob extends Command
 {
-    protected $signature = 'job:import-printings
+    protected $signature = 'job:import-customizations
                             {--download-data=1 : Scarica dati da API (1=sì, 0=no)}
                             {--update-live=1 : Aggiorna prezzi e stock live (1=sì, 0=no)}
-                            {--process-print-data=1 : Processa dati stampa (1=sì, 0=no)}
+                            {--process-customization-data=1 : Processa dati stampa (1=sì, 0=no)}
                             {--process-source=all : Connettore da processare (all oppure la chiave di un connettore attivo)}
                             {--sync : Esegui in modo sincrono (per debug)}';
 
@@ -25,7 +25,7 @@ class DispatchImportPrintingsJob extends Command
         $options = [
             'download_data' => (bool) $this->option('download-data'),
             'update_live' => (bool) $this->option('update-live'),
-            'process_print_data' => (bool) $this->option('process-print-data'),
+            'process_customization_data' => (bool) $this->option('process-customization-data'),
             'process_source' => $this->option('process-source'),
         ];
 
@@ -51,13 +51,13 @@ class DispatchImportPrintingsJob extends Command
         if ($this->option('sync')) {
             // Esecuzione sincrona (per debug)
             $this->info('⚙️  Esecuzione SINCRONA...');
-            $job = new ImportPrintingsJob($options);
+            $job = new ImportCustomizationsJob($options);
             $job->handle();
             $this->info('✅ Import completato!');
         } else {
             // Esecuzione asincrona (normale)
             $this->info('📤 Job accodato per esecuzione asincrona...');
-            ImportPrintingsJob::dispatch($options);
+            ImportCustomizationsJob::dispatch($options);
             $this->info('✅ Job accodato con successo!');
             $this->comment('   Monitora con: php artisan queue:work');
         }

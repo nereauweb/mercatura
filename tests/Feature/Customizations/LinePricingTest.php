@@ -163,7 +163,7 @@ final class LinePricingTest extends TestCase
                 return 'Own';
             }
 
-            public function printingPipelines(): array
+            public function customizationPipelines(): array
             {
                 return ['other'];
             }

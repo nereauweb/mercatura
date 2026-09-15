@@ -36,7 +36,7 @@ abstract class ConnectorCommand extends Command
 
     protected $update_categories = false;
 
-    protected $process_print_data = false;
+    protected $process_customization_data = false;
 
     protected function initialize(InputInterface $input, OutputInterface $output): void
     {

@@ -62,7 +62,7 @@ abstract class BaseConnector implements ImportConnector
         return false;
     }
 
-    public function printingPipelines(): ?array
+    public function customizationPipelines(): ?array
     {
         return null;
     }

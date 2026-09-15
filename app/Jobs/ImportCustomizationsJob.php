@@ -6,7 +6,7 @@ use App\Contracts\ImportConnector;
 use App\Events\ImportStageCompleted;
 use App\Support\CaughtExceptionLogger;
 
-class ImportPrintingsJob extends ImportJob
+class ImportCustomizationsJob extends ImportJob
 {
     protected $context = 'job_import_printings';
 
@@ -21,7 +21,7 @@ class ImportPrintingsJob extends ImportJob
 
     protected $update_categories = false;
 
-    protected $process_print_data = true;
+    protected $process_customization_data = true;
 
     protected $process_source = 'all';
 
@@ -29,7 +29,7 @@ class ImportPrintingsJob extends ImportJob
      * Create a new job instance.
      *
      * @param  array  $options  Array of flags to override defaults
-     *                          Esempio: ['download_data' => false, 'process_print_data' => true]
+     *                          Esempio: ['download_data' => false, 'process_customization_data' => true]
      */
     public function __construct(array $options = [])
     {
@@ -63,10 +63,10 @@ class ImportPrintingsJob extends ImportJob
             $this->runConnectorStage(ImportConnector::STAGE_DOWNLOAD);
 
             // Process printing data
-            if ($this->process_print_data) {
-                $this->runConnectorStage(ImportConnector::STAGE_PRINTINGS);
+            if ($this->process_customization_data) {
+                $this->runConnectorStage(ImportConnector::STAGE_CUSTOMIZATIONS);
                 $this->callCommand('cleanup:customizations');
-                ImportStageCompleted::dispatch((int) $this->import_id, ImportConnector::STAGE_PRINTINGS, (string) $this->process_source);
+                ImportStageCompleted::dispatch((int) $this->import_id, ImportConnector::STAGE_CUSTOMIZATIONS, (string) $this->process_source);
             }
 
             $time_elapsed_secs = microtime(true) - $start;
@@ -79,7 +79,7 @@ class ImportPrintingsJob extends ImportJob
             );
 
         } catch (\Exception $e) {
-            CaughtExceptionLogger::error('ImportPrintingsJob::handle failed', $e);
+            CaughtExceptionLogger::error('ImportCustomizationsJob::handle failed', $e);
             $this->db_log(
                 'error',
                 'Errore durante il processo di import personalizzazioni: '.$e->getMessage(),
@@ -114,7 +114,7 @@ class ImportPrintingsJob extends ImportJob
         if ($this->update_live) {
             $flags[] = 'Aggiornamento anticipato prezzi e quantità';
         }
-        if ($this->process_print_data) {
+        if ($this->process_customization_data) {
             $flags[] = 'Processazione dati stampa';
         }
 
