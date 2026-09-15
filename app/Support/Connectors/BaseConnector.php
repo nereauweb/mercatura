@@ -52,14 +52,9 @@ abstract class BaseConnector implements ImportConnector
         return null;
     }
 
-    public function markupPercent(float $percent, ?ProductMarkup $rule, float $condition, int $condition3, ?string $sku): float
+    public function markupPercent(float $percent, ?ProductMarkup $rule, float $condition, ?string $sku): float
     {
         return $percent;
-    }
-
-    public function markupSeries(Product $product): int
-    {
-        return ProductMarkup::SERIES_STANDARD;
     }
 
     public function appliesMarkupToSingleTier(?string $sku): bool

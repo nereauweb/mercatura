@@ -71,12 +71,8 @@ interface ImportConnector
      *
      * @param  float  $percent  the band value, 0 when no band matched
      * @param  float  $condition  quantity × unit cost
-     * @param  int  $condition3  the series (markupSeries)
      */
-    public function markupPercent(float $percent, ?ProductMarkup $rule, float $condition, int $condition3, ?string $sku): float;
-
-    /** Markup series (product_markups.condition_3) for a product: ProductMarkup::SERIES_STANDARD unless the connector assigns it to the web-shop series. */
-    public function markupSeries(Product $product): int;
+    public function markupPercent(float $percent, ?ProductMarkup $rule, float $condition, ?string $sku): float;
 
     /** Whether a single-tier price (no band) still gets the markup applied (supplier exception). */
     public function appliesMarkupToSingleTier(?string $sku): bool;

@@ -53,7 +53,7 @@ class ConnectorFrameworkTest extends TestCase
                 return 12;
             }
 
-            public function markupPercent(float $percent, ?ProductMarkup $rule, float $condition, int $condition3, ?string $sku): float
+            public function markupPercent(float $percent, ?ProductMarkup $rule, float $condition, ?string $sku): float
             {
                 return max($percent, 42.0);
             }
@@ -86,8 +86,8 @@ class ConnectorFrameworkTest extends TestCase
         $product = new Product(['source' => 'Acme', 'sku' => 'X']);
         $this->assertSame(12, $product->processing_days('none'));
         $this->assertSame(BaseConnector::DEFAULT_PROCESSING_DAYS, (new Product(['source' => 'own']))->processing_days('none'));
-        $this->assertSame(42.0, $this->app->make(MarkupRules::class)->percent(1.0, 0, 'ACM', 'X'));
-        $this->assertSame(0.0, $this->app->make(MarkupRules::class)->percent(1_000_000_000.0, 0, 'own', 'X'), 'no band, no connector: 0');
+        $this->assertSame(42.0, $this->app->make(MarkupRules::class)->percent(1.0, 'ACM', 'X'));
+        $this->assertSame(0.0, $this->app->make(MarkupRules::class)->percent(1_000_000_000.0, 'own', 'X'), 'no band, no connector: 0');
     }
 
     public function test_printing_pipeline_filter_only_touches_declared_sources(): void

@@ -102,9 +102,9 @@ abstract class ImportJob implements ShouldQueue
         return $value != '' ? $value : null;
     }
 
-    protected function normalized_price($quantity, $price, $is_ws = false, $source = null, $sku = null)
+    protected function normalized_price($quantity, $price, $source = null, $sku = null)
     {
-        return app(\App\Support\Connectors\MarkupRules::class)->price((float) $quantity, (float) $price, (bool) $is_ws, $source, $sku);
+        return app(\App\Support\Connectors\MarkupRules::class)->price((float) $quantity, (float) $price, $source, $sku);
     }
 
     protected function generate_tiers_normalized_prices($price, $source = null, $sku = null)

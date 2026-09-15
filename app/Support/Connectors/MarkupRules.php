@@ -10,38 +10,35 @@ use App\Support\ImportConnectors;
 
 /**
  * Selling price from unit cost: markup bands in product_markups
- * (condition = quantity × cost, condition_3 = the series) and
- * quantity breaks in normalized_tiers_rules. The series (condition_3) is
- * the connector's choice per product (ImportConnector::markupSeries: 0
- * standard, 1 web-shop); connectors may also adjust the percent for their
- * own sources (ImportConnector::markupPercent).
+ * (condition = quantity × cost) and quantity breaks in normalized_tiers_rules.
+ * Connectors may adjust the percent for their own sources
+ * (ImportConnector::markupPercent).
  */
 final class MarkupRules
 {
     public function __construct(private readonly ImportConnectors $connectors) {}
 
-    public function rule(float $condition, int $condition3): ?ProductMarkup
+    public function rule(float $condition): ?ProductMarkup
     {
         return ProductMarkup::query()
             ->where('condition_1', '<', $condition)
             ->where('condition_2', '>=', $condition)
-            ->where('condition_3', '=', $condition3)
             ->first();
     }
 
-    public function percent(float $condition, int $condition3, ?string $source, ?string $sku): float
+    public function percent(float $condition, ?string $source, ?string $sku): float
     {
-        $rule = $this->rule($condition, $condition3);
+        $rule = $this->rule($condition);
         $percent = $rule ? (float) $rule->value : 0.0;
         $connector = $this->connectors->forSource($source);
 
-        return $connector ? $connector->markupPercent($percent, $rule, $condition, $condition3, $sku) : $percent;
+        return $connector ? $connector->markupPercent($percent, $rule, $condition, $sku) : $percent;
     }
 
     /** Selling price for a quantity (legacy ImportCommand::normalized_price). */
-    public function price(int|float $quantity, float $cost, bool $isWebShop = false, ?string $source = null, ?string $sku = null): float
+    public function price(int|float $quantity, float $cost, ?string $source = null, ?string $sku = null): float
     {
-        $percent = $this->percent((float) $quantity * $cost, $isWebShop ? 1 : 0, $source, $sku);
+        $percent = $this->percent((float) $quantity * $cost, $source, $sku);
 
         return $cost * (1 + $percent / 100);
     }
@@ -57,7 +54,7 @@ final class MarkupRules
         if (! $band) {
             $single = $cost;
             if ($this->connectors->forSource($source)?->appliesMarkupToSingleTier($sku)) {
-                $single = $this->price(1, $cost, false, $source, $sku);
+                $single = $this->price(1, $cost, $source, $sku);
             }
 
             return [['from_quantity' => 1, 'normalized_price' => $single]];
@@ -66,7 +63,7 @@ final class MarkupRules
         $tiers = [];
         foreach (['from_quantity_1', 'from_quantity_2', 'from_quantity_3', 'from_quantity_4'] as $column) {
             $quantity = (int) $band->{$column};
-            $tiers[] = ['from_quantity' => $quantity, 'normalized_price' => $this->price($quantity, $cost, false, $source, $sku)];
+            $tiers[] = ['from_quantity' => $quantity, 'normalized_price' => $this->price($quantity, $cost, $source, $sku)];
         }
 
         return $tiers;

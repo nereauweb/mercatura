@@ -44,8 +44,7 @@ class CoreSeeder extends Seeder
 
     /**
      * Markup bands: [from order value, to order value, markup %]. The order
-     * value is quantity × unit cost; the bands are seeded in both series
-     * (condition_3 = 0 standard, 1 web-shop) with the same values.
+     * value is quantity × unit cost.
      */
     public const MARKUP_BANDS = [
         [0, 100, 100.0], [100, 150, 90.0], [150, 200, 80.0], [200, 250, 65.0], [250, 350, 60.0],
@@ -82,10 +81,8 @@ class CoreSeeder extends Seeder
 
         if (DB::table('product_markups')->count() === 0) {
             $rows = [];
-            foreach ([0, 1] as $condition3) {
-                foreach (self::MARKUP_BANDS as [$from, $to, $percent]) {
-                    $rows[] = ['condition_type' => 0, 'condition_1' => $from, 'condition_2' => $to, 'condition_3' => $condition3, 'delta_type' => 0, 'value' => $percent, 'created_at' => now()];
-                }
+            foreach (self::MARKUP_BANDS as [$from, $to, $percent]) {
+                $rows[] = ['condition_type' => 0, 'condition_1' => $from, 'condition_2' => $to, 'delta_type' => 0, 'value' => $percent, 'created_at' => now()];
             }
             DB::table('product_markups')->insert($rows);
         }

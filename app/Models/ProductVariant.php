@@ -205,10 +205,7 @@ class ProductVariant extends Model implements HasMedia
             }
         }
 
-        // The series is the connector's choice per product (web-shop subtype); no connector: standard.
-        $series = app(ImportConnectors::class)->forSource($this->source)?->markupSeries($this->product) ?? \App\Models\ProductMarkup::SERIES_STANDARD;
-
-        return app(MarkupRules::class)->percent((float) $quantity * (float) $original_price, $series, $this->source, $this->sku);
+        return app(MarkupRules::class)->percent((float) $quantity * (float) $original_price, $this->source, $this->sku);
     }
 
     public function price_per_quantity($quantity, $use_original_price = false, $markup_percent = false, $with_default_printing = false, $with_default_princing_setup = false)
