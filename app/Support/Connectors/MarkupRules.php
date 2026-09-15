@@ -21,8 +21,8 @@ final class MarkupRules
     public function rule(float $condition): ?ProductMarkup
     {
         return ProductMarkup::query()
-            ->where('condition_1', '<', $condition)
-            ->where('condition_2', '>=', $condition)
+            ->where('from_condition', '<', $condition)
+            ->where('to_condition', '>=', $condition)
             ->first();
     }
 

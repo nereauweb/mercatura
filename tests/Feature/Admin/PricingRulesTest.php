@@ -33,19 +33,19 @@ class PricingRulesTest extends TestCase
 
     public function test_bands_are_listed_edited_and_kept_disjoint(): void
     {
-        $band = ProductMarkup::query()->where('condition_1', 600)->firstOrFail();
+        $band = ProductMarkup::query()->where('from_condition', 600)->firstOrFail();
         $this->assertSame(30, (int) $band->value);
 
         $page = Livewire::test(ManageProductMarkups::class);
         $page->assertOk()->assertSee('600');
-        $page->callTableAction(EditAction::class, $band, ['condition_1' => 600, 'condition_2' => 1000, 'value' => 40])->assertHasNoActionErrors();
+        $page->callTableAction(EditAction::class, $band, ['from_condition' => 600, 'to_condition' => 1000, 'value' => 40])->assertHasNoActionErrors();
         $this->assertSame(40, (int) $band->fresh()?->value);
 
         // A fresh component per call: a mounted action would otherwise capture the next one as its nested modal action.
-        Livewire::test(ManageProductMarkups::class)->callAction(TestAction::make('create')->table(), data: ['condition_1' => 900, 'condition_2' => 1200, 'value' => 33])->assertHasActionErrors(['condition_2']);
-        Livewire::test(ManageProductMarkups::class)->callAction(TestAction::make('create')->table(), data: ['condition_1' => 100000000, 'condition_2' => 200000000, 'value' => 5])->assertHasNoActionErrors();
-        $this->assertSame(1, ProductMarkup::query()->where('condition_1', 100000000)->count());
-        Livewire::test(ManageProductMarkups::class)->callAction(TestAction::make('create')->table(), data: ['condition_1' => 50, 'condition_2' => 40, 'value' => 5])->assertHasActionErrors(['condition_2']);
+        Livewire::test(ManageProductMarkups::class)->callAction(TestAction::make('create')->table(), data: ['from_condition' => 900, 'to_condition' => 1200, 'value' => 33])->assertHasActionErrors(['to_condition']);
+        Livewire::test(ManageProductMarkups::class)->callAction(TestAction::make('create')->table(), data: ['from_condition' => 100000000, 'to_condition' => 200000000, 'value' => 5])->assertHasNoActionErrors();
+        $this->assertSame(1, ProductMarkup::query()->where('from_condition', 100000000)->count());
+        Livewire::test(ManageProductMarkups::class)->callAction(TestAction::make('create')->table(), data: ['from_condition' => 50, 'to_condition' => 40, 'value' => 5])->assertHasActionErrors(['to_condition']);
 
         Livewire::test(ManageProductPriceTiers::class)->assertOk();
     }
@@ -56,8 +56,8 @@ class PricingRulesTest extends TestCase
         $payload = ['articles' => [[$f->a->id, 100]], 'printings' => [], 'has_packaging' => 0];
         $this->assertSame('1.040,00&nbsp;&euro;', $this->postJson('/prodotti/configuratore/articoli', $payload)->json('total_price'), '100 × (8 + 30 %)');
 
-        $band = ProductMarkup::query()->where('condition_1', 600)->firstOrFail();
-        Livewire::test(ManageProductMarkups::class)->callTableAction(EditAction::class, $band, ['condition_1' => 600, 'condition_2' => 1000, 'value' => 40])->assertHasNoActionErrors();
+        $band = ProductMarkup::query()->where('from_condition', 600)->firstOrFail();
+        Livewire::test(ManageProductMarkups::class)->callTableAction(EditAction::class, $band, ['from_condition' => 600, 'to_condition' => 1000, 'value' => 40])->assertHasNoActionErrors();
 
         $this->assertSame('1.120,00&nbsp;&euro;', $this->postJson('/prodotti/configuratore/articoli', $payload)->json('total_price'), '100 × (8 + 40 %)');
     }

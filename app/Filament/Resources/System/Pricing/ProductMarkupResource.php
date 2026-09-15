@@ -56,15 +56,15 @@ final class ProductMarkupResource extends Resource
     public static function form(Schema $schema): Schema
     {
         return $schema->columns(2)->components([
-            TextInput::make('condition_1')->label(__('admin.pricing.from_value'))->helperText(__('admin.pricing.from_value_hint'))->numeric()->minValue(0)->required()->suffix('€'),
-            TextInput::make('condition_2')->label(__('admin.pricing.to_value'))->numeric()->required()->suffix('€')
-                ->gt('condition_1')
+            TextInput::make('from_condition')->label(__('admin.pricing.from_value'))->helperText(__('admin.pricing.from_value_hint'))->numeric()->minValue(0)->required()->suffix('€'),
+            TextInput::make('to_condition')->label(__('admin.pricing.to_value'))->numeric()->required()->suffix('€')
+                ->gt('from_condition')
                 ->rule(fn (Get $get, ?Model $record): Closure => function (string $attribute, mixed $value, Closure $fail) use ($get, $record): void {
-                    $from = (float) $get('condition_1');
+                    $from = (float) $get('from_condition');
                     $overlapping = ProductMarkup::query()
                         ->when($record, fn ($q) => $q->whereKeyNot($record->getKey()))
-                        ->where('condition_1', '<', (float) $value)
-                        ->where('condition_2', '>', $from)
+                        ->where('from_condition', '<', (float) $value)
+                        ->where('to_condition', '>', $from)
                         ->exists();
                     if ($overlapping) {
                         $fail(__('admin.pricing.overlap'));
@@ -77,10 +77,10 @@ final class ProductMarkupResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-            ->defaultSort('condition_1')
+            ->defaultSort('from_condition')
             ->columns([
-                TextColumn::make('condition_1')->label(__('admin.pricing.from_value'))->numeric(decimalPlaces: 2, decimalSeparator: ',', thousandsSeparator: '.')->suffix(' €')->sortable(),
-                TextColumn::make('condition_2')->label(__('admin.pricing.to_value'))->numeric(decimalPlaces: 2, decimalSeparator: ',', thousandsSeparator: '.')->suffix(' €')->sortable(),
+                TextColumn::make('from_condition')->label(__('admin.pricing.from_value'))->numeric(decimalPlaces: 2, decimalSeparator: ',', thousandsSeparator: '.')->suffix(' €')->sortable(),
+                TextColumn::make('to_condition')->label(__('admin.pricing.to_value'))->numeric(decimalPlaces: 2, decimalSeparator: ',', thousandsSeparator: '.')->suffix(' €')->sortable(),
                 TextColumn::make('value')->label(__('admin.pricing.percent'))->numeric(decimalPlaces: 2, decimalSeparator: ',')->suffix(' %')->sortable(),
             ])
             ->recordActions([

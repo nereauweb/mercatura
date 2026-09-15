@@ -86,7 +86,7 @@ final class LinePricingTest extends TestCase
 
     public function test_under_minimum_adds_the_flat_surcharge(): void
     {
-        // 20 pieces: tier 1 → 10.00, band 200 → 80 % (band 150–200 wins: condition_2 >= 200); unit 18.00.
+        // 20 pieces: tier 1 → 10.00, band 200 → 80 % (band 150–200 wins: to_condition >= 200); unit 18.00.
         $payload = ['articles' => [[$this->f->a->id, 20]], 'printings' => [$this->f->screenOneColorA->id], 'has_packaging' => 0];
 
         $summary = $this->summary($payload);
@@ -138,7 +138,7 @@ final class LinePricingTest extends TestCase
         $payload = ['articles' => [[$this->f->a->id, 50]], 'printings' => [], 'has_packaging' => 0];
 
         $summary = $this->summary($payload);
-        // 50 pieces: tier 50 → 9.00, band 450 → 50 % (band 400–450 wins: condition_2 >= 450); unit 13.50.
+        // 50 pieces: tier 50 → 9.00, band 450 → 50 % (band 400–450 wins: to_condition >= 450); unit 13.50.
         $this->assertSame('675,00&nbsp;&euro;', $summary['total_price']);
         $this->assertCount(1, $summary['lines']);
 
