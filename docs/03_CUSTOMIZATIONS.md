@@ -153,7 +153,45 @@ deviation is listed in §3.
 10. `order_items` in the schema dump has no `unit_price` column while
     `store_order` writes one (to verify against the migrated fixture).
 
-### 2.5 What is already generic
+### 2.5 Evidence from real supplier data (fixture database, 2026-09-15)
+
+The local fixture holds the output of real imports: 310 588 customization
+rows (PF 261 436; Sipec 19 639 `excel` + 29 513 `json_v3`), 393 039 areas,
+679 520 options, 6 657 897 tiers. The raw feed tables are empty locally and
+no supplier credential is on this machine, so the feeds themselves were not
+re-downloaded; the normalized rows are what the connectors produced from
+them.
+
+- **Techniques are free labels, 31 for PF and 10 + 14 for Sipec**, mixed
+  Italian and English ("Serigrafia", "Embroidery fixed", "Ricamo 3D",
+  "Incisione Laser", "Etichetta resinata", "Nello stampo - drinkware",
+  "Logo Light-Up", "Digital Sticker", "Dtf", "Digitale (uv)", "Laser",
+  "Stampa a caldo", "Etichetta adesiva"…). Sipec `json_v3` also carries a
+  technique code whose prefix groups them (`TS*`/`TX*`/`S*` screen,
+  `T*` pad, `L*` laser, `EC*` embroidery, `SC*` hot stamping, `DF*` DTF,
+  `DV*` digital UV, `SU*` sublimation, `DT*` label, `DR*`/`DP*` digital);
+  PF's feed has an `impMethodCode` per method whose value list is not in
+  the fixture. **Neither feed exposes a decoration family field.**
+- **Every non-ink technique already fits the four-level tree** without
+  special cases: embroidery is priced by option labels "Fino a 12",
+  "Fino a 5", "1" (PF) or "1".."5" thread colours (Sipec, five options
+  with setup 20 → 80 €); laser has one option labelled "1", "Incisione"
+  or "Engraving"; hot stamping "Hot stamping" / "Impressione a caldo";
+  labels and in-mould "full color". Areas are rectangles with real
+  millimetres (903 PF circles, 3 rows without width).
+- **`number_of_colors` is already not a colour count**: PF stores 1 for
+  "Fino a 12" and "full color", Sipec stores 1 for "Engraving". It is the
+  multiplier the pricing uses, nothing more.
+- Packaging exists only on Sipec (7 949 + 13 897 rows with packaging
+  tiers); PF has none. Start costs exist only on Sipec `excel`.
+  `max_print_position` is set only by Sipec `json_v3` (always 2).
+  Minimum quantities: PF 0, Sipec 50–250.
+
+Conclusion: the *structure* is generic today and needs no new level; a
+*family* of the decoration is not in the data and would be a mapping we
+maintain by hand. That is the reason for decision 2 below.
+
+### 2.6 What is already generic
 
 The pipeline filter, the connector stage mechanism, the import jobs, the
 cleanup command, the media handling of print files, the configurator's
@@ -172,21 +210,30 @@ a discriminator plus one pricing service, not a redesign.
    Namespace `App\Models\Customizations\`. The legacy classes stay as
    deprecated thin subclasses for one minor release so the connector
    packages keep working until they are updated (v2c.5).
-2. **Kind discriminator.** `customizations.kind` (enum
-   `App\Enums\CustomizationKind`: `print`, `embroidery`, `engraving`,
-   `label`, `digital`, `other`), NOT cast on the model (same policy as
-   the other enums, `EnumsTest` guards the values). Existing rows are
-   backfilled `print`; the demo seeder maps Ricamo → `embroidery`,
-   Incisione laser → `engraving`, Sublimazione and Transfer digitale →
-   `digital`. `technique_label` stays the free label the supplier gives.
-3. **Kind-specific data in JSON, not columns.** `customizations.attributes`
-   and `customization_areas.attributes` (JSON, nullable) hold what a kind
-   needs beyond the shared columns (stitch count, depth, material of a
-   label). The shared columns are renamed generically: `max_colors` →
-   `max_units`, `max_print_position` → `max_positions`,
-   `number_of_colors` → `units`, `width_mm`/`height_mm` kept (an extent),
-   `type` → `shape`. No column is dropped in v2c except the four dead
-   `*_method_*` ones.
+2. **No kind enum; an optional, untyped family.** The taxonomy first
+   proposed (print / embroidery / engraving / label / digital) was a guess
+   made before looking at the data (§2.5): the feeds carry no family and
+   every technique already prices through the same tree. v2c therefore
+   adds only `customizations.family` VARCHAR(32) NULL, **not an enum,
+   nothing depends on it**: connectors fill it when they know it (Sipec
+   `json_v3` can derive it from the technique code prefix; PF from
+   `impMethodCode` once its value list is verified), the admin can set it
+   (v2c.6), the core uses it for a badge and a catalogue filter only when
+   present. `technique_label` stays the free label the supplier gives and
+   remains the key of every lookup. A typed enum, if ever, is a later
+   decision taken on verified feed data.
+3. **Structure renamed, columns kept.** Tables and classes get the generic
+   names of decision 1 because the data proves the structure is generic;
+   column names stay as they are (`number_of_colors`, `max_colors`,
+   `max_print_position`, `type`, `width_mm`, `height_mm`) because their
+   semantics are the pricing multiplier and extent the connectors write
+   today, and renaming them would only move the same guess into the
+   schema. `customizations.attributes` and `customization_areas.attributes`
+   (JSON, nullable) are added for data a supplier gives beyond the shared
+   columns (PF `laserColor`, `allowedColorType`, `maxAreaCm2`; Sipec
+   `accetta_pantone`), written by connectors, read by nobody in the core
+   until a feature needs them. Only the four dead `*_method_*` columns
+   are dropped.
 4. **One pricing service.** `App\Support\Customizations\LinePricer`
    computes a configured line (articles + option ids + packaging) into
    the same structure both controllers build today: per-article price,
@@ -263,21 +310,20 @@ a discriminator plus one pricing service, not a redesign.
 customizations                (was printing_variants)
   id, source, pipeline, source_product_sku, source_variant_sku,
   product_id, variant_id, normalized_product_id, normalized_variant_id,
-  kind VARCHAR(16) NOT NULL DEFAULT 'print',
-  technique_label, technique_code (was technique_main_code),
-  position_label, position_code, image, is_default, processing_days,
-  has_packaging, packaging_code, minimum_quantity,
-  max_units (was max_colors), max_positions (was max_print_position),
+  family VARCHAR(32) NULL,
+  technique_label, technique_main_code, position_label, position_code,
+  image, is_default, processing_days, has_packaging, packaging_code,
+  minimum_quantity, max_colors, max_print_position,
   attributes JSON NULL, timestamps
   UNIQUE (source, pipeline, source_product_sku, source_variant_sku, technique_label, position_label)
-  INDEX (variant_id) — fixes defect 4; INDEX (product_id), (kind), (source, pipeline)
+  INDEX (variant_id) — fixes defect 4; INDEX (product_id), (family), (source, pipeline)
 
 customization_areas           (was printing_variants_sizes)
-  id, customization_id, label, shape (was type), width_mm, height_mm,
+  id, customization_id, label, type, width_mm, height_mm,
   attributes JSON NULL, timestamps
 
 customization_options         (was printing_variants_colors)
-  id, area_id, label, units (was number_of_colors), setup_multiplier,
+  id, area_id, label, number_of_colors, setup_multiplier,
   setup, original_setup, start_cost, original_start_cost, timestamps
 
 customization_tiers           (was printing_variants_prices)
@@ -286,8 +332,8 @@ customization_tiers           (was printing_variants_prices)
   (the four *_method_* columns dropped)
 
 order_item_customizations     (was order_item_printings)
-  id, item_id, option_id NULL, kind, technique_label, position_label,
-  area_label, option_label, units, quantity, unit_price,
+  id, item_id, option_id NULL, family NULL, technique_label, position_label,
+  area_label, option_label, number_of_colors, quantity, unit_price,
   packaging_unit_price NULL, label, file, timestamps
   INDEX (item_id)
 
@@ -301,8 +347,8 @@ normalized_products.default_customization_* (was default_print_*)
 normalized_products_variants.customization_default_* (was printing_default_*)
 ```
 
-Migration strategy: `RENAME TABLE` (instant in MariaDB), `ALTER` for
-columns, backfill `kind = 'print'`, drop the four dead columns, recreate
+Migration strategy: `RENAME TABLE` (instant in MariaDB), `ALTER` to add
+`family` and `attributes`, drop the four dead columns, recreate
 the foreign keys with the new names. Runs in minutes on the largest known
 installation (tens of thousands of customizations, hundreds of thousands
 of tiers). The `2026_09_10_121000` pipeline migration and the widen
@@ -319,8 +365,6 @@ database).
   option label).
 - `App\Models\OrderItemCustomization`, `App\Models\OrderItemExtra` (type
   aware).
-- `App\Enums\CustomizationKind` with `label()` and `options()` like the
-  other enums.
 - `App\Support\Customizations\LinePricer` (§4.3), `CustomizationLabel`
   (presenter: `option($option)`, `line($option)`, `setup($option)`,
   `start()`, all through lang keys), `CustomizationPipeline` (renamed
@@ -376,7 +420,7 @@ cent.
 ### 4.4 Storefront
 
 - `ProductPageData::configurator()` returns the same payload; each
-  position gains `kind` per technique; the product page "recommended
+  technique gains `family` (null when unknown); the product page "recommended
   technique / print area" block reads `defaultCustomization()`.
 - The JS keeps its cascade and request shape; only the request key
   `printings` → `customizations` (server accepts both for one release).
@@ -412,7 +456,9 @@ Column rename, lang keys for yes/no, controller reads
 - Stage `customizations` (alias `printings`), `customizationPipelines()`,
   `CustomizationPipeline`, jobs and commands renamed with aliases.
 - Connectors write the renamed tables through the core models or raw
-  inserts (`customization_tiers`), always with `kind`. Sipec and PF
+  inserts (`customization_tiers`); `family` is optional and written only
+  from a verified feed field (Sipec code prefix; PF `impMethodCode` after
+  its values are checked on a real download). Sipec and PF
   Concept packages get one release each (`v1.1.0`, requires core
   `^2.2`), Silan's skeleton is untouched.
 - `cleanup:customizations` keeps the behaviour (live pipelines only,
@@ -422,7 +468,7 @@ Column rename, lang keys for yes/no, controller reads
 ### 4.8 Admin (v2c.6)
 
 - Variant edit: the read-only section becomes a relation manager
-  `CustomizationsRelationManager` (table: kind badge, technique,
+  `CustomizationsRelationManager` (table: family badge when set, technique,
   position, default, minimum, source) with nested edit of areas, options
   and tiers in a modal form; `SetDefaultCustomization` action in
   `app/Actions/Catalog`.
@@ -461,15 +507,16 @@ that one case.
 Stop: totals identical to v2c.0 on every characterisation case except
 the documented one; no duplicated formula left in `app/Http`.
 
-**v2c.2 — Schema and models.** Migration of §4.1 (rename, `kind`,
-`attributes`, dead columns dropped, indexes), new models and enum,
-deprecated aliases, `CustomizationPipeline`, presenter with lang keys,
-`Product`/`ProductVariant` forwards; demo seeder writes kinds. Connector
-packages keep working through the aliases (verified with both checked
-out).
+**v2c.2 — Schema and models.** Migration of §4.1 (rename, `family`,
+`attributes`, dead columns dropped, indexes), new models, deprecated
+aliases, `CustomizationPipeline`, presenter with lang keys,
+`Product`/`ProductVariant` forwards; the demo seeder leaves `family`
+null except where the technique name is unambiguous in the demo itself.
+Connector packages keep working through the aliases (verified with both
+checked out) and against the migrated fixture (310 k rows).
 Stop: fresh `migrate --seed` and the migrated fixture both pass the
-whole suite; schema dump regenerated; `EnumsTest` covers the kind; no
-supplier or print assumption in `app/Models/Customizations`.
+whole suite; schema dump regenerated; no supplier or print assumption in
+`app/Models/Customizations`.
 
 **v2c.3 — Storefront, cart, order snapshot.** Configurator payload and
 endpoints on the new models; cart key rename with fallback;
@@ -480,7 +527,7 @@ migration renders identically after it; `CartToOrderTest` asserts the
 snapshot and extras.
 
 **v2c.4 — Quotation and admin read-only.** Column rename, lang keys,
-admin infolists on the new names, kind badge in the variant section,
+admin infolists on the new names, family badge in the variant section,
 Imports page action renamed with alias.
 Stop: quotation flow and mails identical; admin tests green.
 
@@ -528,10 +575,11 @@ as in `02_V2B_ADMIN.md`.
 - **Connector pace.** Between v2c.2 and v2c.5 the packages run on
   aliases; nothing forces them to update early, but their tests will
   print deprecation notices.
-- **Kind granularity.** Six kinds are a guess informed by the demo
-  catalogue and the suppliers' technique lists. Adding a kind later is a
-  one-line enum change plus a lang key; mis-classifying now only affects
-  badges and copy, not prices.
+- **Family values.** Deliberately untyped (decision 2). Before v2c.5 the
+  two feeds should be downloaded once with real credentials (not on this
+  machine) to list PF `impMethodCode` values and confirm the Sipec code
+  prefixes; until then connectors write `family` only where the mapping is
+  certain, otherwise null.
 - **Open:** should `has_packaging` become a customization of kind
   `packaging` instead of a flag with its own tier columns? Not in v2c
   (parity); worth a decision when a second supplier prices packaging
@@ -545,8 +593,8 @@ as in `02_V2B_ADMIN.md`.
 
 ## 9. What needs approval before v2c starts
 
-- Decisions 1–14 of §3, in particular: the names (1), the kind list (2),
-  the cart/configurator asymmetry resolved in favour of the configurator
+- Decisions 1–14 of §3, in particular: the names (1), no kind enum and
+  an optional untyped family (2), columns kept (3), the cart/configurator asymmetry resolved in favour of the configurator
   (4), the typed extras on orders (6), the quotation column rename (11),
   the connector contract renames with one-release aliases (12).
 - The removal of the two dead routes (decision 8, CLAUDE.md "ask before
