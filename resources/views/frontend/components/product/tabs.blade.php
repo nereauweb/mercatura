@@ -1,11 +1,16 @@
 {{-- @mercatura-view frontend.components.product.tabs @version 1 --}}
 {{-- Lazy product tabs (docs/04_STOREFRONT_FLOWS.md §4.3): the first panel is rendered inline (the slot), the others
-     fetch their HTML fragment from route frontend.product.sheet on first open. $tabs: list of [key, label, tab slug or null]. --}}
-@props(['tabs', 'endpoint'])
-<div {{ $attributes }} x-data="{ active: @js($tabs[0]['key']), loaded: {}, loading: null, error: null,
-        async open(tab, slug) { this.active = tab; if (!slug || this.loaded[tab] !== undefined) return; this.loading = tab; this.error = null;
+     fetch their HTML fragment from route frontend.product.sheet: on first open, or in the browser's idle time after
+     the page has loaded when $prefetch is true (default), so a click is instant and the first paint pays nothing.
+     $tabs: list of [key, label, tab slug or null]. --}}
+@props(['tabs', 'endpoint', 'prefetch' => true])
+<div {{ $attributes }} x-data="{ active: @js($tabs[0]['key']), loaded: {}, pending: {}, loading: null, error: null,
+        init() { if (! @js((bool) $prefetch)) return; const idle = window.requestIdleCallback || ((f) => setTimeout(f, 1500));
+            window.addEventListener('load', () => idle(() => @js(array_values(array_filter($tabs, fn ($t) => ! empty($t['slug'])))).forEach((t) => this.load(t.key, t.slug))), { once: true }); },
+        open(tab, slug) { this.active = tab; if (slug && this.loaded[tab] === undefined) this.loading = tab; return this.load(tab, slug); },
+        async load(tab, slug) { if (!slug || this.loaded[tab] !== undefined || this.pending[tab]) return; this.pending[tab] = true; this.error = null;
             try { const r = await fetch(@js($endpoint) + '/' + slug, { headers: { 'X-Requested-With': 'XMLHttpRequest' } }); if (!r.ok) throw new Error(r.statusText); this.loaded[tab] = await r.text(); }
-            catch (e) { this.error = tab; } finally { this.loading = null; } } }">
+            catch (e) { this.error = tab; } finally { this.pending[tab] = false; if (this.loading === tab) this.loading = null; } } }">
     <div role="tablist" class="flex flex-wrap gap-1 border-b border-border">
         @foreach($tabs as $tab)
             <button type="button" role="tab" :aria-selected="active === @js($tab['key'])" @click="open(@js($tab['key']), @js($tab['slug'] ?? null))"
