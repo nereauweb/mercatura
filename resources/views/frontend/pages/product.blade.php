@@ -18,6 +18,7 @@
     ]);
     $defaultPrinting = $has_printing ? $article->defaultCustomization() : null;
     $hasPrices = $article->prices->count() > 0 && ! $product->quote_only;
+    $modal = config('mercatura.storefront.configurator') === 'modal';
     $configuratorConfig = [
         'endpoints' => [
             'summary' => route('frontend.product.build_articles_request'),
@@ -32,6 +33,36 @@
         'labels' => ['fourColour' => __('frontend.product.configurator.four_colour'), 'selectVariantFirst' => __('frontend.product.configurator.select_variant_first')],
         'conversion' => config('gtm.google_ads_id') && config('gtm.conversions.add_to_cart') ? config('gtm.google_ads_id').'/'.config('gtm.conversions.add_to_cart') : null,
     ];
+    $modalConfig = [
+        'articleId' => $article->id,
+        'endpoints' => [
+            'options' => route('frontend.product.configurator.options'),
+            'summary' => route('frontend.product.configurator.summary'),
+            'artwork' => route('frontend.cart.artwork'),
+            'quote' => $quoteUrl,
+        ],
+        'csrf' => csrf_token(),
+        'hasPrinting' => $page['configurator']['has_printing'],
+        'hasPackaging' => $page['configurator']['has_packaging'],
+        'artworkEnabled' => (bool) config('mercatura.storefront.artwork_in_configurator') && $page['configurator']['has_printing'],
+        'minQuantity' => $page['configurator']['min_quantity'],
+        'colors' => $page['configurator']['colors'],
+        'labels' => [
+            'belowMinimum' => __('frontend.product.configurator_modal.below_minimum'),
+            'overMaximum' => __('frontend.product.configurator_modal.over_maximum'),
+            'restockNotice' => __('frontend.product.configurator_modal.restock_notice'),
+            'completeQuantities' => __('frontend.product.configurator_modal.complete_quantities'),
+            'setup' => __('frontend.product.configurator_modal.setup'),
+            'setupCost' => __('frontend.product.configurator_modal.setup_cost'),
+            'startCost' => __('frontend.product.configurator_modal.start_cost'),
+            'packaging' => __('frontend.product.configurator_modal.packaging'),
+            'surcharge' => __('frontend.product.configurator_modal.surcharge'),
+            'summaryError' => __('frontend.product.configurator_modal.summary_error'),
+            'artworkError' => __('frontend.product.configurator_modal.artwork_error'),
+            'selectVariantFirst' => __('frontend.product.configurator.select_variant_first'),
+        ],
+        'conversion' => $configuratorConfig['conversion'],
+    ];
 @endphp
 
 @section('title', $title.' | '.$brand['name'])
@@ -43,7 +74,7 @@
 @endsection
 
 @section('content')
-	<div id="product" class="mx-auto max-w-7xl px-4 py-4" x-data="productConfigurator(@js($configuratorConfig))">
+	<div id="product" class="mx-auto max-w-7xl px-4 py-4" x-data="{{ $modal ? 'productConfiguratorModal('.e(json_encode($modalConfig)).')' : 'productConfigurator('.e(json_encode($configuratorConfig)).')' }}">
 		<x-frontend::breadcrumb :items="$page['breadcrumbs']" class="mb-4 hidden md:block" />
 		@stack('product-before')
 
@@ -76,7 +107,7 @@
 				<div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
 					<a href="{{ $quoteUrl }}" class="rounded-card bg-accent px-4 py-2 text-center text-sm font-bold uppercase text-on-accent shadow hover:bg-accent-strong">{{ __('frontend.product.request_quote') }}</a>
 					@if($hasPrices)
-					<button type="button" @click="show()" class="rounded-card bg-primary px-4 py-2 text-center text-sm font-bold uppercase text-on-primary shadow hover:bg-primary-strong">{{ __('frontend.product.buy') }}</button>
+					<button type="button" @click="show()" class="rounded-card bg-primary px-4 py-2 text-center text-sm font-bold uppercase text-on-primary shadow hover:bg-primary-strong">{{ $modal ? __('frontend.product.buy_modal') : __('frontend.product.buy') }}</button>
 					@endif
 				</div>
 				@if($hasPrices)
@@ -122,7 +153,11 @@
 		@stack('product-after-tables')
 
 		@if($hasPrices)
-			<x-frontend::product.configurator :product="$product" :article="$article" :configurator="$page['configurator']" />
+			@if($modal)
+				<x-frontend::product.configurator-modal :product="$product" :article="$article" :configurator="$page['configurator']" />
+			@else
+				<x-frontend::product.configurator :product="$product" :article="$article" :configurator="$page['configurator']" />
+			@endif
 		@endif
 
 		@if(count($page['related']))

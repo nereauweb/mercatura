@@ -31,6 +31,8 @@
                     </tbody>
                 </table>
             </div>
+            @if(!empty($item['sample']))<p class="mt-2 text-xs font-semibold uppercase text-primary">{{ __('frontend.cart.sample') }}</p>@endif
+            @if(!empty($item['shipping_date']))<p class="mt-2 text-xs"><strong>{{ __('frontend.cart.shipping_date') }}:</strong> {{ $item['shipping_date']->format('d/m/Y') }}</p>@endif
             @if(!empty($item['printings']))
             <p class="mt-2 rounded bg-danger-soft px-3 py-2 text-xs text-accent-strong"><strong>{{ __('frontend.cart.print_files_missing') }}</strong><br>{{ __('frontend.cart.print_files_hint') }}</p>
             @endif

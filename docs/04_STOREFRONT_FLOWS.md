@@ -1,6 +1,6 @@
 # v2d — Storefront flows: modal configurator, onepage checkout, quick quote, samples, delivery date
 
-Status: **approved 2026-09-16 (decisions of the owner in §2). F1 done (2026-09-17); F2 in progress.**
+Status: **approved 2026-09-16 (decisions of the owner in §2). F1 and F2 done (2026-09-17); F3 in progress.**
 Written for the gesca84 installation (`mercatura-gesca84/docs/GESCA84_SKIN.md`
 has the page-by-page comparison with gesca84.it) but every feature here is a
 **core feature behind configuration**, as ARCHITECTURE §1 requires: an
@@ -277,3 +277,15 @@ clean; `docs/GESCA84_SKIN.md` updated with what was overridden.
 ## 7. Deviations recorded during execution
 
 **F1 (2026-09-17).** As planned, plus: the cart artwork directory is keyed by a token kept in the session, not by the session id (the id changes at login); the options tree carries `markup_percent` and per-option `packaging_unit_price`; the summary JSON adds `taxable`, `vat_rate` and `processing_days`. `ProductPageData` exposes `detailsRows`, `packagingRows`, `priceTableRows`, `defaultCustomization`, `stockTable` and `configuratorOptions` for the sheet fragments.
+
+**F2 (2026-09-17).** `productConfiguratorModal` (Alpine, core bundle) and
+`components/product/configurator-modal`; the product page mounts panel or
+modal by `storefront.configurator` and labels the CTA "Calcola e acquista"
+for the modal. Step 3 offers every technique as a button row and one
+select of priced position/area/option rows for the browsed technique;
+"Aggiungi posizione" keeps one decoration per position, so different
+positions may use different techniques (the owner's extension). The
+"SÌ (richiedi preventivo)" answer sends to the quotation page with the
+quantities in the URL hash until F3 wires the modal. No browser test yet:
+the page test checks the mount and the copy, the endpoints are tested in
+F1. Bundle: 119 KB gzip, at the budget.

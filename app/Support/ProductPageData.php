@@ -103,6 +103,7 @@ final class ProductPageData
             ];
             $colors[$colorId]['sizes'][] = [
                 'variant_id' => (int) $variant->id,
+                'sku' => (string) $variant->sku,
                 'label' => $variant->size ? (string) $variant->size->shown_label() : __('frontend.product.configurator.one_size'),
                 'stock' => (int) $variant->stock,
                 'next_stock_quantity' => (int) $variant->next_stock_quantity,
