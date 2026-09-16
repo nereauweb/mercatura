@@ -4,6 +4,8 @@
      ({ articleId?, quantity? }); the contact fields and the products share the session store
      of the quotation page, which remains the no-JS fallback. --}}
 @php
+    // Mounted by the layout on every page, including ones rendered outside the web middleware: the form components expect $errors.
+    if (! isset($errors)) { view()->share('errors', new \Illuminate\Support\ViewErrorBag); $errors = view()->shared('errors'); }
     $q = 'frontend.quick_quote.';
     $qCust = (array) session('quotation.customer', []);
     $config = [

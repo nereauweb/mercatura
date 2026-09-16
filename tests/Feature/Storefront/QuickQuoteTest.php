@@ -44,6 +44,7 @@ final class QuickQuoteTest extends TestCase
         $this->assertStringContainsString(__('frontend.quick_quote.products'), $page);
         $this->assertStringContainsString('name="customer[email]"', $page);
 
+        $this->get('/pagina-che-non-esiste')->assertNotFound();
         $listing = $this->get('/prodotti')->assertOk()->getContent();
         $this->assertMatchesRegularExpression('/quick-quote-open\\\', \\{articleId: \\d+\\}/', $listing, 'the card CTA opens the modal with the main variant id');
     }

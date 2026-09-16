@@ -23,6 +23,14 @@
     <php>
         <env name="APP_ENV" value="testing"/>
         <env name="MERCATURA_SKIN" value=""/>
+        <!-- Storefront flows at the core defaults: the suite asserts the core storefront, an installation's .env must not change it. -->
+        <env name="MERCATURA_CONFIGURATOR" value="panel"/>
+        <env name="MERCATURA_CHECKOUT" value="steps"/>
+        <env name="MERCATURA_QUICK_QUOTE" value="page"/>
+        <env name="MERCATURA_SAMPLES" value="false"/>
+        <env name="MERCATURA_SHIPPING_DATE" value="false"/>
+        <env name="MERCATURA_ARTWORK_IN_CONFIGURATOR" value="false"/>
+        <env name="MERCATURA_CARD_HOVER_IMAGE" value="false"/>
         <env name="BCRYPT_ROUNDS" value="4"/>
         <env name="CACHE_DRIVER" value="array"/>
         <env name="DB_DATABASE" value="mercatura_test"/>

@@ -44,7 +44,7 @@
 
 	<x-frontend::flash />
 
-	@if(config('mercatura.storefront.quick_quote') === 'modal')
+	@if(config('mercatura.storefront.quick_quote') === 'modal' && request()->hasSession())
 	<x-frontend::quick-quote />
 	@endif
 
