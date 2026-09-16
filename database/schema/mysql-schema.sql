@@ -151,8 +151,10 @@ DROP TABLE IF EXISTS `content_home_slides`;
 CREATE TABLE `content_home_slides` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `position` int(11) NOT NULL DEFAULT 0,
+  `active` tinyint(1) NOT NULL DEFAULT 1,
   `background_color` varchar(32) DEFAULT NULL,
   `background_image` varchar(256) DEFAULT NULL,
+  `mobile_image` varchar(256) DEFAULT NULL,
   `title_color` varchar(32) DEFAULT NULL,
   `title_text` varchar(256) DEFAULT NULL,
   `subtitle_color` varchar(32) DEFAULT NULL,

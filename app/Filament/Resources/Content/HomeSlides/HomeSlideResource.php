@@ -15,14 +15,17 @@ use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Cache;
 
-/** Home slideshow (content_home_slides): the legacy admin had no screen for it. */
+/** Home slideshow (content_home_slides): the legacy admin had no screen for it. Texts are optional (banners with the copy baked in). */
 final class HomeSlideResource extends Resource
 {
     protected static ?string $model = ContentHomeSlide::class;
@@ -51,17 +54,19 @@ final class HomeSlideResource extends Resource
     public static function form(Schema $schema): Schema
     {
         return $schema->columns(2)->components([
-            TextInput::make('title_text')->label(__('admin.content.title'))->required()->maxLength(256),
+            TextInput::make('title_text')->label(__('admin.content.title'))->maxLength(256),
             TextInput::make('subtitle_text')->label(__('admin.content.subtitle'))->maxLength(256),
             Textarea::make('text')->label(__('admin.content.text'))->rows(2)->maxLength(256)->columnSpanFull(),
             TextInput::make('cta_text')->label(__('admin.content.cta_text'))->maxLength(256),
             TextInput::make('cta_link')->label(__('admin.content.cta_link'))->maxLength(64),
-            FileUpload::make('background_image')->label(__('admin.content.background_image'))->image()->disk('public')->directory(self::IMAGE_DIR)->visibility('public')->columnSpanFull(),
+            FileUpload::make('background_image')->label(__('admin.content.background_image'))->helperText(__('admin.content.background_image_hint'))->image()->disk('public')->directory(self::IMAGE_DIR)->visibility('public')->required(),
+            FileUpload::make('mobile_image')->label(__('admin.content.mobile_image'))->helperText(__('admin.content.mobile_image_hint'))->image()->disk('public')->directory(self::IMAGE_DIR)->visibility('public'),
             ColorPicker::make('background_color')->label(__('admin.content.background_color')),
             ColorPicker::make('title_color')->label(__('admin.content.title_color')),
             ColorPicker::make('subtitle_color')->label(__('admin.content.subtitle_color')),
             ColorPicker::make('text_color')->label(__('admin.content.text_color')),
             TextInput::make('position')->label(__('admin.content.position'))->numeric()->default(0),
+            Toggle::make('active')->label(__('admin.content.active'))->default(true),
         ]);
     }
 
@@ -73,20 +78,28 @@ final class HomeSlideResource extends Resource
             ->columns([
                 ImageColumn::make('background_image')->label(__('admin.content.background_image'))->disk('public')
                     ->getStateUsing(fn (ContentHomeSlide $record): ?string => $record->background_image ? self::IMAGE_DIR.'/'.$record->background_image : null)->height(40),
-                TextColumn::make('title_text')->label(__('admin.content.title'))->searchable(),
+                TextColumn::make('title_text')->label(__('admin.content.title'))->searchable()->placeholder('-'),
+                ToggleColumn::make('active')->label(__('admin.content.active'))->afterStateUpdated(fn () => self::flush()),
                 TextColumn::make('subtitle_text')->label(__('admin.content.subtitle'))->placeholder('-'),
                 TextColumn::make('cta_link')->label(__('admin.content.cta_link'))->placeholder('-'),
                 TextColumn::make('position')->label(__('admin.content.position'))->sortable(),
             ])
             ->recordActions([
                 EditAction::make()->modalWidth('3xl')
-                    ->mutateRecordDataUsing(fn (array $data): array => StoredFileName::toUploadPaths($data, self::IMAGE_DIR, ['background_image']))
-                    ->mutateDataUsing(fn (array $data): array => StoredFileName::toBareNames($data, ['background_image'])),
-                DeleteAction::make(),
+                    ->mutateRecordDataUsing(fn (array $data): array => StoredFileName::toUploadPaths($data, self::IMAGE_DIR, ['background_image', 'mobile_image']))
+                    ->mutateDataUsing(fn (array $data): array => StoredFileName::toBareNames($data, ['background_image', 'mobile_image']))
+                    ->after(fn () => self::flush()),
+                DeleteAction::make()->after(fn () => self::flush()),
             ])
             ->headerActions([
-                CreateAction::make()->modalWidth('3xl')->mutateDataUsing(fn (array $data): array => StoredFileName::toBareNames($data, ['background_image'])),
+                CreateAction::make()->modalWidth('3xl')->mutateDataUsing(fn (array $data): array => StoredFileName::toBareNames($data, ['background_image', 'mobile_image']))->after(fn () => self::flush()),
             ]);
+    }
+
+    /** The storefront caches the slides for a day. */
+    public static function flush(): void
+    {
+        Cache::forget('home_slides');
     }
 
     public static function getPages(): array

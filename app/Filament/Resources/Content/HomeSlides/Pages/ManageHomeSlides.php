@@ -10,4 +10,10 @@ use Filament\Resources\Pages\ManageRecords;
 final class ManageHomeSlides extends ManageRecords
 {
     protected static string $resource = HomeSlideResource::class;
+
+    public function reorderTable(array $order, int|string|null $draggedRecordKey = null): void
+    {
+        parent::reorderTable($order, $draggedRecordKey);
+        HomeSlideResource::flush();
+    }
 }

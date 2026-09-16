@@ -13,8 +13,10 @@ class ContentHomeSlide extends Model
 
     protected $fillable = [
         'position',
+        'active',
         'background_color',
         'background_image',
+        'mobile_image',
         'title_color',
         'title_text',
         'subtitle_color',
@@ -24,4 +26,6 @@ class ContentHomeSlide extends Model
         'cta_text',
         'cta_link',
     ];
+
+    protected $casts = ['active' => 'boolean'];
 }

@@ -237,7 +237,11 @@ recorded there for the gesca84 preview.
 
 One guarded, forward-only migration, folded into the dump as usual:
 `products.quote_only` (bool default 0), `order_items.is_sample` (bool
-default 0), `order_items.shipping_date` (date null). Artwork uses the
+default 0), `order_items.shipping_date` (date null). Added on 2026-09-17,
+in the same file: `content_home_slides.active` (bool default 1) and
+`content_home_slides.mobile_image` (string null): the admin switches a slide
+off instead of deleting it (seasonal banners) and uploads a phone-sized
+image, served by the slideshow through `<picture>` under 640 px. Artwork uses the
 existing `order_item_customizations.file`.
 
 ## 6. Phases and stop criteria

@@ -18,7 +18,7 @@ class FrontendContentController extends Controller
         }
 */
         $slides = Cache::remember('home_slides', now()->addDays(1), function () {
-            return ContentHomeSlide::orderBy('position')->get();
+            return ContentHomeSlide::query()->where('active', 1)->orderBy('position')->get();
         });
         /*
         $bestsellers = Cache::remember('home_bestellers', now()->addDays(1), function () {

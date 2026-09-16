@@ -16,11 +16,14 @@ use App\Filament\Resources\System\ImportLogs\Pages\ListImportLogs;
 use App\Models\BlogArticle;
 use App\Models\BlogTag;
 use App\Models\Category;
+use App\Models\ContentHomeSlide;
 use App\Models\LegacyRedirect;
 use App\Models\Page;
 use App\Models\User;
 use Database\Seeders\CoreSeeder;
+use Filament\Actions\Testing\TestAction;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
@@ -88,5 +91,26 @@ class ContentResourcesTest extends TestCase
         $this->assertSame(2, LegacyRedirectResource::importCsv((string) $csv));
         $this->assertSame(410, LegacyRedirect::for('/sparito.pdf')?->status_code);
         $this->get('/vecchio.html')->assertRedirect('/contenuti/chi-siamo');
+    }
+
+    public function test_home_slides_are_managed_with_a_switch_and_a_phone_image(): void
+    {
+        ContentHomeSlide::query()->delete();
+        Livewire::test(ManageHomeSlides::class)->callAction(TestAction::make('create')->table(), data: [
+            'title_text' => '', 'background_image' => UploadedFile::fake()->image('wide.jpg', 1920, 420), 'mobile_image' => UploadedFile::fake()->image('phone.jpg', 768, 420),
+            'cta_link' => '/prodotti', 'position' => 1, 'active' => false,
+        ])->assertHasNoFormErrors();
+        $slide = ContentHomeSlide::query()->latest('id')->firstOrFail();
+        $this->assertFalse($slide->active);
+        $this->assertNotNull($slide->mobile_image);
+        $this->assertStringNotContainsString('/', (string) $slide->background_image, 'bare file name, as the storefront expects');
+        \Illuminate\Support\Facades\Cache::flush();
+        $this->assertStringNotContainsString('home_slides/'.$slide->background_image, $this->get('/')->assertOk()->getContent(), 'an inactive slide is not shown');
+
+        $slide->update(['active' => true]);
+        \Illuminate\Support\Facades\Cache::flush();
+        $html = $this->get('/')->assertOk()->getContent();
+        $this->assertStringContainsString('home_slides/'.$slide->background_image, $html);
+        $this->assertStringContainsString('<source media="(max-width: 639px)" srcset="/storage/home_slides/'.$slide->mobile_image.'"', $html, 'the phone image is offered under 640 px');
     }
 }
