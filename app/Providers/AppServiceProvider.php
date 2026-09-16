@@ -50,7 +50,7 @@ class AppServiceProvider extends ServiceProvider
     }
 
     /**
-     * @return array{nav_categories: array<int, array<string, mixed>>, nav_extra_pages: array<int, array<string, mixed>>, all_brands: \Illuminate\Support\Collection<int, string>}
+     * @return array{nav_categories: array<int, array<string, mixed>>, nav_extra_pages: array<int, array<string, mixed>>, nav_utility_pages: array<int, array<string, mixed>>, all_brands: \Illuminate\Support\Collection<int, string>}
      */
     public static function sharedNavigation(): array
     {
@@ -84,11 +84,19 @@ class AppServiceProvider extends ServiceProvider
         $nav_extra_pages = Cache::remember('nav_extra_pages', now()->addHour(1), function () {
             return Page::where('navbar', 1)->get()->toArray();
         });
+        // Pages the installation shows in the header's utility bar (config brand.utility_pages, in that order), not in the category bar.
+        $utilitySlugs = (array) config('brand.utility_pages', []);
+        $nav_utility_pages = $utilitySlugs === [] ? [] : Cache::remember('nav_utility_pages_'.md5(implode(',', $utilitySlugs)), now()->addHour(), function () use ($utilitySlugs) {
+            $pages = Page::query()->whereIn('slug', $utilitySlugs)->where('active', 1)->get(['slug', 'title'])->keyBy('slug');
+
+            return array_values(array_filter(array_map(fn (string $slug) => $pages->has($slug) ? ['slug' => $slug, 'title' => $pages[$slug]->title] : null, $utilitySlugs)));
+        });
+        $nav_extra_pages = array_values(array_filter($nav_extra_pages, fn (array $page) => ! in_array($page['slug'], $utilitySlugs, true)));
 
         $brands = Cache::remember('all_brands', now()->addDays(3), function () {
             return Product::select('brand')->distinct()->where('active', 1)->whereNot('brand', 'Unbranded')->whereNot('brand', '0')->pluck('brand');
         });
 
-        return ['nav_categories' => $categories, 'nav_extra_pages' => $nav_extra_pages, 'all_brands' => $brands];
+        return ['nav_categories' => $categories, 'nav_extra_pages' => $nav_extra_pages, 'nav_utility_pages' => $nav_utility_pages, 'all_brands' => $brands];
     }
 }

@@ -101,4 +101,24 @@ final class StorefrontChromeTest extends TestCase
 
         $this->withUnencryptedCookie('cookies_analytics', '1')->get('/')->assertSee("'dataLayer',\"GTM-TEST\"", false);
     }
+
+    public function test_a_navbar_page_sits_in_the_category_bar_by_default(): void
+    {
+        \App\Models\Page::query()->create(['title' => 'Chi siamo', 'slug' => 'chi-siamo-test', 'active' => 1, 'navbar' => 1, 'position' => 1, 'products' => 0, 'text' => '<p>Storia</p>']);
+        \Illuminate\Support\Facades\Cache::flush();
+        $html = $this->get('/')->assertOk()->getContent();
+        $this->assertStringContainsString('text-sm font-semibold uppercase text-primary hover:text-accent">Chi siamo</a>', $html);
+        $this->assertStringNotContainsString('@mouseenter', $html, 'menu panes open on click');
+    }
+
+    /** The shared navigation is computed once per request; the config must be set before the first render. */
+    public function test_utility_pages_move_from_the_category_bar_to_the_header(): void
+    {
+        \App\Models\Page::query()->create(['title' => 'Chi siamo', 'slug' => 'chi-siamo-test', 'active' => 1, 'navbar' => 1, 'position' => 1, 'products' => 0, 'text' => '<p>Storia</p>']);
+        config(['brand.utility_pages' => ['chi-siamo-test']]);
+        \Illuminate\Support\Facades\Cache::flush();
+        $html = $this->get('/')->assertOk()->getContent();
+        $this->assertStringNotContainsString('text-sm font-semibold uppercase text-primary hover:text-accent">Chi siamo</a>', $html, 'gone from the category bar');
+        $this->assertMatchesRegularExpression('#/contenuti/chi-siamo-test" class="hover:underline">Chi siamo</a>\s*<a href="[^"]*/contattaci" class="hover:underline">#', $html, 'in the utility bar, left of Contatti');
+    }
 }

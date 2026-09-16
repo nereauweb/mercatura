@@ -18,17 +18,17 @@
 			</ul>
 			@endif
 
-			{{-- Desktop: two-pane mega menu --}}
+			{{-- Desktop: two-pane mega menu. Panes switch on click, as the menus this storefront replaces (no hover surprises). --}}
 			<div id="main-navigation" x-cloak x-show="open" x-transition.opacity class="absolute left-0 top-full z-40 hidden w-full max-w-4xl grid-cols-5 rounded-b-card border border-border bg-surface shadow-xl md:grid">
 				<ul class="col-span-2 border-r border-border-muted py-2 text-sm">
 					<li>
-						<button type="button" @click="select(0)" @mouseenter="select(0)" :class="active === 0 ? 'bg-surface-muted text-accent' : 'text-text'" class="flex w-full items-center gap-2 px-4 py-2 text-left font-semibold hover:bg-surface-muted">
+						<button type="button" @click="select(0)" :class="active === 0 ? 'bg-surface-muted text-accent' : 'text-text'" class="flex w-full items-center gap-2 px-4 py-2 text-left font-semibold hover:bg-surface-muted">
 							{{ __('frontend.nav.all_products') }}
 						</button>
 					</li>
 					@foreach($nav_categories as $category)
 					<li>
-						<button type="button" @click="select({{ $loop->iteration }})" @mouseenter="select({{ $loop->iteration }})" :class="active === {{ $loop->iteration }} ? 'bg-surface-muted text-accent' : 'text-text'" class="flex w-full items-center gap-2 px-4 py-2 text-left hover:bg-surface-muted">
+						<button type="button" @click="select({{ $loop->iteration }})" :class="active === {{ $loop->iteration }} ? 'bg-surface-muted text-accent' : 'text-text'" class="flex w-full items-center gap-2 px-4 py-2 text-left hover:bg-surface-muted">
 							@if($category['icon'])
 								<img src="/storage/categories/icons/{{ $category['icon'] }}" alt="" width="24" height="24" loading="lazy" class="h-6 w-6 object-contain">
 							@endif

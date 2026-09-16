@@ -26,6 +26,10 @@ return [
     // Mail clients do not all render WebP/SVG: a raster copy for the mail layout (null = same as logo).
 
     'logo_mail' => env('BRAND_LOGO_MAIL'),
+
+    // CMS page slugs shown in the header's utility bar (left of Contatti) instead of the category bar.
+
+    'utility_pages' => array_values(array_filter(array_map('trim', explode(',', (string) env('BRAND_UTILITY_PAGES', ''))))),
     'logo_width' => 500,   // intrinsic pixel size of the logo file, for width/height attributes
     'logo_height' => 103,
     'logo_mark' => '/img/logo-mark.png',

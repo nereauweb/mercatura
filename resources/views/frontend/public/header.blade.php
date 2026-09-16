@@ -15,6 +15,9 @@
 	<div class="hidden border-b border-white/10 md:block">
 		<div class="mx-auto flex max-w-7xl items-center justify-between px-4 py-1 text-sm">
 			<nav aria-label="{{ __('frontend.nav.contacts') }}" class="flex gap-4">
+				@foreach($nav_utility_pages ?? [] as $utility_page)
+					<a href="{{ route('frontend.contents.page', ['slug' => $utility_page['slug']]) }}" class="hover:underline">{{ $utility_page['title'] }}</a>
+				@endforeach
 				<a href="{{ route('frontend.contacts.index') }}" class="hover:underline">{{ __('frontend.nav.contacts') }}</a>
 			</nav>
 			<div class="flex items-center gap-4">
@@ -81,6 +84,9 @@
 
 			<nav id="header-mobile-menu" x-cloak x-show="mobileOpen" x-transition.opacity class="mt-3 border-t border-white/10 pt-3 md:hidden" aria-label="{{ __('frontend.nav.menu') }}">
 				<ul class="flex flex-col gap-2 text-sm uppercase">
+					@foreach($nav_utility_pages ?? [] as $utility_page)
+						<li><a href="{{ route('frontend.contents.page', ['slug' => $utility_page['slug']]) }}" class="block py-1">{{ $utility_page['title'] }}</a></li>
+					@endforeach
 					<li><a href="{{ route('frontend.contacts.index') }}" class="block py-1">{{ __('frontend.nav.contacts') }}</a></li>
 					@guest
 						<li><a href="{{ route('frontend.auth.login') }}" class="block py-1">{{ __('frontend.nav.login') }}</a></li>
