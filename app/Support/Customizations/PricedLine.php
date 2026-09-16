@@ -28,6 +28,7 @@ final class PricedLine
         public readonly int $processingDays,
         public readonly float $additionalCosts,
         public readonly float $price,
+        public readonly bool $sample = false,
     ) {}
 
     public function underMinimum(): bool

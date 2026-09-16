@@ -17,7 +17,7 @@
         $product->isNew() ? ['label' => __('frontend.product.card.badge_new'), 'class' => 'bg-primary text-on-primary'] : null,
     ]);
     $defaultPrinting = $has_printing ? $article->defaultCustomization() : null;
-    $hasPrices = $article->prices->count() > 0;
+    $hasPrices = $article->prices->count() > 0 && ! $product->quote_only;
     $configuratorConfig = [
         'endpoints' => [
             'summary' => route('frontend.product.build_articles_request'),
@@ -70,6 +70,9 @@
 				</div>
 				@endif
 				@stack('product-after-description')
+				@if($product->quote_only)
+				<p class="rounded-card bg-primary-soft p-3 text-sm">{{ __('frontend.product.quote_only') }}</p>
+				@endif
 				<div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
 					<a href="{{ $quoteUrl }}" class="rounded-card bg-accent px-4 py-2 text-center text-sm font-bold uppercase text-on-accent shadow hover:bg-accent-strong">{{ __('frontend.product.request_quote') }}</a>
 					@if($hasPrices)

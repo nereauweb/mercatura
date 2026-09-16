@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @property float|null $unit_price item price / quantity, stored by the checkout since v2c.0
+ * @property bool $is_sample
+ * @property string|null $shipping_date
  */
 class OrderItem extends Model
 {
@@ -22,6 +24,8 @@ class OrderItem extends Model
         'quantity',
         'price',
         'unit_price',
+        'is_sample',
+        'shipping_date',
     ];
 
     public function product(): BelongsTo

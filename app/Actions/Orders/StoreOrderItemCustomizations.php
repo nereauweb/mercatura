@@ -17,7 +17,8 @@ use App\Support\Customizations\PricedLine;
  */
 final class StoreOrderItemCustomizations
 {
-    public function handle(OrderItem $orderItem, PricedLine $line): void
+    /** @param  array<int, string>  $artwork  option id => absolute path of a file uploaded in the configurator, moved next to the order */
+    public function handle(OrderItem $orderItem, PricedLine $line, array $artwork = []): void
     {
         foreach ($line->customizations as $customization) {
             $option = $customization->option;
@@ -44,6 +45,12 @@ final class StoreOrderItemCustomizations
                 'packaging_price' => $line->packaging ? round($packaging, 2) : null,
                 'label' => $customization->label,
             ]);
+            if (isset($artwork[$option->id]) && is_file($artwork[$option->id])) {
+                $target = 'orders/'.$orderItem->order_id.'/printings/printing_'.$row->id.'_'.basename($artwork[$option->id]);
+                \Illuminate\Support\Facades\Storage::disk('public')->put($target, (string) file_get_contents($artwork[$option->id]));
+                @unlink($artwork[$option->id]);
+                $row->update(['file' => $target]);
+            }
             if ($customization->startCost > 0) {
                 $orderItem->extras()->create(['type' => OrderItemExtra::TYPE_START, 'customization_id' => $row->id, 'label' => $option->startLabel(), 'price' => $customization->startCost]);
             }

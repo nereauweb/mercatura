@@ -76,6 +76,7 @@ Route::put('/preventivo/{id}/aggiorna', [FrontendQuotationController::class, 'up
 // CARRELLO E CHECKOUT
 Route::get('/carrello/riepilogo', [FrontendCartController::class, 'cart'])->name('frontend.cart.index');
 Route::post('/carrello/aggiungi', [FrontendCartController::class, 'add_to_cart'])->name('frontend.cart.add');
+Route::post('/carrello/grafica', [FrontendCartController::class, 'uploadArtwork'])->name('frontend.cart.artwork');
 Route::delete('/carrello/rimuovi/{id}', [FrontendCartController::class, 'remove_from_cart'])->name('frontend.cart.remove');
 
 Route::post('/carrello/procedi', [FrontendCartController::class, 'checkout'])->name('frontend.cart.checkout');

@@ -187,6 +187,8 @@ return [
 
     'catalog' => [
         'family' => 'Famiglia',
+        'quote_only' => 'Solo su preventivo',
+        'quote_only_hint' => 'Il prodotto non si acquista online: la scheda mostra solo la richiesta di preventivo.',
         'customization' => [
             'title' => 'Personalizzazioni',
             'singular' => 'Personalizzazione',

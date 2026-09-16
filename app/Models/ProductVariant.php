@@ -91,6 +91,17 @@ class ProductVariant extends Model implements HasMedia
         return $this->belongsTo(ProductSize::class, 'size_id');
     }
 
+    /** The second image of the variant, for the card hover (docs/04 §4.3); null when there is one image only. */
+    public function hoverImage(bool $thumb = true): ?string
+    {
+        $media = $this->getMedia('image')->get(1);
+        if ($media === null) {
+            return null;
+        }
+
+        return $thumb && $media->hasGeneratedConversion('thumb') ? $media->getUrl('thumb') : $media->getUrl();
+    }
+
     public function cover($thumb_url = false)
     {
         $images = $this->getMedia('image');

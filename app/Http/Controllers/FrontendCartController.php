@@ -10,17 +10,20 @@ use App\Models\CustomerAddress;
 use App\Models\Order;
 use App\Models\User;
 use App\Rules\Captcha;
+use App\Support\ArtworkFiles;
 use App\Support\CaughtExceptionLogger;
 use App\Support\CustomerFormRules;
 use App\Support\Customizations\LinePricer;
 use App\Support\Customizations\Pricing;
 use App\Support\FrontendDebugLog;
 use App\Support\PaymentGateways;
+use App\Support\ShippingDate;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
@@ -53,6 +56,9 @@ class FrontendCartController extends Controller
         $decodedCartItem['customizations'] = $this->normalizeIntegerList($decodedCartItem['customizations'] ?? $decodedCartItem['printings'] ?? []);
         unset($decodedCartItem['printings']);
         $decodedCartItem['has_packaging'] = $this->normalizeCheckboxLike($decodedCartItem['has_packaging'] ?? 0);
+        // A sample is one plain piece (docs/04 §4.6); artwork maps an option id to a token returned by uploadArtwork().
+        $decodedCartItem['sample'] = config('mercatura.storefront.samples') ? $this->normalizeCheckboxLike($decodedCartItem['sample'] ?? 0) : 0;
+        $decodedCartItem['artwork'] = $this->normalizeArtwork($decodedCartItem['artwork'] ?? [], $request);
 
         $session_cart = $request->session()->has('cart') ? session('cart') : [];
         $cart_item_id = Str::random(9);
@@ -416,6 +422,8 @@ class FrontendCartController extends Controller
                 'quantity' => $cart_item['quantity'],
                 'price' => $cart_item['price'],
                 'unit_price' => $cart_item['unit_price'],
+                'is_sample' => $cart_item['sample'] ? 1 : 0,
+                'shipping_date' => $cart_item['shipping_date']?->toDateString(),
                 'product_id' => $cart_item['product']->id,
                 'product_sku' => $cart_item['product']->sku,
                 'product_name' => $cart_item['product']->name,
@@ -433,7 +441,7 @@ class FrontendCartController extends Controller
                     'price' => $cart_item_article['quantity_price'],
                 ]);
             }
-            app(StoreOrderItemCustomizations::class)->handle($order_item, $cart_item['line']);
+            app(StoreOrderItemCustomizations::class)->handle($order_item, $cart_item['line'], $this->artworkFiles($cart_item['artwork'], $request));
         }
 
         if ($order->payment_method == 'bank_transfer') {
@@ -505,6 +513,7 @@ class FrontendCartController extends Controller
                 array_map(fn ($article): array => [intval($article[0]), intval($article[1])], (array) ($sci['articles'] ?? [])),
                 array_map('intval', (array) ($sci['customizations'] ?? $sci['printings'] ?? [])),
                 (bool) ($sci['has_packaging'] ?? false),
+                (bool) ($sci['sample'] ?? false),
             );
             $cart_item = [
                 'id' => $session_cart_item_id,
@@ -523,6 +532,9 @@ class FrontendCartController extends Controller
                 'printings' => array_map(fn ($customization) => $customization->option, $line->customizations),
                 'unit_price' => $line->unitPrice(),
                 'line' => $line,
+                'sample' => $line->sample,
+                'artwork' => (array) ($sci['artwork'] ?? []),
+                'shipping_date' => config('mercatura.storefront.shipping_date') ? ShippingDate::for($line) : null,
             ];
             $delivery_days = $line->product->processing_days() + $line->processingDays;
             if ($cart['delivery_days'] < $delivery_days) {
@@ -541,6 +553,68 @@ class FrontendCartController extends Controller
         FrontendDebugLog::prezzoCarrello('Totali carrello: spedizione '.$cart['delivery_cost'].' | imponibile '.$cart['total_price'].' | IVA '.$cart['tax'].' | costi addizionali '.$cart['total_additional_costs'].' | totale '.$cart['total_taxed_price'].' | giorni '.$cart['delivery_days']);
 
         return $cart;
+    }
+
+    /**
+     * Artwork uploaded from the configurator (docs/04 §4.2): kept per session until the order is stored.
+     * Returns the token the cart line refers to.
+     */
+    public function uploadArtwork(Request $request)
+    {
+        if (! config('mercatura.storefront.artwork_in_configurator')) {
+            abort(404);
+        }
+        $request->validate(['file' => ArtworkFiles::rules(), 'option_id' => ['required', 'integer']]);
+        $path = ArtworkFiles::store($request->file('file'), 'local', self::artworkDirectory($request), 'artwork_'.$request->integer('option_id'));
+        if ($path === null) {
+            return response()->json(['message' => __('frontend.cart.artwork_invalid')], 422);
+        }
+
+        return response()->json(['token' => basename($path), 'name' => $request->file('file')->getClientOriginalName()]);
+    }
+
+    /** Keyed by a token kept in the session, not by the session id: the id changes at login, the cart must not lose its files. */
+    private static function artworkDirectory(Request $request): string
+    {
+        $key = (string) $request->session()->get('cart_artwork_key', '');
+        if ($key === '') {
+            $key = Str::random(32);
+            $request->session()->put('cart_artwork_key', $key);
+        }
+
+        return 'cart-artwork/'.$key;
+    }
+
+    /** @return array<int, string> option id => token, only tokens that exist in this session's directory */
+    private function normalizeArtwork($values, Request $request): array
+    {
+        if (! is_array($values) || ! config('mercatura.storefront.artwork_in_configurator')) {
+            return [];
+        }
+        $normalized = [];
+        foreach ($values as $optionId => $token) {
+            $optionId = $this->normalizePositiveInt($optionId);
+            $token = is_string($token) ? basename($token) : null;
+            if ($optionId !== null && $token && Storage::disk('local')->exists(self::artworkDirectory($request).'/'.$token)) {
+                $normalized[$optionId] = $token;
+            }
+        }
+
+        return $normalized;
+    }
+
+    /** @param  array<int, string>  $artwork  @return array<int, string> option id => absolute path of the uploaded file */
+    private function artworkFiles(array $artwork, Request $request): array
+    {
+        $files = [];
+        foreach ($artwork as $optionId => $token) {
+            $path = self::artworkDirectory($request).'/'.$token;
+            if (Storage::disk('local')->exists($path)) {
+                $files[(int) $optionId] = Storage::disk('local')->path($path);
+            }
+        }
+
+        return $files;
     }
 
     private function checkoutBlockCode(User $user): ?string

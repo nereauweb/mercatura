@@ -124,6 +124,31 @@ return [
         'cleanup_days' => (int) env('MERCATURA_CUSTOMIZATIONS_CLEANUP_DAYS', 90),
     ],
 
+    /*
+    | Storefront flows (docs/04_STOREFRONT_FLOWS.md). An installation picks
+    | the configurator, checkout and quick-quote flow and switches the
+    | optional behaviours on; the defaults are the original flows.
+    */
+    'storefront' => [
+        'configurator' => env('MERCATURA_CONFIGURATOR', 'panel'),   // panel | modal
+        'checkout' => env('MERCATURA_CHECKOUT', 'steps'),           // steps | onepage
+        'quick_quote' => env('MERCATURA_QUICK_QUOTE', 'page'),      // page | modal
+        'samples' => (bool) env('MERCATURA_SAMPLES', false),
+        'shipping_date' => (bool) env('MERCATURA_SHIPPING_DATE', false),
+        'artwork_in_configurator' => (bool) env('MERCATURA_ARTWORK_IN_CONFIGURATOR', false),
+        'card_hover_image' => (bool) env('MERCATURA_CARD_HOVER_IMAGE', false),
+    ],
+
+    /*
+    | Shipping date (App\Support\ShippingDate): working days from the order
+    | day (from the next one after cutoff_hour), Saturdays, Sundays and the
+    | listed holidays ('MM-DD' or 'YYYY-MM-DD') excluded.
+    */
+    'delivery' => [
+        'cutoff_hour' => (int) env('MERCATURA_DELIVERY_CUTOFF_HOUR', 12),
+        'holidays' => array_values(array_filter(array_map('trim', explode(',', (string) env('MERCATURA_DELIVERY_HOLIDAYS', '01-01,01-06,04-25,05-01,06-02,08-15,11-01,12-08,12-25,12-26'))))),
+    ],
+
     'features' => [
         // Supplier connectors (docs/ARCHITECTURE.md §13): each installed package
         // carries its own switch (`connector-<key>.enabled`, env

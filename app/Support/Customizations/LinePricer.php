@@ -29,8 +29,13 @@ final class LinePricer
      * @param  list<array{0: int, 1: int}>  $articles  [variant id, quantity]
      * @param  list<int>  $optionIds  chosen CustomizationOption ids
      */
-    public function price(array $articles, array $optionIds, bool $packaging): PricedLine
+    public function price(array $articles, array $optionIds, bool $packaging, bool $sample = false): PricedLine
     {
+        // A sample (docs/04 §4.6) is one plain piece: no customization, no minimum surcharge.
+        if ($sample) {
+            $optionIds = [];
+            $packaging = false;
+        }
         $quantity = 0;
         foreach ($articles as [$variantId, $articleQuantity]) {
             $quantity += (int) $articleQuantity;
@@ -102,7 +107,7 @@ final class LinePricer
             $processingDays = max($processingDays, (int) $printing->processing_days);
         }
 
-        $surcharge = $quantity < $minimum ? Pricing::underMinimumSurcharge() : 0.0;
+        $surcharge = ! $sample && $quantity < $minimum ? Pricing::underMinimumSurcharge() : 0.0;
         $price += $surcharge;
 
         return new PricedLine(
@@ -116,6 +121,7 @@ final class LinePricer
             processingDays: $processingDays,
             additionalCosts: $additionalCosts,
             price: $price,
+            sample: $sample,
         );
     }
 }

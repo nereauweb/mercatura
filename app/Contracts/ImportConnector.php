@@ -74,6 +74,9 @@ interface ImportConnector
      */
     public function markupPercent(float $percent, ?ProductMarkup $rule, float $condition, ?string $sku): float;
 
+    /** Shipping date for a product given the working days the core computed; null leaves the core rule (docs/04 §4.5). */
+    public function shippingDate(Product $product, int $workingDays): ?\Carbon\CarbonInterface;
+
     /** Whether a single-tier price (no band) still gets the markup applied (supplier exception). */
     public function appliesMarkupToSingleTier(?string $sku): bool;
 

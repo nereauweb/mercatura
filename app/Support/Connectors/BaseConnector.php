@@ -57,6 +57,11 @@ abstract class BaseConnector implements ImportConnector
         return $percent;
     }
 
+    public function shippingDate(Product $product, int $workingDays): ?\Carbon\CarbonInterface
+    {
+        return null;
+    }
+
     public function appliesMarkupToSingleTier(?string $sku): bool
     {
         return false;

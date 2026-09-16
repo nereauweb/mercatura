@@ -43,6 +43,7 @@ final class ProductForm
                         Select::make('isBestseller')->label(__('admin.catalog.is_bestseller'))->options(__('admin.catalog.yes_no'))->default('0')->native(false),
                         Select::make('isGreen')->label(__('admin.catalog.is_green'))->options(__('admin.catalog.flag_options'))->default('0')->native(false),
                         Select::make('isPromo')->label(__('admin.catalog.is_promo'))->options(__('admin.catalog.flag_options'))->default('0')->native(false),
+                        Select::make('quote_only')->label(__('admin.catalog.quote_only'))->helperText(__('admin.catalog.quote_only_hint'))->options(__('admin.catalog.yes_no'))->default('0')->native(false),
                         TextInput::make('slug')->label(__('admin.catalog.slug'))->maxLength(256)->helperText(__('admin.catalog.slug_hint'))
                             ->visible(fn (string $operation): bool => $operation === 'edit'),
                     ]),

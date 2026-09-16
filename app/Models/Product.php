@@ -22,6 +22,7 @@ use Laravel\Scout\Searchable;
 /**
  * @property string|null $default_customization_technique
  * @property string|null $default_customization_position
+ * @property bool $quote_only
  */
 class Product extends Model
 {
@@ -82,6 +83,7 @@ class Product extends Model
         'isGreen', // boolean
         'isPromo', // boolean
         'isBestseller', // boolean
+        'quote_only', // boolean: no direct purchase, quote requests only (docs/04 §4.3)
     ];
 
     public function searchableAs(): string

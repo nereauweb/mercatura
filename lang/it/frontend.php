@@ -197,6 +197,9 @@ return [
     ],
 
     'cart' => [
+        'artwork_invalid' => 'Il file non è valido o non è tra i formati accettati.',
+        'sample' => 'Campione',
+        'shipping_date' => 'Data di spedizione',
         'title' => 'Carrello',
         'summary' => 'Riepilogo',
         'continue_shopping' => 'Continua gli acquisti',
@@ -427,6 +430,7 @@ return [
     ],
 
     'product' => [
+        'quote_only' => 'Questo prodotto non può essere aggiunto al carrello perché è disponibile solo in modalità preventivo: richiedi un preventivo rapido, ti risponderemo entro 24 ore.',
         'code' => 'Cod.',
         'description' => 'Descrizione',
         'request_quote' => 'Chiedi un preventivo',

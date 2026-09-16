@@ -6,9 +6,9 @@ use App\Contracts\PaymentConfirmation;
 use App\Models\Order;
 use App\Models\OrderItemCustomization;
 use App\Services\OrderPaymentCompletion;
+use App\Support\ArtworkFiles;
 use App\Support\FrontendDebugLog;
 use App\Support\PaymentGateways;
-use enshrined\svgSanitize\Sanitizer as SvgSanitizer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -123,26 +123,6 @@ class FrontendOrderController extends Controller
         'processing',
     ];
 
-    /**
-     * Mime-types accettati per gli allegati degli ordini (incl. file di stampa).
-     */
-    private const ALLOWED_UPLOAD_MIMETYPES = [
-        'image/jpeg',
-        'image/png',
-        'image/webp',
-        'image/tiff',
-        'image/svg+xml',
-        'image/svg',
-        'application/pdf',
-        'application/postscript',
-        'application/illustrator',
-        'application/octet-stream', // AI/EPS talvolta riportati come octet-stream dal client
-    ];
-
-    private const ALLOWED_UPLOAD_EXTENSIONS = [
-        'jpg', 'jpeg', 'png', 'webp', 'tif', 'tiff', 'svg', 'pdf', 'ai', 'eps',
-    ];
-
     public function uploadOrderImage(Request $request, $id)
     {
         $order = Order::findOrFail($id);
@@ -163,8 +143,8 @@ class FrontendOrderController extends Controller
                 'file',
                 'min:1',
                 'max:10240',
-                'mimetypes:'.implode(',', self::ALLOWED_UPLOAD_MIMETYPES),
-                'mimes:'.implode(',', self::ALLOWED_UPLOAD_EXTENSIONS),
+                'mimetypes:'.implode(',', ArtworkFiles::MIMETYPES),
+                'mimes:'.implode(',', ArtworkFiles::EXTENSIONS),
             ],
         ]);
 
@@ -207,14 +187,14 @@ class FrontendOrderController extends Controller
                 'file',
                 'min:1',
                 'max:20480',
-                'mimetypes:'.implode(',', self::ALLOWED_UPLOAD_MIMETYPES),
-                'mimes:'.implode(',', self::ALLOWED_UPLOAD_EXTENSIONS),
+                'mimetypes:'.implode(',', ArtworkFiles::MIMETYPES),
+                'mimes:'.implode(',', ArtworkFiles::EXTENSIONS),
             ],
         ]);
 
         $file = $request->file('variant_image');
         $extension = strtolower($file->extension() ?: $file->getClientOriginalExtension());
-        if (! in_array($extension, self::ALLOWED_UPLOAD_EXTENSIONS, true)) {
+        if (! in_array($extension, ArtworkFiles::EXTENSIONS, true)) {
             return back()->withErrors([
                 'variant_image' => 'Formato file non supportato.',
             ])->withInput();
@@ -223,8 +203,8 @@ class FrontendOrderController extends Controller
         $directory = 'orders/'.$order->id.'/printings';
         $filename = 'printing_'.$printing->id.'_'.now()->timestamp.'_'.Str::random(8).'.'.$extension;
 
-        if ($this->isSvgExtension($extension)) {
-            $clean = $this->sanitizeSvgContents(file_get_contents($file->getRealPath()));
+        if (ArtworkFiles::isSvg($extension)) {
+            $clean = ArtworkFiles::sanitizeSvg(file_get_contents($file->getRealPath()));
             if ($clean === null) {
                 return back()->withErrors([
                     'variant_image' => 'Il file SVG non è valido o contiene elementi non consentiti.',
@@ -254,21 +234,13 @@ class FrontendOrderController extends Controller
     }
 
     /**
-     * Restituisce true se l'estensione indica un SVG (incl. svgz).
-     */
-    private function isSvgExtension(string $extension): bool
-    {
-        return in_array(strtolower($extension), ['svg', 'svgz'], true);
-    }
-
-    /**
      * Costruisce un filename "safe" per Spatie Media Library:
      * rimuove path traversal, mantiene l'estensione originale e aggiunge suffisso random.
      */
     private function buildSafeFilename(string $prefix, \Symfony\Component\HttpFoundation\File\UploadedFile $upload): string
     {
         $extension = strtolower($upload->extension() ?: $upload->getClientOriginalExtension() ?: 'bin');
-        if (! in_array($extension, self::ALLOWED_UPLOAD_EXTENSIONS, true)) {
+        if (! in_array($extension, ArtworkFiles::EXTENSIONS, true)) {
             $extension = 'bin';
         }
 
@@ -283,11 +255,11 @@ class FrontendOrderController extends Controller
     private function sanitizeSvgUpload(\Symfony\Component\HttpFoundation\File\UploadedFile $upload): \Symfony\Component\HttpFoundation\File\UploadedFile
     {
         $extension = strtolower($upload->extension() ?: $upload->getClientOriginalExtension());
-        if (! $this->isSvgExtension($extension)) {
+        if (! ArtworkFiles::isSvg($extension)) {
             return $upload;
         }
 
-        $clean = $this->sanitizeSvgContents(file_get_contents($upload->getRealPath()));
+        $clean = ArtworkFiles::sanitizeSvg(file_get_contents($upload->getRealPath()));
         if ($clean === null) {
             throw \Illuminate\Validation\ValidationException::withMessages([
                 'image' => 'Il file SVG non è valido o contiene elementi non consentiti.',
@@ -304,19 +276,6 @@ class FrontendOrderController extends Controller
             null,
             true // test-mode: evita i controlli su is_uploaded_file
         );
-    }
-
-    /**
-     * Sanifica un contenuto SVG rimuovendo script, event handler e reference esterne.
-     * Ritorna la stringa sanificata o null se la sanificazione non è stata possibile.
-     */
-    private function sanitizeSvgContents(string $contents): ?string
-    {
-        $sanitizer = new SvgSanitizer;
-        $sanitizer->removeRemoteReferences(true);
-        $clean = $sanitizer->sanitize($contents);
-
-        return $clean === false ? null : $clean;
     }
 
     public function deleteOrderImage(Request $request, $id, $mediaId)

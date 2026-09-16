@@ -4,6 +4,7 @@
 @props(['product'])
 @php
     $cover = $product->cover(true);
+    $hover = config('mercatura.storefront.card_hover_image') ? $product->main_variant()?->hoverImage() : null;
     $url = route('frontend.product.show.by_slug', ['slug' => $product->slug]);
     $badges = array_filter([
         $product->isBestseller() ? ['label' => __('frontend.product.card.badge_bestseller'), 'class' => 'bg-accent text-on-accent'] : null,
@@ -17,7 +18,8 @@
         ? $product->main_variant_relationship
         : $product->main_variant();
 @endphp
-<article x-data="{ cover: @js($cover), async swap(id) { try { const r = await fetch(@js(url('/variante')) + '/' + id + '/cover'); if (r.ok) this.cover = await r.text(); } catch (e) {} } }"
+<article x-data="{ cover: @js($cover), base: @js($cover), hover: @js($hover), async swap(id) { try { const r = await fetch(@js(url('/variante')) + '/' + id + '/cover'); if (r.ok) { this.cover = await r.text(); this.base = this.cover; this.hover = null; } } catch (e) {} } }"
+         @if($hover) @mouseenter="if (hover) cover = hover" @mouseleave="cover = base" @endif
          wire:key="{{ $product->id }}"
          {{ $attributes->merge(['class' => 'group flex h-full flex-col overflow-hidden rounded-card border border-border-muted bg-surface text-center shadow-sm transition hover:shadow-md']) }}>
     <div class="relative flex h-40 items-center justify-center p-3">
