@@ -21,13 +21,15 @@ final class ConfiguratorModalTest extends TestCase
         $url = '/prodotti/'.$f->product->slug;
 
         $panel = $this->get($url)->assertOk()->getContent();
-        $this->assertStringContainsString('productConfigurator(', $panel);
+        $this->assertStringContainsString('productConfigurator(JSON.parse(', $panel);
+        $this->assertStringNotContainsString('&amp;quot;', $panel);
         $this->assertStringContainsString(__('frontend.product.configurator.title'), $panel);
         $this->assertStringNotContainsString('productConfiguratorModal(', $panel);
 
         config(['mercatura.storefront.configurator' => 'modal', 'mercatura.storefront.artwork_in_configurator' => true]);
         $modal = $this->get($url)->assertOk()->getContent();
-        $this->assertStringContainsString('productConfiguratorModal(', $modal);
+        $this->assertStringContainsString('productConfiguratorModal(JSON.parse(', $modal, 'the config is embedded with @js: attribute-safe, no double escaping');
+        $this->assertStringNotContainsString('&amp;quot;', $modal);
         $this->assertStringContainsString(__('frontend.product.buy_modal'), $modal);
         $this->assertStringContainsString(__('frontend.product.configurator_modal.decoration_question'), $modal);
         $this->assertStringContainsString(__('frontend.product.configurator_modal.step_artwork'), $modal);

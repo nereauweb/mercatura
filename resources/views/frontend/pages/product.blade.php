@@ -77,7 +77,7 @@
 @endsection
 
 @section('content')
-	<div id="product" class="mx-auto max-w-7xl px-4 py-4" x-data="{{ $modal ? 'productConfiguratorModal('.e(json_encode($modalConfig)).')' : 'productConfigurator('.e(json_encode($configuratorConfig)).')' }}">
+	<div id="product" class="mx-auto max-w-7xl px-4 py-4" @if($modal) x-data="productConfiguratorModal(@js($modalConfig))" @else x-data="productConfigurator(@js($configuratorConfig))" @endif>
 		<x-frontend::breadcrumb :items="$page['breadcrumbs']" class="mb-4 hidden md:block" />
 		@stack('product-before')
 
