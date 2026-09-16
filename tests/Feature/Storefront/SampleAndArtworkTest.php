@@ -82,6 +82,43 @@ final class SampleAndArtworkTest extends TestCase
         Storage::disk('local')->assertMissing($sessionDir.'/'.$token);
     }
 
+    public function test_the_sample_request_is_offered_where_the_plan_says_when_enabled(): void
+    {
+        $url = '/prodotti/'.$this->f->product->slug;
+        $page = $this->get($url)->assertOk()->getContent();
+        $this->assertStringContainsString('sampleRequest(', $page);
+        $this->assertStringContainsString('id="sample-request"', $page);
+        $this->assertStringContainsString(__('frontend.product.sample_modal.title'), $page);
+        $sheet = $this->get($url.'/'.$this->f->a->sku.'/scheda/disponibilita', ['X-Requested-With' => 'XMLHttpRequest'])->assertOk()->getContent();
+        $this->assertStringContainsString('data-sample-request="'.$this->f->a->id.'"', $sheet, 'the Disponibilità tab offers the sample');
+
+        config(['mercatura.storefront.configurator' => 'modal']);
+        $modal = $this->get($url)->assertOk()->getContent();
+        $this->assertStringContainsString('requestSample()', $modal, 'the modal configurator offers the sample below the minimum');
+
+        \Illuminate\Support\Facades\Cache::flush();
+        config(['mercatura.storefront.samples' => false]);
+        $page = $this->get($url)->assertOk()->getContent();
+        $this->assertStringNotContainsString('sampleRequest(', $page);
+        $sheet = $this->get($url.'/'.$this->f->a->sku.'/scheda/disponibilita', ['X-Requested-With' => 'XMLHttpRequest'])->assertOk()->getContent();
+        $this->assertStringNotContainsString('data-sample-request', $sheet);
+    }
+
+    public function test_the_summary_prices_a_sample_and_the_admin_shows_the_badge(): void
+    {
+        $json = $this->postJson(action([\App\Http\Controllers\FrontendProductController::class, 'configuratorSummary']), ['articles' => [[$this->f->a->id, 1]], 'printings' => [], 'has_packaging' => 0, 'sample' => 1])->assertOk()->json();
+        $this->assertTrue($json['sample']);
+        $this->assertEqualsWithDelta(20.0, $json['price'], 0.001);
+        $this->assertEqualsWithDelta(0.0, $json['surcharge'], 0.001);
+        $this->assertNotNull($json['shipping_date']);
+
+        $this->actingAs($this->user)->withSession(['cart' => ['s' => ['articles' => [[$this->f->a->id, 1]], 'customizations' => [], 'has_packaging' => 0, 'sample' => 1]]])
+            ->post(action([FrontendCartController::class, 'store_order']), ['payment_method' => 'bank_transfer', 'consent_gdpr' => '1', 'consent_terms' => '1'])->assertOk();
+        $order = Order::query()->where('user_id', $this->user->id)->firstOrFail();
+        $this->user->assignRole('admin');
+        \Livewire\Livewire::actingAs($this->user)->test(\App\Filament\Resources\Orders\Pages\ViewOrder::class, ['record' => $order->id])->assertOk()->assertSee(__('admin.order.sample'));
+    }
+
     public function test_quote_only_products_offer_the_quote_only(): void
     {
         $this->f->product->update(['quote_only' => 1]);

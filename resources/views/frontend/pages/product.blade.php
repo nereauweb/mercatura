@@ -47,6 +47,7 @@
         'hasPackaging' => $page['configurator']['has_packaging'],
         'artworkEnabled' => (bool) config('mercatura.storefront.artwork_in_configurator') && $page['configurator']['has_printing'],
         'quickQuoteModal' => $quickModal,
+        'samples' => (bool) config('mercatura.storefront.samples'),
         'minQuantity' => $page['configurator']['min_quantity'],
         'colors' => $page['configurator']['colors'],
         'labels' => [
@@ -159,6 +160,9 @@
 				<x-frontend::product.configurator-modal :product="$product" :article="$article" :configurator="$page['configurator']" />
 			@else
 				<x-frontend::product.configurator :product="$product" :article="$article" :configurator="$page['configurator']" />
+			@endif
+			@if(config('mercatura.storefront.samples'))
+				<x-frontend::product.sample-request :product="$product" :article="$article" :configurator="$page['configurator']" />
 			@endif
 		@endif
 

@@ -1,6 +1,6 @@
 # v2d — Storefront flows: modal configurator, onepage checkout, quick quote, samples, delivery date
 
-Status: **approved 2026-09-16 (decisions of the owner in §2). F1, F2 and F3 done (2026-09-17); F4 in progress.**
+Status: **approved 2026-09-16 (decisions of the owner in §2). F1–F4 done (2026-09-17); F5 in progress.**
 Written for the gesca84 installation (`mercatura-gesca84/docs/GESCA84_SKIN.md`
 has the page-by-page comparison with gesca84.it) but every feature here is a
 **core feature behind configuration**, as ARCHITECTURE §1 requires: an
@@ -301,3 +301,16 @@ preventivo" answer raise `quick-quote-open` with the article (and the
 total quantity from the configurator). `captcha-init` is now `@once`, so
 the modal and a page with its own form share one bootstrap. The quotation
 page and its routes are untouched (no-JS fallback).
+
+**F4 (2026-09-17).** `components/product/sample-request` + Alpine
+`sampleRequest`, mounted by the product page when `samples` is on; it
+prices one piece through the summary endpoint with `sample: 1` and
+submits the cart line `{articles: [[variant, 1]], printings: [],
+sample: 1}` (F1 already stored `is_sample` and the cart label). Opened by
+`data-sample-request="<variant>"` buttons, so the one in the lazily
+loaded Disponibilità fragment needs no Alpine wiring, and by the modal
+configurator when a quantity is below the minimum. The admin order view
+shows "Campione"/"Ordine" and the shipping date per item. Bundle: the
+product-page components (both configurators, sample request) moved to a
+lazy chunk loaded when the page has `#product`, before Alpine starts;
+main bundle 117 KB gzip, chunk 3.8 KB.

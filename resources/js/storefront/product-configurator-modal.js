@@ -111,6 +111,20 @@ export function productConfiguratorModal(config) {
             return this.articles().reduce((sum, [, qty]) => sum + qty, 0);
         },
 
+        // Variants whose quantity is below the minimum: the sample request is offered for the first one (§4.6).
+        belowMinimumVariant() {
+            if (!config.samples) return null;
+            const found = Object.entries(this.quantityErrors).find(([, message]) => message && message !== this.labels.restockNotice && message !== this.labels.overMaximum);
+            return found ? parseInt(found[0], 10) : null;
+        },
+
+        requestSample() {
+            const variantId = this.belowMinimumVariant();
+            if (!variantId) return;
+            this.close();
+            window.dispatchEvent(new CustomEvent('sample-request-open', { detail: { variantId } }));
+        },
+
         quantitiesValid() {
             if (this.totalQuantity() === 0) return false;
             return this.selectedColorRows().every((color) => color.sizes.every((size) => this.quantityState(size) !== 'error'));

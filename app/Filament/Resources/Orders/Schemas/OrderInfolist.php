@@ -81,6 +81,8 @@ final class OrderInfolist
                                 TextEntry::make('product_sku')->label(__('admin.order.sku')),
                                 TextEntry::make('quantity')->label(__('admin.order.quantity')),
                                 TextEntry::make('price')->label(__('admin.order.price'))->money('EUR'),
+                                TextEntry::make('is_sample')->label(__('admin.order.line_type'))->badge()->formatStateUsing(fn ($state): string => $state ? __('admin.order.sample') : __('admin.order.regular_line'))->color(fn ($state): string => $state ? 'warning' : 'gray'),
+                                TextEntry::make('shipping_date')->label(__('admin.order.shipping_date'))->date('d/m/Y')->placeholder('-'),
                                 RepeatableEntry::make('articles')
                                     ->label(__('admin.order.articles'))
                                     ->columnSpanFull()

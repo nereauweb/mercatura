@@ -21,6 +21,9 @@
         </div>
     </div>
     @endforeach
+    @if($article && config('mercatura.storefront.samples') && ! $article->product->quote_only)
+    <p><button type="button" data-sample-request="{{ $article->id }}" class="rounded-full border border-accent px-5 py-2 text-sm font-bold uppercase text-accent hover:bg-accent hover:text-on-accent">{{ __('frontend.product.sample_modal.request') }}</button></p>
+    @endif
 </div>
 @else
 <p class="text-sm text-text-muted">{{ __('frontend.product.stock_table.none') }}</p>

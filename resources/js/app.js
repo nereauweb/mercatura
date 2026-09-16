@@ -4,8 +4,6 @@ import { headerSearch } from './storefront/header-search';
 import { categoriesMenu } from './storefront/categories-menu';
 import { flashMessages } from './storefront/flash-messages';
 import { slideshow } from './storefront/slideshow';
-import { productConfigurator } from './storefront/product-configurator';
-import { productConfiguratorModal } from './storefront/product-configurator-modal';
 import { customerForm } from './storefront/customer-form';
 import { quotationForm } from './storefront/quotation-form';
 import { quickQuote } from './storefront/quick-quote';
@@ -18,8 +16,6 @@ Alpine.data('headerSearch', headerSearch);
 Alpine.data('categoriesMenu', categoriesMenu);
 Alpine.data('flashMessages', flashMessages);
 Alpine.data('slideshow', slideshow);
-Alpine.data('productConfigurator', productConfigurator);
-Alpine.data('productConfiguratorModal', productConfiguratorModal);
 Alpine.data('customerForm', customerForm);
 Alpine.data('quotationForm', quotationForm);
 Alpine.data('quickQuote', quickQuote);
@@ -30,4 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initCaptchaRefresh();
 });
 
-Livewire.start();
+// The product page's components (configurator, modal configurator, sample request) are a
+// separate chunk: Alpine starts once they are registered, everywhere else immediately.
+const productPage = document.getElementById('product') ? import('./storefront/product-page').then((m) => m.register(Alpine)) : Promise.resolve();
+productPage.then(() => Livewire.start());

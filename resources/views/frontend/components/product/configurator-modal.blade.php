@@ -58,6 +58,7 @@
                             </div>
                         </div>
                     </template>
+                    <p x-cloak x-show="belowMinimumVariant()" class="rounded bg-primary-soft px-3 py-2 text-sm">{{ __('frontend.product.sample_modal.below_minimum') }} <button type="button" @click="requestSample()" class="font-bold text-accent underline">{{ __('frontend.product.sample_modal.request') }}</button></p>
                     <div class="rounded-card bg-surface-muted p-4">
                         <p class="font-semibold">{{ __($m.'decoration_question') }}</p>
                         <div class="mt-3 flex flex-wrap gap-2">
