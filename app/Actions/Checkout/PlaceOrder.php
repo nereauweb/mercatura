@@ -97,18 +97,15 @@ final class PlaceOrder
     {
         if ($order->payment_method === 'bank_transfer') {
             FrontendDebugLog::carrelloPagamento('store_order:payment_branch', ['branch' => 'bank_transfer', 'order_id' => $order->id]);
-            $order->send_notification('stored', 'user');
-            $order->send_notification('stored', 'admin');
+            $this->notify($order);
             $session->put('cart', []);
             FrontendDebugLog::carrelloPagamento('store_order:bank_transfer:completed', ['order_id' => $order->id, 'cart_cleared' => true]);
 
             return null;
         }
         if ($this->gateways->has($order->payment_method)) {
+            $this->notify($order);
             try {
-                $order->send_notification('stored', 'user');
-                $order->send_notification('stored', 'admin');
-
                 // The gateway (config mercatura.payments.gateways) prepares the hosted payment.
                 return $this->gateways->for($order->payment_method)->start($order, $user);
             } catch (\Throwable $e) {
@@ -120,5 +117,21 @@ final class PlaceOrder
         FrontendDebugLog::carrelloPagamento('store_order:unsupported_payment_method', ['order_id' => $order->id, 'payment_method' => $order->payment_method]);
 
         throw new RuntimeException('Unsupported payment method '.$order->payment_method);
+    }
+
+    /**
+     * The "stored" notifications. A mail failure (provider down, template
+     * missing) is logged and never undoes an order that is already persisted:
+     * the admin sees the order, the customer sees the outcome page.
+     */
+    private function notify(Order $order): void
+    {
+        foreach (['user', 'admin'] as $to) {
+            try {
+                $order->send_notification('stored', $to);
+            } catch (\Throwable $e) {
+                CaughtExceptionLogger::error('PlaceOrder notification failed', $e, ['order_id' => $order->id, 'to' => $to]);
+            }
+        }
     }
 }

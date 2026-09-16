@@ -119,6 +119,43 @@ final class OnepageCheckoutTest extends TestCase
         $this->get(route('frontend.checkout.finalized_page'))->assertOk()->assertSee(__('frontend.checkout.bank_title'));
     }
 
+    public function test_a_failing_mail_provider_does_not_undo_a_placed_order(): void
+    {
+        $user = User::query()->create(['name' => 'Cliente', 'email' => 'onepage-mail@example.com', 'password' => Hash::make('password'), 'email_verified_at' => now()]);
+        $user->assignRole('customer');
+        $address = CustomerAddress::query()->create(['address' => 'Via Test 1', 'city' => 'Città', 'province' => 'XX', 'zip_code' => '00000', 'country' => 'Italia']);
+        Customer::query()->create(['user_id' => $user->id, 'customer_type' => 'Azienda', 'email' => $user->email, 'name' => 'C', 'surname' => 'T', 'billing_address_id' => $address->id, 'shipping_address_id' => $address->id]);
+        $this->app->instance(\App\Contracts\TransactionalMailer::class, new class implements \App\Contracts\TransactionalMailer
+        {
+            public function attribute(string $key, mixed $value): self
+            {
+                return $this;
+            }
+
+            public function to(string $email): self
+            {
+                return $this;
+            }
+
+            public function send(string $template): void
+            {
+                throw new \InvalidArgumentException('Missing template id for ['.$template.']');
+            }
+
+            public function reset(): self
+            {
+                return $this;
+            }
+        });
+        session(['cart' => $this->sessionCart]);
+        Livewire::actingAs($user)->test(FrontendCheckoutOnepage::class)
+            ->set('paymentMethod', 'bank_transfer')->set('reached', 6)->set('step', 6)
+            ->call('placeOrder', ['consent_gdpr' => '1', 'consent_terms' => '1'])
+            ->assertHasNoErrors()->assertRedirect(route('frontend.checkout.finalized_page'));
+        $this->assertSame(1, Order::query()->where('user_id', $user->id)->count());
+        $this->assertSame([], session('cart'));
+    }
+
     public function test_a_logged_customer_starts_at_the_billing_step_and_an_admin_is_blocked(): void
     {
         $user = User::query()->create(['name' => 'Cliente', 'email' => 'onepage-customer@example.com', 'password' => Hash::make('password'), 'email_verified_at' => now()]);

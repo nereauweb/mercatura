@@ -50,6 +50,10 @@ final class RecaptchaV3CaptchaProvider implements CaptchaProvider
 
     public function verify(string $action, mixed $token, ?string $ip = null): bool
     {
+        // No site key: nothing was rendered, nothing to verify (an installation without keys is a captcha switched off).
+        if (! $this->enabled()) {
+            return true;
+        }
         $response = $this->service()->setAction($action)->verifyResponse(is_string($token) ? $token : '', $ip);
         if ($response->isSuccess()) {
             return true;
