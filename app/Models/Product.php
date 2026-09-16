@@ -220,7 +220,7 @@ class Product extends Model
 
     public function breadcrumb_categories()
     {
-        $breadcrumb_categories = false;
+        $breadcrumb_categories = [];
         $first_category = $this->categories()->orderBy('parent_id', 'desc')->first();
         if ($first_category) {
             $breadcrumb_categories[] = $first_category;

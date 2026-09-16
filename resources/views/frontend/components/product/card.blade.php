@@ -4,7 +4,6 @@
 @props(['product'])
 @php
     $cover = $product->cover(true);
-    $hover = config('mercatura.storefront.card_hover_image') ? $product->main_variant()?->hoverImage() : null;
     $url = route('frontend.product.show.by_slug', ['slug' => $product->slug]);
     $badges = array_filter([
         $product->isBestseller() ? ['label' => __('frontend.product.card.badge_bestseller'), 'class' => 'bg-accent text-on-accent'] : null,
@@ -17,6 +16,7 @@
     $mainVariant = $product->relationLoaded('main_variant_relationship') && $product->main_variant_relationship?->active
         ? $product->main_variant_relationship
         : $product->main_variant();
+    $hover = config('mercatura.storefront.card_hover_image') ? $mainVariant?->hoverImage() : null;
 @endphp
 <article x-data="{ cover: @js($cover), base: @js($cover), hover: @js($hover), async swap(id) { try { const r = await fetch(@js(url('/variante')) + '/' + id + '/cover'); if (r.ok) { this.cover = await r.text(); this.base = this.cover; this.hover = null; } } catch (e) {} } }"
          @if($hover) @mouseenter="if (hover) cover = hover" @mouseleave="cover = base" @endif

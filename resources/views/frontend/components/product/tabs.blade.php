@@ -14,7 +14,8 @@
         @endforeach
     </div>
     @foreach($tabs as $tab)
-        <div role="tabpanel" x-show="active === @js($tab['key'])" x-cloak class="rounded-b-card bg-surface-muted p-4">
+        {{-- The first panel is visible before Alpine starts (no x-cloak): no layout shift when the script arrives. --}}
+        <div role="tabpanel" x-show="active === @js($tab['key'])" @if(! $loop->first) x-cloak @endif class="rounded-b-card bg-surface-muted p-4">
             @if($loop->first)
                 {{ $slot }}
             @else
