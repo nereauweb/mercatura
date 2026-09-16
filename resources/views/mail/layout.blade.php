@@ -21,8 +21,9 @@
                 <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:600px;background-color:#ffffff;border-radius:8px;overflow:hidden;">
                     <tr>
                         <td align="center" style="background-color:#1e40af;padding:24px;">
-                            @if($brand['logo'])
-                                <img src="{{ $base.$brand['logo'] }}" alt="{{ $brand['name'] }}" width="{{ min((int) $brand['logo_width'], 200) }}" style="display:block;max-width:200px;height:auto;border:0;">
+                            @php $mailLogo = $brand['logo_mail'] ?? $brand['logo']; @endphp
+                            @if($mailLogo)
+                                <img src="{{ $base.$mailLogo }}" alt="{{ $brand['name'] }}" width="{{ min((int) $brand['logo_width'], 200) }}" style="display:block;max-width:200px;height:auto;border:0;">
                             @else
                                 <span style="font-size:20px;font-weight:700;color:#ffffff;">{{ $brand['name'] }}</span>
                             @endif

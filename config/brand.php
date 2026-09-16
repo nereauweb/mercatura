@@ -22,6 +22,10 @@ return [
     'tagline' => 'Il tuo negozio online',
 
     'logo' => '/img/logo.png',
+
+    // Mail clients do not all render WebP/SVG: a raster copy for the mail layout (null = same as logo).
+
+    'logo_mail' => env('BRAND_LOGO_MAIL'),
     'logo_width' => 500,   // intrinsic pixel size of the logo file, for width/height attributes
     'logo_height' => 103,
     'logo_mark' => '/img/logo-mark.png',
