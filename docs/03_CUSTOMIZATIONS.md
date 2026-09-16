@@ -622,7 +622,7 @@ plan: markup bands renamed `product_markups` (`from_condition`,
 dropped on the user's decision), quantity breaks `normalized_tiers_rules`,
 admin pages under Sistema → Regole di prezzo.
 
-**v2c.2 (2026-09-16).** Migration `2026_09_16_150000_customizations_schema`:
+**v2c.2 (2026-09-16).** Migration (now part of `2026_09_01_000003_mercatura_customizations`):
 tables renamed (`customizations`, `customization_areas`,
 `customization_options`, `customization_tiers`, `order_item_customizations`),
 `family` and the JSON `supplier_data` added (named so, not `attributes`:
@@ -650,7 +650,7 @@ forwarding methods with the old names on `Product`/`ProductVariant` either
 Demo seeder sets `family` for Ricamo (embroidery) and Incisione laser
 (engraving) only. Schema dump regenerated.
 
-**v2c.3 (2026-09-16).** Migration `2026_09_16_160000_order_customization_snapshot`:
+**v2c.3 (2026-09-16).** Migration (now part of `2026_09_01_000003_mercatura_customizations`):
 `order_item_customizations` gains `family`, `technique_label`,
 `position_label`, `area_label`, `option_label`, `number_of_colors`,
 `quantity`, `price`, `packaging_price` (`option_id` nullable), existing

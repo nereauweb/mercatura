@@ -277,6 +277,7 @@ CREATE TABLE `customizations` (
   `source` varchar(16) NOT NULL DEFAULT 'own',
   `pipeline` varchar(32) DEFAULT NULL,
   `family` varchar(32) DEFAULT NULL,
+  `locked` tinyint(1) NOT NULL DEFAULT 0,
   `source_product_sku` varchar(16) DEFAULT NULL,
   `source_variant_sku` varchar(16) DEFAULT NULL,
   `product_id` bigint(20) unsigned DEFAULT NULL,
@@ -686,7 +687,16 @@ DROP TABLE IF EXISTS `order_item_customizations`;
 CREATE TABLE `order_item_customizations` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `item_id` bigint(20) unsigned NOT NULL,
-  `option_id` bigint(20) unsigned NOT NULL,
+  `option_id` bigint(20) unsigned DEFAULT NULL,
+  `option_label` varchar(64) DEFAULT NULL,
+  `number_of_colors` int(11) DEFAULT NULL,
+  `quantity` int(11) DEFAULT NULL,
+  `price` decimal(10,2) DEFAULT NULL,
+  `packaging_price` decimal(10,2) DEFAULT NULL,
+  `area_label` varchar(128) DEFAULT NULL,
+  `position_label` varchar(512) DEFAULT NULL,
+  `technique_label` varchar(512) DEFAULT NULL,
+  `family` varchar(32) DEFAULT NULL,
   `label` varchar(256) DEFAULT NULL,
   `file` text DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
@@ -701,11 +711,14 @@ DROP TABLE IF EXISTS `order_item_extras`;
 CREATE TABLE `order_item_extras` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `item_id` bigint(20) unsigned NOT NULL,
+  `type` varchar(16) NOT NULL DEFAULT 'other',
+  `customization_id` bigint(20) unsigned DEFAULT NULL,
   `label` text NOT NULL,
   `price` decimal(8,2) NOT NULL DEFAULT 0.00,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NULL DEFAULT NULL,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  KEY `order_item_extras_item_id_index` (`item_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `order_items`;
@@ -1064,7 +1077,7 @@ CREATE TABLE `quotations_items` (
   `sku` varchar(32) NOT NULL,
   `name` varchar(128) NOT NULL,
   `quantity` int(11) NOT NULL,
-  `printing` varchar(32) NOT NULL DEFAULT 'No',
+  `customization` varchar(255) DEFAULT NULL,
   `image` varchar(128) DEFAULT NULL,
   `color` varchar(64) DEFAULT NULL,
   `size` varchar(64) DEFAULT NULL,
@@ -1165,30 +1178,6 @@ CREATE TABLE `users` (
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
 /*M!999999\- enable the sandbox mode */ 
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1,'2014_10_12_000000_create_users_table',1);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (2,'2014_10_12_100000_create_password_reset_tokens_table',1);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (3,'2019_08_19_000000_create_failed_jobs_table',1);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (4,'2019_12_14_000001_create_personal_access_tokens_table',1);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (5,'2023_03_28_114013_create_media_table',2);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (6,'2023_03_28_153358_create_permission_tables',3);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (7,'2019_05_03_000001_create_customer_columns',4);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (8,'2019_05_03_000002_create_subscriptions_table',4);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (9,'2019_05_03_000003_create_subscription_items_table',4);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (10,'2025_09_30_193650_add_is_sale_to_products_variants_table',5);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (11,'2025_10_01_162545_create_jobs_table',6);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (12,'2025_02_03_120000_create_blog_tables',7);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (13,'2026_03_31_120000_backfill_null_size_id_on_products_variants',8);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (14,'2026_05_15_120000_add_soft_deletes_to_quotations_table',9);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (16,'2026_09_10_121000_add_pipeline_to_printing_variants',11);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (17,'2026_09_11_120000_widen_source_columns',12);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (18,'2026_09_13_100000_create_brands_table',12);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (19,'2026_09_13_100100_add_seo_fields',12);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (20,'2026_09_13_100200_create_legacy_redirects_table',12);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (21,'2026_09_14_110000_widen_normalized_source_columns',12);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (22,'2026_09_15_120000_fix_printing_index_order_unit_price_drop_product_markups',13);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (23,'2026_09_16_100000_rename_markup_bands_to_product_markups',13);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (24,'2026_09_16_110000_rename_price_tiers_to_normalized_tiers_rules',13);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (25,'2026_09_16_120000_drop_markup_series',13);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (26,'2026_09_16_130000_drop_unused_markup_columns',13);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (27,'2026_09_16_140000_rename_markup_band_columns',13);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (28,'2026_09_16_150000_customizations_schema',13);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (29,'2026_09_01_000001_mercatura_catalog_and_seo',14);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (30,'2026_09_01_000002_mercatura_pricing_rules',14);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (31,'2026_09_01_000003_mercatura_customizations',14);

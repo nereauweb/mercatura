@@ -115,11 +115,19 @@ appears outside `app/Drivers`.
 ## 5. Schema policy
 
 - All migrations live in the core (`CLAUDE.md` rule 4).
-- The originating schema was largely created outside its migrations. Phase 1
-  establishes a **schema baseline** (`database/schema/mysql-schema.sql`
-  produced by `schema:dump --prune` from the production schema, data
-  excluded) so that `migrate` on a fresh database reproduces the live
-  structure. From then on every change is a migration.
+- The originating schema was largely created outside its migrations, so
+  the **schema dump** (`database/schema/mysql-schema.sql`, regenerated from a
+  fresh migrate at the end of every phase that touches the schema) is the
+  baseline of a fresh installation: `migrate` loads it and runs nothing
+  else. The migration files exist for databases migrated from the
+  originating platform: three consolidated, idempotent, forward-only
+  migrations (`2026_09_01_*`: catalogue and SEO, pricing rules,
+  customizations) take such a database to the current schema; their result
+  is verified against the dump on the monolith fixture. A new schema change
+  is a new guarded migration that is folded into the dump and, when it
+  reworks something a previous migration did, into that migration rather
+  than appended after it — the sequence must read as the schema, not as
+  its history.
 - Migrations are idempotent where they touch pre-existing tables.
 
 ## 6. Open decisions carried from ARCHITECTURE.md §11
