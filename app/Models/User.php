@@ -55,6 +55,7 @@ class User extends Authenticatable implements FilamentUser
         'email_verified_at' => 'datetime',
     ];
 
+    /** @return HasOne<Customer, $this> */
     public function customer(): HasOne
     {
         return $this->hasOne(Customer::class, 'user_id', 'id');

@@ -234,6 +234,26 @@ return [
         'complete_order' => 'Completa l\'ordine',
         'delivery_help' => 'Vuoi ulteriori informazioni sui tempi di spedizione, o hai bisogno di consegne tassative? Chiama il :phone',
         'secure_payments' => 'Pagamenti sicuri',
+        'table' => ['product' => 'Prodotto', 'unit_price' => 'Prezzo unitario', 'quantity' => 'Quantità', 'subtotal' => 'Subtotale', 'clear' => 'Svuota il carrello', 'clear_confirm' => 'Vuoi svuotare il carrello?', 'proceed' => 'Procedi al checkout'],
+    ],
+
+    'onepage' => [
+        'title' => 'Checkout',
+        'your_checkout' => 'Il tuo checkout',
+        'edit' => 'Modifica',
+        'continue' => 'Continua',
+        'steps' => ['method' => 'Metodo di checkout', 'billing' => 'Dati di fatturazione', 'shipping' => 'Indirizzo di spedizione', 'shipping_method' => 'Metodo di spedizione', 'payment' => 'Informazioni di pagamento', 'review' => 'Riepilogo ordine'],
+        'login_title' => 'Accedi',
+        'login_hint' => 'Hai già un account? Accedi con la tua email.',
+        'register_title' => 'Registrati',
+        'register_hint' => 'Crea un account per completare l\'ordine e seguirlo nell\'area riservata.',
+        'ship_here' => 'Spedisci a questo indirizzo',
+        'courier' => 'Corriere espresso',
+        'free' => 'Gratis',
+        'place_order' => 'Conferma ordine',
+        'working' => 'Attendere…',
+        'summary_customer' => ':name (:email)',
+        'summary_address' => ':address, :zip :city (:province)',
     ],
 
     'checkout' => [

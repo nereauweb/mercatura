@@ -105,11 +105,13 @@ class Customer extends Model
         'Uffici legali',
     ];
 
+    /** @return HasOne<CustomerAddress, $this> */
     public function shipping_address(): HasOne
     {
         return $this->hasOne(CustomerAddress::class, 'id', 'shipping_address_id');
     }
 
+    /** @return HasOne<CustomerAddress, $this> */
     public function billing_address(): HasOne
     {
         return $this->hasOne(CustomerAddress::class, 'id', 'billing_address_id');

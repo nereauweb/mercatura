@@ -1,6 +1,6 @@
 # v2d — Storefront flows: modal configurator, onepage checkout, quick quote, samples, delivery date
 
-Status: **approved 2026-09-16 (decisions of the owner in §2). F1–F4 done (2026-09-17); F5 in progress.**
+Status: **approved 2026-09-16 (decisions of the owner in §2). F1–F5 done (2026-09-17); F6 in progress.**
 Written for the gesca84 installation (`mercatura-gesca84/docs/GESCA84_SKIN.md`
 has the page-by-page comparison with gesca84.it) but every feature here is a
 **core feature behind configuration**, as ARCHITECTURE §1 requires: an
@@ -314,3 +314,24 @@ shows "Campione"/"Ordine" and the shipping date per item. Bundle: the
 product-page components (both configurators, sample request) moved to a
 lazy chunk loaded when the page has `#product`, before Alpine starts;
 main bundle 117 KB gzip, chunk 3.8 KB.
+
+**F5 (2026-09-17).** The checkout logic left the controller for shared
+classes so both flows run the same code: `Support\Checkout\CartData`
+(the priced cart, artwork directory and files), `CheckoutGuard`,
+`Actions\Checkout\RegisterCustomer`, `SaveCustomerProfile` (customer +
+either address group) and `PlaceOrder` (`handle` persists, `complete`
+notifies and returns the gateway URL or clears the cart). The steps flow
+delegates to them; its routes, views and outcomes are unchanged. The
+onepage flow is `livewire.frontend-checkout-onepage`
+(`App\Http\Livewire\FrontendCheckoutOnepage`) at `GET /checkout`,
+reached from "Completa l'ordine" when `checkout = onepage`. Its forms post
+their fields as one array (FormData, after a captcha refresh when a
+field exists), so `forms.customer-fields` is reused unchanged (it gained
+`with-shipping="false"`); one request per step; "Spedisci a questo
+indirizzo" copies billing to shipping and skips step 3; the bank
+transfer outcome is `GET /checkout/completato` (the finalized page with
+the bank details), a gateway redirects to its hosted page. The cart page
+shows `components/cart/table` (with "Svuota il carrello",
+`POST /carrello/svuota`) in the onepage flow and the card list otherwise;
+the same table, read-only, is the order review of step 6. Not done:
+guest checkout (gesca84.it has none either).

@@ -9,6 +9,9 @@
 		<h1 class="sr-only">{{ __('frontend.cart.title') }}</h1>
 		<x-frontend::forms.errors />
 		@stack('cart-before')
+		@if(config('mercatura.storefront.checkout') === 'onepage')
+			<x-frontend::cart.table :cart="$cart" />
+		@else
 		<div class="space-y-4 rounded-card bg-surface-muted p-4">
 			@forelse($cart['items'] as $item)
 				<x-frontend::cart.item :item="$item" />
@@ -16,6 +19,7 @@
 				<p class="py-6 text-center font-semibold">{{ __('frontend.cart.empty') }}</p>
 			@endforelse
 		</div>
+		@endif
 		@stack('cart-after')
 	</x-frontend::checkout.page>
 @endsection

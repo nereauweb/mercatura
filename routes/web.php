@@ -90,7 +90,9 @@ Route::post('/carrello/aggiungi', [FrontendCartController::class, 'add_to_cart']
 Route::post('/carrello/grafica', [FrontendCartController::class, 'uploadArtwork'])->name('frontend.cart.artwork');
 Route::delete('/carrello/rimuovi/{id}', [FrontendCartController::class, 'remove_from_cart'])->name('frontend.cart.remove');
 
+Route::post('/carrello/svuota', [FrontendCartController::class, 'clear_cart'])->name('frontend.cart.clear');
 Route::post('/carrello/procedi', [FrontendCartController::class, 'checkout'])->name('frontend.cart.checkout');
+Route::get('/checkout', [FrontendCartController::class, 'onepage'])->name('frontend.checkout.onepage');
 Route::get('/checkout/account', [FrontendCartController::class, 'account'])->name('frontend.checkout.account');
 Route::post('/checkout/account/login', [FrontendCartController::class, 'attempt_login'])->name('frontend.checkout.account.login');
 Route::get('/checkout/account/register', [FrontendCartController::class, 'register_form'])->name('frontend.checkout.account.registration');
@@ -107,6 +109,7 @@ Route::group(['middleware' => 'auth'], function () {
     Route::post('/checkout/pagamento', [FrontendCartController::class, 'payment'])->name('frontend.checkout.payment');
     Route::post('/checkout/completa', [FrontendCartController::class, 'store_order'])->name('frontend.checkout.finalize');
     Route::get('/checkout/registrato', [FrontendOrderController::class, 'bank_transfer_order_registered'])->name('frontend.checkout.registered');
+    Route::get('/checkout/completato', [FrontendCartController::class, 'finalized'])->name('frontend.checkout.finalized_page');
 
     Route::get('/utente', [FrontendAuthController::class, 'index'])->name('frontend.auth.index');
     Route::get('/area-riservata', [FrontendAuthController::class, 'index'])->middleware(['auth', 'redirect.if.admin'])->name('frontend.auth.reserved_area');

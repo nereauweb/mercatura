@@ -1,7 +1,7 @@
 {{-- @mercatura-view frontend.components.forms.customer-fields @version 1 --}}
 {{-- Customer identity, fiscal data, billing and shipping address. Field names match CustomerFormRules.
      Must be placed inside an element with x-data="customerForm(...)" (see forms.customer-form). --}}
-@props(['customer' => [], 'billing' => [], 'shipping' => [], 'provinces' => [], 'withPassword' => false, 'withNotes' => false, 'headings' => true])
+@props(['customer' => [], 'billing' => [], 'shipping' => [], 'provinces' => [], 'withPassword' => false, 'withNotes' => false, 'headings' => true, 'withShipping' => true])
 @php
     $c = fn (string $key) => $customer[$key] ?? '';
     $b = fn (string $key) => $billing[$key] ?? '';
@@ -45,6 +45,7 @@
         </div>
     </section>
 
+    @if($withShipping)
     <section>
         @if($headings)<h2 class="mb-3 flex flex-wrap items-baseline gap-3 text-lg font-bold text-primary">{{ __('frontend.forms.shipping_question') }} <button type="button" @click="copyBillingToShipping()" class="text-sm font-normal text-accent hover:underline">{{ __('frontend.forms.copy_billing') }}</button></h2>@endif
         <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -56,4 +57,5 @@
             <x-frontend::forms.input name="shipping_notes" :label="__('frontend.forms.notes')" :value="$s('notes')" />
         </div>
     </section>
+    @endif
 </div>
