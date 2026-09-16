@@ -320,6 +320,19 @@ return [
         'sent_help' => 'Se hai bisogno di ulteriori informazioni contattaci al :phone oppure scrivi a :email.',
     ],
 
+    'quick_quote' => [
+        'title' => 'Richiedi un preventivo',
+        'products' => 'Prodotti da quotare',
+        'empty' => 'Nessun prodotto selezionato: sfoglia il catalogo e usa "Chiedi un preventivo" sulla scheda prodotto.',
+        'loading' => 'Aggiornamento…',
+        'close' => 'Chiudi',
+        'remove' => 'Rimuovi',
+        'sending' => 'Invio in corso…',
+        'error' => 'Si è verificato un errore, riprova.',
+        'no_products' => 'Nessun prodotto presente nella richiesta di preventivo',
+        'sent_close' => 'Continua a navigare',
+    ],
+
     'auth' => [
         'register_success' => 'Registrazione completata. Benvenuto su :brand.',
         'login' => 'Accedi',

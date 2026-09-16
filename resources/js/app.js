@@ -8,6 +8,7 @@ import { productConfigurator } from './storefront/product-configurator';
 import { productConfiguratorModal } from './storefront/product-configurator-modal';
 import { customerForm } from './storefront/customer-form';
 import { quotationForm } from './storefront/quotation-form';
+import { quickQuote } from './storefront/quick-quote';
 import { initFormErrors } from './storefront/form-errors';
 import { initCaptchaRefresh } from './storefront/captcha-refresh';
 import { cookieConsent } from './storefront/cookie-consent';
@@ -21,6 +22,7 @@ Alpine.data('productConfigurator', productConfigurator);
 Alpine.data('productConfiguratorModal', productConfiguratorModal);
 Alpine.data('customerForm', customerForm);
 Alpine.data('quotationForm', quotationForm);
+Alpine.data('quickQuote', quickQuote);
 Alpine.data('cookieConsent', cookieConsent);
 
 document.addEventListener('DOMContentLoaded', () => {

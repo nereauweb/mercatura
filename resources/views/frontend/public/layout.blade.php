@@ -44,6 +44,10 @@
 
 	<x-frontend::flash />
 
+	@if(config('mercatura.storefront.quick_quote') === 'modal')
+	<x-frontend::quick-quote />
+	@endif
+
 	{{-- Cookie consent banner (area 4h) --}}
 	@php
 		$cookieConsentConfig = config('cookie-consent');

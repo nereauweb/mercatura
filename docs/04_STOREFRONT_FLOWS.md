@@ -1,6 +1,6 @@
 # v2d — Storefront flows: modal configurator, onepage checkout, quick quote, samples, delivery date
 
-Status: **approved 2026-09-16 (decisions of the owner in §2). F1 and F2 done (2026-09-17); F3 in progress.**
+Status: **approved 2026-09-16 (decisions of the owner in §2). F1, F2 and F3 done (2026-09-17); F4 in progress.**
 Written for the gesca84 installation (`mercatura-gesca84/docs/GESCA84_SKIN.md`
 has the page-by-page comparison with gesca84.it) but every feature here is a
 **core feature behind configuration**, as ARCHITECTURE §1 requires: an
@@ -289,3 +289,15 @@ positions may use different techniques (the owner's extension). The
 quantities in the URL hash until F3 wires the modal. No browser test yet:
 the page test checks the mount and the copy, the endpoints are tested in
 F1. Bundle: 119 KB gzip, at the budget.
+
+**F3 (2026-09-17).** `SendQuotation` action holds what `store()` did
+(rows, the two mails, newsletter); the page calls it too. JSON endpoints
+under `/preventivo/api/` (`lista`, `aggiungi`, `{id}/aggiorna`,
+`{id}/elimina`, `invia`) in `FrontendQuickQuoteController`, on the same
+session keys as the page. `components/quick-quote` is mounted once by the
+layout when `quick_quote = modal`; the header pill, the product CTA, the
+price-table link, the card CTA and the modal configurator's "richiedi
+preventivo" answer raise `quick-quote-open` with the article (and the
+total quantity from the configurator). `captcha-init` is now `@once`, so
+the modal and a page with its own form share one bootstrap. The quotation
+page and its routes are untouched (no-JS fallback).

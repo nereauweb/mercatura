@@ -124,6 +124,12 @@ export function productConfiguratorModal(config) {
             this.error = null;
             this.done[2] = true;
             if (choice === 'quote') {
+                if (config.quickQuoteModal) {
+                    // Hand the current article and the total quantity to the quick-quote modal (§4.4).
+                    this.close();
+                    window.dispatchEvent(new CustomEvent('quick-quote-open', { detail: { articleId: config.articleId, quantity: this.totalQuantity() } }));
+                    return;
+                }
                 window.location.href = this.endpoints.quote + '#quantities=' + encodeURIComponent(JSON.stringify(this.articles()));
                 return;
             }

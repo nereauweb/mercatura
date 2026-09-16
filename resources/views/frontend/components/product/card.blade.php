@@ -54,5 +54,5 @@
         <p class="mt-auto pt-2 text-sm"><small class="text-text-muted">{{ __('frontend.product.card.from_price') }}</small> <strong class="text-primary">€&nbsp;{{ $product->formatted_min_price() }}</strong></p>
         {{ $afterPrice ?? '' }}
     </div>
-    <a href="{{ route('frontend.quotation.configure', ['id' => $mainVariant]) }}" class="block bg-accent py-2 text-xs font-bold uppercase text-on-accent hover:bg-accent-strong md:invisible md:group-hover:visible">{{ __('frontend.product.card.request_quote') }}</a>
+    <a href="{{ route('frontend.quotation.configure', ['id' => $mainVariant]) }}" @if(config('mercatura.storefront.quick_quote') === 'modal') @click.prevent="$dispatch('quick-quote-open', {articleId: {{ (int) $mainVariant }}})" @endif class="block bg-accent py-2 text-xs font-bold uppercase text-on-accent hover:bg-accent-strong md:invisible md:group-hover:visible">{{ __('frontend.product.card.request_quote') }}</a>
 </article>

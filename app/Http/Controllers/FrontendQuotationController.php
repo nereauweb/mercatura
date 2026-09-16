@@ -2,12 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Contracts\NewsletterProvider;
-use App\Contracts\TransactionalMailer;
+use App\Actions\Quotations\SendQuotation;
 use App\Models\ProductVariant;
-use App\Models\Quotation;
 use App\Rules\Captcha;
-use App\Support\CaughtExceptionLogger;
 use App\Support\CustomerFormRules;
 use App\Support\FrontendDebugLog;
 use Illuminate\Http\Request;
@@ -120,105 +117,13 @@ class FrontendQuotationController extends Controller
             'consent_terms' => $request->has('consent_terms') ? (bool) $request->boolean('consent_terms') : null,
         ]);
 
-        $quotation = Quotation::create([
-            'customer_email' => $session_quotation['customer']['email'],
-            'customer_type' => $session_quotation['customer']['customer_type'],
-            'customer_company' => $session_quotation['customer']['company'],
-            'customer_name' => $session_quotation['customer']['name'],
-            'customer_surname' => $session_quotation['customer']['surname'],
-            'customer_phone' => $session_quotation['customer']['phone'],
-            'customer_activity' => $session_quotation['customer']['activity'],
-        ]);
-        FrontendDebugLog::preventivo('store:quotation_created', [
-            'quotation_id' => $quotation->id,
-        ]);
-
-        $quotation_items = [];
-        foreach ($session_quotation['products'] as $quotation_product) {
-            $quotation_product['quantity'] = intval($quotation_product['quantity']);
-            $quotation->items()->create([
-                'sku' => $quotation_product['sku'],
-                'name' => $quotation_product['name'],
-                'quantity' => $quotation_product['quantity'],
-                'customization' => $quotation_product['printing'] ?? __('frontend.quotation.no'),
-                'image' => $quotation_product['image'] ?? '',
-                'color' => $quotation_product['color'] ?? '',
-                'size' => $quotation_product['size'] ?? '',
-                'notes' => $quotation_product['notes'] ?? '',
-            ]);
-            array_push($quotation_items, $quotation_product);
-        }
-        $mailer = app(TransactionalMailer::class);
-        // user notification
-        $mailer->attribute('quotation_date', date('d/m/Y H:i', strtotime($quotation->created_at)));
-        $mailer->attribute('customer_type', $session_quotation['customer']['customer_type']);
-        $mailer->attribute('customer_company', $session_quotation['customer']['company']);
-        $mailer->attribute('customer_activity', $session_quotation['customer']['activity']);
-        $mailer->attribute('customer_name', $session_quotation['customer']['name']);
-        $mailer->attribute('customer_surname', $session_quotation['customer']['surname']);
-        $mailer->attribute('customer_email', $session_quotation['customer']['email']);
-        $mailer->attribute('customer_phone', $session_quotation['customer']['phone']);
-        $mailer->attribute('quotation_items', $quotation_items);
-        $mailer->attribute('gdpr', $request->consent_gdpr == '1' ? 'Sì' : 'No');
-        $mailer->attribute('newsletter', $request->subscribe_newsletter == '1' ? 'Sì' : 'No');
-        // links
-        $mailer->attribute('contacts_link', route('frontend.contacts.index'));
-        $mailer->attribute('gdpr_link', url('/').'/contenuti/privacy-policy');
-        $mailer->to($session_quotation['customer']['email']);
-        $mailer->send('quotation_customer');
-        $mailer->reset();
-        // admin notification
-        $mailer->attribute('quotation_date', date('d/m/Y H:i', strtotime($quotation->created_at)));
-        $mailer->attribute('customer_type', $session_quotation['customer']['customer_type']);
-        $mailer->attribute('customer_company', $session_quotation['customer']['company']);
-        $mailer->attribute('customer_activity', $session_quotation['customer']['activity']);
-        $mailer->attribute('customer_name', $session_quotation['customer']['name']);
-        $mailer->attribute('customer_surname', $session_quotation['customer']['surname']);
-        $mailer->attribute('customer_email', $session_quotation['customer']['email']);
-        $mailer->attribute('customer_phone', $session_quotation['customer']['phone']);
-        $mailer->attribute('quotation_items', $quotation_items);
-        $mailer->attribute('gdpr', $request->consent_gdpr == '1' ? 'Sì' : 'No');
-        $mailer->attribute('newsletter', $request->subscribe_newsletter == '1' ? 'Sì' : 'No');
-        // links
-        $mailer->attribute('contacts_link', route('frontend.contacts.index'));
-        $mailer->attribute('gdpr_link', url('/').'/contenuti/privacy-policy');
-        $mailer->to(config('emails.technical'));
-        $mailer->to(config('emails.merchant'));
-        $mailer->send('quotation_admin');
-
-        if ($request->subscribe_newsletter == '1') {
-            FrontendDebugLog::newsletter('quotation:subscribe_newsletter:start', [
-                'source' => 'quotation',
-                'quotation_id' => $quotation->id,
-            ]);
-            try {
-                app(NewsletterProvider::class)->subscribe([
-                    'email' => $session_quotation['customer']['email'],
-                    'name' => $session_quotation['customer']['name'],
-                    'surname' => $session_quotation['customer']['surname'],
-                    'phone' => $session_quotation['customer']['phone'],
-                    'customer_type' => $session_quotation['customer']['customer_type'],
-                    'company' => $session_quotation['customer']['company'],
-                    'activity' => $session_quotation['customer']['activity'],
-                ]);
-                FrontendDebugLog::newsletter('quotation:subscribe_newsletter:brevo_ok', [
-                    'source' => 'quotation',
-                    'quotation_id' => $quotation->id,
-                    'provider' => config('mercatura.providers.newsletter'),
-                ]);
-            } catch (\Exception $e) {
-                CaughtExceptionLogger::error('FrontendQuotationController::store newsletter subscribe failed', $e, [
-                    'quotation_id' => $quotation->id,
-                    'provider' => config('mercatura.providers.newsletter'),
-                ]);
-                FrontendDebugLog::newsletter('quotation:subscribe_newsletter:provider_error', [
-                    'source' => 'quotation',
-                    'quotation_id' => $quotation->id,
-                    'error' => $e->getMessage(),
-                    'provider' => config('mercatura.providers.newsletter'),
-                ]);
-            }
-        }
+        $quotation = app(SendQuotation::class)->handle(
+            (array) ($session_quotation['customer'] ?? []),
+            array_values($session_quotation['products']),
+            $request->consent_gdpr == '1',
+            $request->subscribe_newsletter == '1',
+        );
+        $quotation_items = array_values($session_quotation['products']);
 
         $request->session()->pull('quotation.products', 'default');
         FrontendDebugLog::preventivo('store:completed', [

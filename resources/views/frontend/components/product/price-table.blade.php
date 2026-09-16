@@ -1,8 +1,8 @@
 {{-- @mercatura-view frontend.components.product.price-table @version 1 --}}
 {{-- Neutral and printed price tables from ProductPageData::priceTable. --}}
-@props(['table', 'quoteUrl'])
+@props(['table', 'quoteUrl', 'quickQuoteId' => null])
 <div {{ $attributes }}>
-    <p class="text-xs text-text-muted">{{ __('frontend.product.quantity_not_in_table') }} <a href="{{ $quoteUrl }}" class="font-semibold text-accent hover:underline">{{ __('frontend.product.calculate_quote') }}</a></p>
+    <p class="text-xs text-text-muted">{{ __('frontend.product.quantity_not_in_table') }} <a href="{{ $quoteUrl }}" @if($quickQuoteId) x-data @click.prevent="$dispatch('quick-quote-open', {articleId: {{ $quickQuoteId }}})" @endif class="font-semibold text-accent hover:underline">{{ __('frontend.product.calculate_quote') }}</a></p>
     @if($table['columns'])
     <div class="mt-3">
         <h3 class="text-sm font-semibold">{{ __('frontend.product.price_neutral') }}</h3>

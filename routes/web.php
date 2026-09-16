@@ -69,6 +69,14 @@ Route::post('/prodotti/stock', [FrontendProductController::class, 'get_product_v
 Route::post('/prodotti/personalizzazione/immagine_dimensioni', [FrontendProductController::class, 'customizationAreas'])->name('frontend.product.get.printing_image_and_sizes');
 Route::post('/prodotti/personalizzazione/colori', [FrontendProductController::class, 'customizationOptions'])->name('frontend.product.get.options');
 // PREVENTIVO
+// Quick-quote modal endpoints (docs/04_STOREFRONT_FLOWS.md §4.4); the page routes below stay as the no-JS fallback.
+Route::prefix('preventivo/api')->name('frontend.quotation.api.')->group(function () {
+    Route::get('lista', [FrontendQuickQuoteController::class, 'index'])->name('list');
+    Route::post('aggiungi', [FrontendQuickQuoteController::class, 'add'])->name('add');
+    Route::put('{id}/aggiorna', [FrontendQuickQuoteController::class, 'update'])->name('update');
+    Route::delete('{id}/elimina', [FrontendQuickQuoteController::class, 'remove'])->name('remove');
+    Route::post('invia', [FrontendQuickQuoteController::class, 'send'])->name('send');
+});
 Route::get('/preventivo/', [FrontendQuotationController::class, 'show'])->name('frontend.quotation.show');
 Route::get('/preventivo/{id}/configura', [FrontendQuotationController::class, 'configure'])->name('frontend.quotation.configure');
 Route::post('preventivo/articolo/aggiungi', [FrontendQuotationController::class, 'create'])->name('frontend.quotation.add');

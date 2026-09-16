@@ -9,6 +9,7 @@
     $title = $product->get_seo_title();
     $ogImage = $product->getOpenGraphImageInfo();
     $quoteUrl = route('frontend.quotation.configure', ['id' => $article->id]);
+    $quickModal = config('mercatura.storefront.quick_quote') === 'modal';
     $badges = array_filter([
         $product->isBestseller() ? ['label' => __('frontend.product.card.badge_bestseller'), 'class' => 'bg-accent text-on-accent'] : null,
         $product->isPromo() ? ['label' => __('frontend.product.card.badge_promo'), 'class' => 'bg-danger text-on-accent'] : null,
@@ -45,6 +46,7 @@
         'hasPrinting' => $page['configurator']['has_printing'],
         'hasPackaging' => $page['configurator']['has_packaging'],
         'artworkEnabled' => (bool) config('mercatura.storefront.artwork_in_configurator') && $page['configurator']['has_printing'],
+        'quickQuoteModal' => $quickModal,
         'minQuantity' => $page['configurator']['min_quantity'],
         'colors' => $page['configurator']['colors'],
         'labels' => [
@@ -105,7 +107,7 @@
 				<p class="rounded-card bg-primary-soft p-3 text-sm">{{ __('frontend.product.quote_only') }}</p>
 				@endif
 				<div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-					<a href="{{ $quoteUrl }}" class="rounded-card bg-accent px-4 py-2 text-center text-sm font-bold uppercase text-on-accent shadow hover:bg-accent-strong">{{ __('frontend.product.request_quote') }}</a>
+					<a href="{{ $quoteUrl }}" @if($quickModal) @click.prevent="$dispatch('quick-quote-open', {articleId: {{ $article->id }}})" @endif class="rounded-card bg-accent px-4 py-2 text-center text-sm font-bold uppercase text-on-accent shadow hover:bg-accent-strong">{{ __('frontend.product.request_quote') }}</a>
 					@if($hasPrices)
 					<button type="button" @click="show()" class="rounded-card bg-primary px-4 py-2 text-center text-sm font-bold uppercase text-on-primary shadow hover:bg-primary-strong">{{ $modal ? __('frontend.product.buy_modal') : __('frontend.product.buy') }}</button>
 					@endif
@@ -143,7 +145,7 @@
 			@if($hasPrices)
 			<div class="md:col-span-2">
 				<h2 class="text-lg font-bold uppercase text-primary">{{ __('frontend.product.price_table') }}</h2>
-				<x-frontend::product.price-table :table="$page['price_table']" :quote-url="$quoteUrl" class="mt-2" />
+				<x-frontend::product.price-table :table="$page['price_table']" :quote-url="$quoteUrl" :quick-quote-id="$quickModal ? $article->id : null" class="mt-2" />
 			</div>
 			@endif
 			<div class="{{ $hasPrices ? 'md:col-span-3' : 'md:col-span-5' }}">
