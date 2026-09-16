@@ -115,6 +115,15 @@ return [
         'under_minimum_surcharge' => (float) env('MERCATURA_UNDER_MINIMUM_SURCHARGE', 40),
     ],
 
+    /*
+    | Customizations (docs/03_CUSTOMIZATIONS.md). cleanup_days: a customization
+    | of a live pipeline that no import has touched for this many days is
+    | deleted by cleanup:customizations (run after every customizations import).
+    */
+    'customizations' => [
+        'cleanup_days' => (int) env('MERCATURA_CUSTOMIZATIONS_CLEANUP_DAYS', 90),
+    ],
+
     'features' => [
         // Supplier connectors (docs/ARCHITECTURE.md §13): each installed package
         // carries its own switch (`connector-<key>.enabled`, env

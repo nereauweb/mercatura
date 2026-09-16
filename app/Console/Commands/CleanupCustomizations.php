@@ -15,19 +15,19 @@ use Illuminate\Support\Facades\DB;
 
 /**
  * After a customizations import: drop the customizations of live pipelines
- * that the import did not touch for `--days` (the supplier no longer offers
+ * that the import did not touch for `--days` (default from config, 90) (the supplier no longer offers
  * them; the foreign keys cascade to areas, options and tiers), then any
  * orphaned child rows. Runs in chunks.
  */
 final class CleanupCustomizations extends Command
 {
-    protected $signature = 'cleanup:customizations {--days=30 : Retention in days since the last import touch} {--dry-run : Report without deleting}';
+    protected $signature = 'cleanup:customizations {--days= : Retention in days since the last import touch (default: mercatura.customizations.cleanup_days)} {--dry-run : Report without deleting}';
 
     protected $description = 'Delete customizations no import has touched for the retention period, and orphaned child rows';
 
     public function handle(): int
     {
-        $days = (int) $this->option('days');
+        $days = $this->option('days') !== null ? (int) $this->option('days') : (int) config('mercatura.customizations.cleanup_days', 90);
         $dryRun = (bool) $this->option('dry-run');
         $cutoff = Carbon::now()->subDays($days);
         $this->info(sprintf('Customizations cleanup: retention %d days (before %s), %s', $days, $cutoff->format('Y-m-d H:i:s'), $dryRun ? 'dry run' : 'live'));

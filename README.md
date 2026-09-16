@@ -71,6 +71,7 @@ implemented by drivers under `app/Drivers` and selected in
 | `NEWSLETTER_PROVIDER` | `brevo`, `mailchimp`, `null` (default) |
 | `MERCATURA_PAYMENT_METHODS` | `bank_transfer,stripe,paypal`; gateways in `config/mercatura.php` |
 | `MERCATURA_VAT_RATE`, `MERCATURA_DELIVERY_COST`, `MERCATURA_FREE_DELIVERY_FROM`, `MERCATURA_UNDER_MINIMUM_SURCHARGE` | pricing constants (`config/mercatura.php` pricing) |
+| `MERCATURA_CUSTOMIZATIONS_CLEANUP_DAYS` | days without an import touch after which `cleanup:customizations` deletes a customization (default 90) |
 | `MERCATURA_CONNECTOR_<KEY>` | one switch per installed supplier connector package, off by default |
 
 Switching a provider never needs a code change; adding one means a new
