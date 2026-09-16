@@ -60,6 +60,9 @@ Route::get('/prodotti/{slug}/{sku}', [FrontendProductController::class, 'show_va
 Route::post('/prodotti/bestsellers', [FrontendProductController::class, 'get_bestsellers'])->name('frontend.product.get_bestsellers');
 Route::post('/prodotti/configuratore', [FrontendProductController::class, 'get_configurator'])->name('frontend.product.get_configurator');
 Route::post('/prodotti/configuratore/articoli', [FrontendProductController::class, 'build_articles_request'])->name('frontend.product.build_articles_request');
+Route::post('/prodotti/configuratore/opzioni', [FrontendProductController::class, 'configuratorOptions'])->name('frontend.product.configurator.options');
+Route::post('/prodotti/configuratore/riepilogo', [FrontendProductController::class, 'configuratorSummary'])->name('frontend.product.configurator.summary');
+Route::get('/prodotti/{slug}/{sku}/scheda/{tab}', [FrontendProductController::class, 'sheet'])->name('frontend.product.sheet');
 Route::post('/prodotti/configuratore/stampa/pdf', [FrontendProductController::class, 'print_summary'])->name('frontend.product.print_summary');
 Route::get('/prodotti/configuratore/stampa/pdf', [FrontendContentController::class, 'index'])->name('frontend.product.pdf_summary');
 Route::post('/prodotti/stock', [FrontendProductController::class, 'get_product_variants_stock'])->name('frontend.product.get.variants_stock');

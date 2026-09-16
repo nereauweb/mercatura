@@ -1,6 +1,6 @@
 # v2d — Storefront flows: modal configurator, onepage checkout, quick quote, samples, delivery date
 
-Status: **approved in principle 2026-09-16 (decisions of the owner listed in §2); phases in §6. F1 in progress.**
+Status: **approved 2026-09-16 (decisions of the owner in §2). F1 done (2026-09-17); F2 in progress.**
 Written for the gesca84 installation (`mercatura-gesca84/docs/GESCA84_SKIN.md`
 has the page-by-page comparison with gesca84.it) but every feature here is a
 **core feature behind configuration**, as ARCHITECTURE §1 requires: an
@@ -276,4 +276,4 @@ clean; `docs/GESCA84_SKIN.md` updated with what was overridden.
 
 ## 7. Deviations recorded during execution
 
-(none yet)
+**F1 (2026-09-17).** As planned, plus: the cart artwork directory is keyed by a token kept in the session, not by the session id (the id changes at login); the options tree carries `markup_percent` and per-option `packaging_unit_price`; the summary JSON adds `taxable`, `vat_rate` and `processing_days`. `ProductPageData` exposes `detailsRows`, `packagingRows`, `priceTableRows`, `defaultCustomization`, `stockTable` and `configuratorOptions` for the sheet fragments.

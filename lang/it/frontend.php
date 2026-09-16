@@ -430,6 +430,11 @@ return [
     ],
 
     'product' => [
+        'tabs' => ['details' => 'Dettagli prodotto', 'stock' => 'Disponibilità', 'prices' => 'Prezzi di listino'],
+        'tab_loading' => 'Caricamento…',
+        'tab_error' => 'Contenuto non disponibile, riprova.',
+        'default_customization' => ['title' => 'Opzione predefinita di stampa', 'technique' => 'Tipologia di decorazione consigliata', 'position' => 'Posizione di stampa consigliata', 'area' => 'Dimensione di stampa consigliata', 'max_colors' => 'Numero massimo di colori stampabili'],
+        'stock_table' => ['sku' => 'Codice articolo', 'size' => 'Taglia', 'stock' => 'Disponibilità', 'restock' => 'Restock', 'restock_on' => ':count il :date', 'none' => 'Nessuna disponibilità'],
         'quote_only' => 'Questo prodotto non può essere aggiunto al carrello perché è disponibile solo in modalità preventivo: richiedi un preventivo rapido, ti risponderemo entro 24 ore.',
         'code' => 'Cod.',
         'description' => 'Descrizione',

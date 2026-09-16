@@ -8,6 +8,7 @@ use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Support\CaughtExceptionLogger;
 use App\Support\Connectors\CustomizationPipeline;
+use App\Support\Customizations\LineJson;
 use App\Support\Customizations\LinePricer;
 use App\Support\FrontendDebugLog;
 use App\Support\ProductPageData;
@@ -206,6 +207,61 @@ class FrontendProductController extends Controller
         return Pdf::view('frontend.pdf.configurator_summary', ['data' => $summary_data])
             ->format('a4')
             ->name(\Illuminate\Support\Str::slug((string) config('brand.name')).'-'.$product->sku.'-'.date('Y-m-d').'.pdf');
+    }
+
+    /**
+     * A product sheet tab as an HTML fragment, fetched on first open (docs/04 §4.3): dettagli, disponibilita, listino.
+     * Cached per variant and tab with the product page cache.
+     */
+    public function sheet(Request $request, string $slug, string $sku, string $tab)
+    {
+        if (! in_array($tab, ['dettagli', 'disponibilita', 'listino'], true)) {
+            abort(404);
+        }
+        $article = ProductVariant::query()->where('sku', $sku)->where('active', 1)->first();
+        $product = $article?->product;
+        if (! $article || ! $product || $product->slug !== $slug || ! $product->active) {
+            abort(404);
+        }
+        $html = \Illuminate\Support\Facades\Cache::remember('product_sheet_'.$article->id.'_'.$tab.'_'.app()->getLocale(), now()->addDay(), function () use ($product, $article, $tab): string {
+            $hasPrinting = $article->customizations()->exists();
+
+            return match ($tab) {
+                'dettagli' => view('frontend.components.product.sheet-details', ['details' => ProductPageData::detailsRows($product, $article, $hasPrinting), 'defaultCustomization' => ProductPageData::defaultCustomization($article), 'packaging' => ProductPageData::packagingRows($article)])->render(),
+                'disponibilita' => view('frontend.components.product.stock-table', ['rows' => ProductPageData::stockTable($product), 'article' => $article])->render(),
+                default => view('frontend.components.product.price-table', ['table' => ProductPageData::priceTableRows($product, $article), 'quoteUrl' => route('frontend.quotation.configure', ['id' => $article->id])])->render(),
+            };
+        });
+
+        return response($html)->header('Content-Type', 'text/html; charset=UTF-8')->header('Cache-Control', 'private, max-age=300');
+    }
+
+    /** The decoration tree of an article priced for a line quantity (docs/04 §4.1), for the modal configurator. */
+    public function configuratorOptions(Request $request)
+    {
+        $article = ProductVariant::query()->find((int) $request->input('article_id'));
+        if (! $article) {
+            return response()->json(['message' => 'not found'], 404);
+        }
+        $quantity = 0;
+        foreach ((array) $request->input('articles', []) as $line) {
+            $quantity += (int) ($line[1] ?? 0);
+        }
+
+        return response()->json(ProductPageData::configuratorOptions($article, max(1, $quantity, (int) $request->input('quantity', 0))));
+    }
+
+    /** The priced line as JSON (docs/04 §4.1): the same request as `articoli`, structured instead of formatted lines. */
+    public function configuratorSummary(Request $request)
+    {
+        $line = app(LinePricer::class)->price(
+            array_map(fn ($article): array => [intval($article[0]), intval($article[1])], (array) $request->input('articles', [])),
+            array_map('intval', (array) ($request->input('customizations') ?: $request->input('printings') ?: [])),
+            $request->has_packaging == '1',
+            config('mercatura.storefront.samples') && $request->sample == '1',
+        );
+
+        return response()->json(LineJson::from($line));
     }
 
     public function build_articles_request(Request $request, $return_data = false)

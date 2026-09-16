@@ -37,6 +37,7 @@ final class ProductPageData
             'configurator' => self::configurator($product, $article, $hasPrinting, $hasPackaging),
             'price_table' => self::priceTable($product, $article),
             'details' => self::details($product, $article, $hasPrinting),
+            'default_customization' => self::defaultCustomization($article),
             'packaging' => self::packaging($article),
             'related' => self::related($product),
         ];
@@ -134,6 +135,11 @@ final class ProductPageData
     }
 
     /** @return array{mode: string, columns: list<string>, rows: list<array{label: string, cells: list<string>}>, printed_columns: list<string>, printed_rows: list<array{label: string, cells: list<string>}>, printed_note: string|null, minCustomizationQuantity: int} */
+    public static function priceTableRows(Product $product, ProductVariant $article): array
+    {
+        return self::priceTable($product, $article);
+    }
+
     private static function priceTable(Product $product, ProductVariant $article): array
     {
         $format = fn ($value) => number_format((float) $value, 2, ',', '').'&nbsp;€';
@@ -231,6 +237,12 @@ final class ProductPageData
     }
 
     /** @return list<array{label: string, value: string}> */
+    /** @return list<array{label: string, value: string}> */
+    public static function detailsRows(Product $product, ProductVariant $article, bool $hasPrinting): array
+    {
+        return self::details($product, $article, $hasPrinting);
+    }
+
     private static function details(Product $product, ProductVariant $article, bool $hasPrinting): array
     {
         $attributes = (array) config('mercatura.catalog.attributes', []);
@@ -259,7 +271,104 @@ final class ProductPageData
         return $rows;
     }
 
+    /** The recommended decoration, as a definition list ("Opzione predefinita di stampa"). @return list<array{label: string, value: string}> */
+    public static function defaultCustomization(ProductVariant $article): array
+    {
+        $default = $article->defaultCustomization();
+        if (! $default) {
+            return [];
+        }
+        $rows = [
+            ['label' => __('frontend.product.default_customization.technique'), 'value' => (string) $default->technique_label],
+            ['label' => __('frontend.product.default_customization.position'), 'value' => (string) $default->position_label],
+        ];
+        if ($area = $default->defaultAreaLabel()) {
+            $rows[] = ['label' => __('frontend.product.default_customization.area'), 'value' => $area];
+        }
+        if ($default->max_colors) {
+            $rows[] = ['label' => __('frontend.product.default_customization.max_colors'), 'value' => (string) $default->max_colors];
+        }
+
+        return $rows;
+    }
+
+    /**
+     * Stock per colour and size of the whole product (the "Disponibilità" tab).
+     *
+     * @return list<array{color: string, code: string, sizes: list<array{variant_id: int, sku: string, label: string, stock: int, next_stock_quantity: int, next_stock_date: string|null}>}>
+     */
+    public static function stockTable(Product $product): array
+    {
+        $rows = [];
+        foreach ($product->variants()->where('active', 1)->with(['color', 'size'])->orderBy('color_id')->orderBy('size_id')->get() as $variant) {
+            if ($variant->color === null) {
+                continue;
+            }
+            $rows[(int) $variant->color_id] ??= ['color' => (string) $variant->color->label, 'code' => (string) $variant->color->render_code(), 'sizes' => []];
+            $rows[(int) $variant->color_id]['sizes'][] = [
+                'variant_id' => (int) $variant->id, 'sku' => (string) $variant->sku,
+                'label' => $variant->size ? (string) $variant->size->shown_label() : __('frontend.product.configurator.one_size'),
+                'stock' => (int) $variant->stock, 'next_stock_quantity' => (int) $variant->next_stock_quantity,
+                'next_stock_date' => $variant->next_stock_date ? (string) $variant->next_stock_date : null,
+            ];
+        }
+
+        return array_values($rows);
+    }
+
+    /**
+     * Every decoration of the article priced for a line quantity, in one tree
+     * (docs/04_STOREFRONT_FLOWS.md §4.1): positions → techniques → areas → options.
+     *
+     * @return array{quantity: int, markup_percent: float, positions: list<array<string, mixed>>, packaging: array{available: bool}}
+     */
+    public static function configuratorOptions(ProductVariant $article, int $quantity): array
+    {
+        $quantity = max(1, $quantity);
+        $original = (float) $article->price_per_quantity($quantity, true);
+        $markup = (float) $article->get_markup_percent($quantity, $original);
+        $positions = [];
+        $packaging = false;
+        foreach ($article->customizations()->with('areas.options.tiers')->get()->groupBy('position_label')->sortKeys() as $label => $group) {
+            $techniques = [];
+            foreach ($group->sortBy('technique_label') as $customization) {
+                $packaging = $packaging || (bool) $customization->has_packaging;
+                $areas = [];
+                foreach ($customization->areas as $area) {
+                    $options = [];
+                    foreach ($area->options as $option) {
+                        $costs = $option->priceFor($quantity, 1, (bool) $customization->has_packaging, false, $markup);
+                        $options[] = [
+                            'id' => (int) $option->id,
+                            'label' => $option->label(),
+                            'number_of_colors' => (int) $option->number_of_colors,
+                            'unit_price' => round((float) $costs['unit_price'], 2),
+                            'packaging_unit_price' => isset($costs['packaging_unit_price']) ? round((float) $costs['packaging_unit_price'], 2) : null,
+                            'setup' => round((float) $option->setup * ((int) $option->setup_multiplier ?: 1), 2),
+                            'start_cost' => round((float) $option->start_cost, 2),
+                        ];
+                    }
+                    $areas[] = ['id' => (int) $area->id, 'label' => (string) $area->label, 'type' => $area->type, 'width_mm' => $area->width_mm, 'height_mm' => $area->height_mm, 'options' => $options];
+                }
+                $techniques[] = [
+                    'id' => (int) $customization->id, 'label' => ucfirst((string) $customization->technique_label), 'family' => $customization->family,
+                    'image' => $customization->image ?: null, 'minimum_quantity' => (int) $customization->minimum_quantity, 'processing_days' => (int) $customization->processing_days,
+                    'has_packaging' => (bool) $customization->has_packaging, 'areas' => $areas,
+                ];
+            }
+            $positions[] = ['label' => ucfirst((string) $label), 'image' => $group->first()->image ?: null, 'techniques' => $techniques];
+        }
+
+        return ['quantity' => $quantity, 'markup_percent' => $markup, 'positions' => $positions, 'packaging' => ['available' => $packaging]];
+    }
+
     /** @return list<array{label: string, value: string}> */
+    /** @return list<array{label: string, value: string}> */
+    public static function packagingRows(ProductVariant $article): array
+    {
+        return self::packaging($article);
+    }
+
     private static function packaging(ProductVariant $article): array
     {
         $attributes = (array) config('mercatura.catalog.attributes', []);
