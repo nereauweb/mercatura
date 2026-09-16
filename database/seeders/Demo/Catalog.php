@@ -63,7 +63,7 @@ final class Catalog
     public const PRINT_TIERS = [1 => 1.20, 50 => 0.85, 100 => 0.62, 250 => 0.48, 500 => 0.39, 1000 => 0.32];
 
     /** Quantity tiers of the product prices. */
-    public const PRODUCT_TIERS = [1, 50, 100, 250, 500, 1000];
+    public const PRODUCT_TIERS = [1, 100, 250, 500];
 
     /**
      * Products. Keys: name, category (leaf), shape, brand, material, dimensions,

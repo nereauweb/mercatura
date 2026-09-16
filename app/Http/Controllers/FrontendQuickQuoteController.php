@@ -40,6 +40,17 @@ final class FrontendQuickQuoteController extends Controller
             abort(404);
         }
         $products = $this->products($request);
+        // The same article opened twice (CTA, configurator) is one row; a quantity given now replaces the old one.
+        foreach ($products as $id => $row) {
+            if (($row['sku'] ?? null) === $article->product->sku && ($row['color'] ?? null) === ($article->color->label ?? '') && ($row['size'] ?? null) === ($article->size->label ?? __('frontend.cart.one_size'))) {
+                if ((int) ($data['quantity'] ?? 0) > 0) {
+                    $products[$id]['quantity'] = (int) $data['quantity'];
+                    $request->session()->put('quotation.products', $products);
+                }
+
+                return response()->json($this->payload($request));
+            }
+        }
         $id = Str::random(9);
         $products[$id] = [
             'id' => $id,

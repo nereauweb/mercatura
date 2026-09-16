@@ -62,6 +62,10 @@ final class QuickQuoteTest extends TestCase
         $this->assertSame(__('frontend.quotation.no'), $row['printing']);
         $this->assertNotEmpty($row['colors'], 'the colours of the product are offered');
         $this->assertSame(1, count(session('quotation.products')), 'the page store is shared');
+        $again = $this->postJson('/preventivo/api/aggiungi', ['article_id' => $this->f->a->id, 'quantity' => 300])->assertOk()->json();
+        $this->assertSame(1, $again['count'], 'the same article is not added twice');
+        $this->assertSame(300, $again['products'][0]['quantity'], 'a new quantity replaces the old one');
+        $this->assertSame(1, $this->postJson('/preventivo/api/aggiungi', ['article_id' => $this->f->a->id])->json('count'));
 
         $updated = $this->putJson('/preventivo/api/'.$row['id'].'/aggiorna', ['quantity' => 200, 'notes' => 'Logo a un colore', 'printing' => __('frontend.quotation.yes')])->assertOk()->json();
         $this->assertSame(200, $updated['products'][0]['quantity']);
