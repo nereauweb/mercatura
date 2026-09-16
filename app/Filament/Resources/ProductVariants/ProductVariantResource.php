@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Filament\Resources\ProductVariants;
 
 use App\Filament\Resources\ProductVariants\Pages\EditProductVariant;
+use App\Filament\Resources\ProductVariants\RelationManagers\CustomizationsRelationManager;
 use App\Filament\Resources\ProductVariants\RelationManagers\ImagesRelationManager;
 use App\Filament\Resources\ProductVariants\Schemas\ProductVariantForm;
 use App\Models\ProductVariant;
@@ -37,7 +38,7 @@ final class ProductVariantResource extends Resource
 
     public static function getRelations(): array
     {
-        return [ImagesRelationManager::class];
+        return [CustomizationsRelationManager::class, ImagesRelationManager::class];
     }
 
     public static function getPages(): array

@@ -8,6 +8,8 @@ use App\Models\ImportData\NormalizedProduct;
 use App\Models\ImportData\NormalizedProductVariant;
 use App\Models\Product;
 use App\Models\ProductVariant;
+use App\Support\ImportConnectors;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -17,6 +19,10 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * areas (extent), options (the priced dimension: colours, threads…) and
  * quantity tiers below. Written by the connectors (docs/ARCHITECTURE.md §13)
  * or by the admin; `family` is optional and untyped (docs/03 decision 2).
+ * Rows the admin creates carry a source no connector owns (`own`) and are
+ * never touched by imports; rows received from an import are protected
+ * only while `locked` is set (v2c.6). Connectors write through
+ * ConnectorCommand::upsertCustomization() and prune through importable().
  *
  * @property int $id
  * @property string $source
@@ -28,6 +34,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property string|null $family
+ * @property bool $locked
  * @property int|null $product_id
  * @property int|null $variant_id
  * @property string $technique_label
@@ -49,12 +56,14 @@ class Customization extends Model
     protected $table = 'customizations';
 
     protected $fillable = [
-        'source', 'pipeline', 'family', 'source_product_sku', 'normalized_product_id', 'product_id', 'source_variant_sku', 'normalized_variant_id', 'variant_id',
+        'source', 'pipeline', 'family', 'locked', 'source_product_sku', 'normalized_product_id', 'product_id', 'source_variant_sku', 'normalized_variant_id', 'variant_id',
         'technique_label', 'position_label', 'position_code', 'technique_main_code', 'image', 'is_default', 'processing_days', 'has_packaging',
         'minimum_quantity', 'max_colors', 'max_print_position', 'packaging_code', 'supplier_data',
     ];
 
-    protected $casts = ['supplier_data' => 'array'];
+    protected $casts = ['supplier_data' => 'array', 'locked' => 'boolean'];
+
+    public const MANUAL_SOURCE = 'own';
 
     /** @return HasMany<CustomizationArea, $this> */
     public function areas(): HasMany
@@ -84,6 +93,29 @@ class Customization extends Model
     public function normalized_variant(): BelongsTo
     {
         return $this->belongsTo(NormalizedProductVariant::class, 'normalized_variant_id');
+    }
+
+    /** Created in the admin, not by a connector: no connector owns its source. */
+    public function isManual(): bool
+    {
+        return app(ImportConnectors::class)->forSource($this->source) === null;
+    }
+
+    /** Imports must neither update nor delete it: manual, or received from an import and locked. */
+    public function isProtectedFromImport(): bool
+    {
+        return $this->locked || $this->isManual();
+    }
+
+    /**
+     * The rows an import may update or delete: unlocked rows of a connector source.
+     *
+     * @param  Builder<static>  $query
+     * @return Builder<static>
+     */
+    public function scopeImportable(Builder $query): Builder
+    {
+        return $query->where('locked', false)->whereIn('source', app(ImportConnectors::class)->allSourceValues());
     }
 
     /** Max colours as the supplier states it; backfilled from the first area's option count when missing (legacy behaviour). */

@@ -13,8 +13,6 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
-use Filament\Infolists\Components\RepeatableEntry;
-use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 
@@ -57,15 +55,6 @@ final class ProductVariantForm
                                 ->options(fn (): array => ProductAttribute::query()->orderBy('label')->pluck('label', 'id')->all())->native(false),
                             TextInput::make('value')->label(__('admin.catalog.value'))->required(),
                         ]),
-                ]),
-                Section::make(__('admin.catalog.printings'))->columnSpanFull()->collapsed()->components([
-                    RepeatableEntry::make('customizations')->hiddenLabel()->columns(5)->placeholder('-')->components([
-                        TextEntry::make('family')->label(__('admin.catalog.family'))->badge()->placeholder('-'),
-                        TextEntry::make('technique_label')->label(__('admin.catalog.technique')),
-                        TextEntry::make('position_label')->label(__('admin.catalog.position')),
-                        TextEntry::make('minimum_quantity')->label(__('admin.catalog.from_quantity')),
-                        TextEntry::make('is_default')->label(__('admin.catalog.main_variant'))->formatStateUsing(fn ($state): string => $state ? 'Sì' : 'No'),
-                    ]),
                 ]),
             ]);
     }

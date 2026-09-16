@@ -7,6 +7,7 @@ namespace Tests\Feature\Admin;
 use App\Actions\Orders\StoreOrderItemCustomizations;
 use App\Filament\Resources\Orders\Pages\ViewOrder;
 use App\Filament\Resources\ProductVariants\Pages\EditProductVariant;
+use App\Filament\Resources\ProductVariants\RelationManagers\CustomizationsRelationManager;
 use App\Models\Customer;
 use App\Models\CustomerAddress;
 use App\Models\Order;
@@ -53,6 +54,6 @@ class OrderCustomizationsViewTest extends TestCase
         $admin->assignRole('admin');
         $this->actingAs($admin);
 
-        Livewire::test(EditProductVariant::class, ['record' => $f->a->id])->assertOk()->assertSee('embroidery')->assertSee('Ricamo');
+        Livewire::test(CustomizationsRelationManager::class, ['ownerRecord' => $f->a, 'pageClass' => EditProductVariant::class])->assertOk()->assertSee('embroidery')->assertSee('Ricamo');
     }
 }

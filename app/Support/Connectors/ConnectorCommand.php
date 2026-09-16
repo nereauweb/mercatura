@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Connectors;
 
+use App\Models\Customizations\Customization;
 use App\Models\ImportLog;
 use App\Support\ImportConnectors;
 use Illuminate\Console\Command;
@@ -72,6 +73,26 @@ abstract class ConnectorCommand extends Command
     protected function value_or_null($value = '')
     {
         return $value != '' ? $value : null;
+    }
+
+    /**
+     * Create or update a customization of this connector, unless it is
+     * protected from imports (docs/03_CUSTOMIZATIONS.md v2c.6): returns null
+     * and logs a skip in that case, so the command leaves its children alone.
+     *
+     * @param  array<string, mixed>  $keys
+     * @param  array<string, mixed>  $values
+     */
+    protected function upsertCustomization(array $keys, array $values): ?Customization
+    {
+        $existing = Customization::query()->where($keys)->first();
+        if ($existing instanceof Customization && $existing->isProtectedFromImport()) {
+            $this->line('Customization '.$existing->id.' ('.$existing->technique_label.' / '.$existing->position_label.') is protected from imports, skipped');
+
+            return null;
+        }
+
+        return Customization::query()->updateOrCreate($keys, $values);
     }
 
     protected function markup(): MarkupRules

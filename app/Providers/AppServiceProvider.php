@@ -37,6 +37,7 @@ class AppServiceProvider extends ServiceProvider
         ] as $model) {
             Gate::policy($model, \App\Policies\CatalogPolicy::class);
         }
+        Gate::policy(\App\Models\Customizations\Customization::class, \App\Policies\CatalogPolicy::class);
         foreach ([\App\Models\Page::class, \App\Models\ContentHomeSlide::class, \App\Models\BlogArticle::class, \App\Models\BlogTag::class, \App\Models\LegacyRedirect::class] as $model) {
             Gate::policy($model, \App\Policies\ContentPolicy::class);
         }

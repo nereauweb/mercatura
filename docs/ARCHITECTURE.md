@@ -481,6 +481,11 @@ prices, attributes, media, categories).
   aliases, markup bands and quantity tiers under Sistema → Regole di prezzo);
   connector-specific pages come with the
   package as a Filament plugin returned by `adminPlugin()`.
+- **Manual data.** Customizations created in the admin carry the manual
+  source and are never touched by imports; imported ones are overwritten
+  unless locked. Connectors create and update customizations through
+  `ConnectorCommand::upsertCustomization()` and prune through the
+  `importable()` scope, so the protection holds without per-connector code.
 - **Schema.** Raw supplier tables are created by the package migrations
   (guarded with `hasTable` for installations migrated from the monolith);
   the core schema dump holds no raw table. The normalized `source` columns

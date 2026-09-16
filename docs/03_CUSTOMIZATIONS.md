@@ -1,6 +1,6 @@
 # v2c — Customizations (printing → generic product customization)
 
-Status: **complete: v2c.0–v2c.5 done (2026-09-16), core v2.2.0. v2c.6 (admin editing) is optional and needs its own approval.**
+Status: **complete: v2c.0–v2c.6 done (2026-09-16), core v2.3.0.**
 Written after the connector extraction and the repository split, from a
 full read of the printing domain in the core, the demo seeders and the two
 supplier packages. Decisions marked *(proposed)* need approval before v2c
@@ -688,6 +688,26 @@ Promo84 feed `v1.1.0`, all requiring core `^2.2`; core tagged `v2.2.0`.
 The `import_logs.context` values (`job_import_printings`,
 `import_printings`) are data and stay. Lang keys stay (decision 10).
 ARCHITECTURE §13 updated.
+
+**v2c.6 (2026-09-16, approved as "option 1 plus a lock").** Editing from
+the variant page: `CustomizationsRelationManager` (technique, position,
+family, minimum, days, packaging, nested areas → options → tiers), actions
+set default (`App\Actions\Catalog\SetDefaultCustomization`), lock/unlock,
+delete; `Customization` in `CatalogPolicy`. Rules of coexistence with the
+imports: a row created in the admin carries the manual source (`own`, no
+connector owns it) and is never touched by an import; a row received from
+an import is overwritten by the next one unless `customizations.locked` is
+set (`Customization::isProtectedFromImport()`, scope `importable()`).
+Enforcement: connectors create/update through
+`ConnectorCommand::upsertCustomization()` (returns null and logs when the
+row is protected), prune and mass-update through `importable()` /
+`locked = false`; `cleanup:customizations` deletes only importable rows.
+The three normalize commands and the PF maintenance commands were updated
+(Sipec `v1.3.0`, PF Concept `v1.3.0`, core `v2.3.0`). Alternatives weighed:
+source-only protection (no way to keep a corrected supplier value), an
+overrides table applied at read time (more machinery than the need), and
+re-sourcing a row to `own` (duplicates on the next import); the lock flag
+is the smallest rule that covers both cases.
 
 ## 9. What needs approval before v2c starts
 

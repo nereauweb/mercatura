@@ -32,7 +32,8 @@ final class CleanupCustomizations extends Command
         $cutoff = Carbon::now()->subDays($days);
         $this->info(sprintf('Customizations cleanup: retention %d days (before %s), %s', $days, $cutoff->format('Y-m-d H:i:s'), $dryRun ? 'dry run' : 'live'));
 
-        $stale = CustomizationPipeline::apply(Customization::query()->where('updated_at', '<', $cutoff));
+        // Only what an import may delete: unlocked rows of connector sources, live pipelines.
+        $stale = CustomizationPipeline::apply(Customization::query()->importable()->where('updated_at', '<', $cutoff));
         $count = (clone $stale)->count();
         $this->line("Stale customizations: {$count}");
         if ($count > 0 && ! $dryRun) {
