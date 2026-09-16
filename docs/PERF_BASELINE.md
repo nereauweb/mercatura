@@ -269,3 +269,27 @@ within noise, no console errors on any page nor on the admin login.
 
 Next lever on the JS budget: Livewire 4 lazy/islands for the listing
 component, or the CSP-safe build if a CSP is adopted.
+
+## v2d — storefront flows — 2026-09-17
+
+Same method (Lighthouse 13.4, Chrome for Testing 153, mobile, one run),
+`php artisan serve` on the demo catalogue (`DemoSeeder`, 41 KB placeholder
+thumbnails), core defaults (panel configurator, steps checkout, quotation
+page). The product-page components (both configurators, the sample
+request) are a lazy chunk: main bundle 355 KB / 117 KB gzip, chunk
+13.5 KB / 3.8 KB gzip.
+
+| Page | Score | FCP s | LCP s | CLS | TBT ms | Transfer KB | JS KB | Requests | TTFB ms |
+|---|---|---|---|---|---|---|---|---|---|
+| Home | 83 | 3.3 | 3.6 | 0.000 | 20 | 538 | 347 | 26 | 27 |
+| Category | 85 | 3.2 | 3.5 | 0.000 | 13 | 464 | 347 | 9 | 52 |
+| Product | 81 | 3.5 | 3.8 | 0.000 | 74 | 557 | 360 | 11 | 86 |
+
+Measured on the gesca84 preview (all flows on, skin, fonts) the same
+pages score 77 / 81 / 77 with CLS 0 after two core fixes found there:
+the gallery box sized to the image (`flex-1` in the column layout) and
+the first product tab hidden by `x-cloak` until Alpine started, each
+worth a 0.16 shift when the image or the script arrives after first
+paint. Query budget: home and category within 30; product page 89 with
+the tabs and the modal configurator (the price helpers, as in 4(d)).
+
