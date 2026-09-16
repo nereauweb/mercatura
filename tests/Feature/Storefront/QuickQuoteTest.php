@@ -43,6 +43,9 @@ final class QuickQuoteTest extends TestCase
         $this->assertStringContainsString('data-quote-count', $page);
         $this->assertStringContainsString(__('frontend.quick_quote.products'), $page);
         $this->assertStringContainsString('name="customer[email]"', $page);
+
+        $listing = $this->get('/prodotti')->assertOk()->getContent();
+        $this->assertMatchesRegularExpression('/quick-quote-open\\\', \\{articleId: \\d+\\}/', $listing, 'the card CTA opens the modal with the main variant id');
     }
 
     public function test_the_endpoints_edit_the_same_session_store_as_the_page(): void

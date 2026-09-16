@@ -529,6 +529,8 @@ return [
         'buy' => 'Acquista',
         'availability_for_color' => 'Disponibilità per questo colore: :count pezzi',
         'view_all_availability' => 'Visualizza tutte le disponibilità',
+        'more_specs' => 'Altre specifiche prodotto',
+        'your_price' => 'Il tuo prezzo',
         'recommended_technique' => 'Tecnica di stampa consigliata',
         'print_area' => 'Area di stampa :size',
         'up_to_colours' => 'Fino a :count colori',
