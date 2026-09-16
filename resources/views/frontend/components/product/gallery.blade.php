@@ -13,7 +13,8 @@
         @endforeach
     </ul>
     @endif
-    <div class="relative order-1 flex h-80 flex-1 items-center justify-center rounded-card border border-border-muted bg-surface p-3 md:order-2 md:h-96">
+    {{-- Definite height on every breakpoint: flex-1 only in the row layout, otherwise the box would size to the image and shift when it arrives. --}}
+    <div class="relative order-1 flex h-80 shrink-0 items-center justify-center rounded-card border border-border-muted bg-surface p-3 md:order-2 md:h-96 md:flex-1">
         @forelse($images as $image)
             <button type="button" @click="zoom = true" @if(!$loop->first) x-cloak @endif x-show="current === {{ $loop->index }}" class="flex h-full w-full items-center justify-center" aria-label="{{ __('frontend.product.gallery_open') }}">
                 <img src="{{ $image['full'] }}" alt="{{ $image['alt'] ?: $alt }}" width="600" height="600" class="max-h-full w-auto object-contain" @if($loop->first) fetchpriority="high" @else loading="lazy" @endif>
