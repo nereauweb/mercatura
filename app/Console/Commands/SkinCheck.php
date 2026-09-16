@@ -176,6 +176,9 @@ final class SkinCheck extends Command
 
         $coreKeys = array_keys(\Illuminate\Support\Arr::dot((array) require config_path('brand.php')));
         $skinKeys = array_keys(\Illuminate\Support\Arr::dot($overrides));
+        // A list-valued core key (certifications, …) is one key: its entries belong to the skin.
+        $listKeys = array_keys(array_filter((array) require config_path('brand.php'), fn ($value): bool => is_array($value) && array_is_list($value)));
+        $skinKeys = array_values(array_filter($skinKeys, fn (string $key): bool => ! array_filter($listKeys, fn (string $list): bool => str_starts_with($key, $list.'.'))));
         $unknown = array_diff($skinKeys, $coreKeys);
 
         if ($unknown !== []) {
