@@ -65,6 +65,16 @@ class FrontendContentController extends Controller
         return view('frontend.pages.page', compact('page'));
     }
 
+    /** robots.txt: the core rules, or "stay away" on a staging instance (config mercatura.staging). */
+    public function robots()
+    {
+        $body = config('mercatura.staging.enabled')
+            ? "User-agent: *\nDisallow: /\n"
+            : view('frontend.public.robots')->render();
+
+        return response($body, 200, ['Content-Type' => 'text/plain; charset=UTF-8']);
+    }
+
     public function notFound(Request $request)
     {
         return response()->view('frontend.pages.not_found', [], 404);

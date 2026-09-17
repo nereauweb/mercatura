@@ -25,8 +25,11 @@ Checklist for a new installation:
 4. Build assets (`npm ci && npm run build`) on the host or in CI and ship
    `public/build`. Filament's own assets are published by `composer install`
    (`filament:upgrade` post-autoload script) into `public/{css,js,fonts}/filament`.
-5. If the search provider needs an index: `php artisan scout:import "App\Models\Product"`.
-6. Webhooks: Stripe → `POST /stripe/webhook` (Cashier, `STRIPE_WEBHOOK_SECRET`).
-7. Supplier connectors: require the private packages with Composer (or check
+5. A test or staging instance: `MERCATURA_STAGING=true` (noindex header and meta on every page, `robots.txt`
+   disallowing everything) and, to keep visitors out too, `MERCATURA_STAGING_USER` / `MERCATURA_STAGING_PASSWORD`
+   (HTTP basic auth in front of the whole site; `/up`, the Stripe webhook and the payment returns stay open).
+6. If the search provider needs an index: `php artisan scout:import "App\Models\Product"`.
+7. Webhooks: Stripe → `POST /stripe/webhook` (Cashier, `STRIPE_WEBHOOK_SECRET`).
+8. Supplier connectors: require the private packages with Composer (or check
    them out under `connectors/`), set `MERCATURA_CONNECTOR_<KEY>=true` and
    their credentials, run `php artisan migrate` again for their raw tables.

@@ -17,7 +17,9 @@
     $imageUrl = str_starts_with((string) $image, 'http') ? $image : rtrim(url('/'), '/').$image;
 @endphp
 <meta name="description" content="{{ $description }}">
-@if($noindex)
+@if(config('mercatura.staging.enabled'))
+<meta name="robots" content="noindex,nofollow">
+@elseif($noindex)
 <meta name="robots" content="noindex,follow">
 @endif
 @include('frontend.public.seo-canonical', ['url' => $url, 'emitCanonical' => $canonical && ! $noindex])

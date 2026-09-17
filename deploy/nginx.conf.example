@@ -37,7 +37,8 @@ server {
     }
 
     location = /favicon.ico { access_log off; log_not_found off; }
-    location = /robots.txt  { access_log off; log_not_found off; }
+    # robots.txt is answered by the application (it depends on MERCATURA_STAGING): no static file.
+    location = /robots.txt  { access_log off; try_files /dev/null /index.php?$query_string; }
 
     error_page 404 /index.php;
 

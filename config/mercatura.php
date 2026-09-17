@@ -144,6 +144,22 @@ return [
     | day (from the next one after cutoff_hour), Saturdays, Sundays and the
     | listed holidays ('MM-DD' or 'YYYY-MM-DD') excluded.
     */
+    /*
+    | Staging switch: X-Robots-Tag noindex on every response, robots.txt that
+    | disallows everything, noindex meta on every page and, when user and
+    | password are set, HTTP basic auth in front of the whole site except the
+    | listed paths (payment webhooks, health check).
+    */
+    // Extra robots.txt lines of the installation (ARCHITECTURE §12: additions by configuration).
+    'robots_extra' => array_values(array_filter(array_map('trim', explode('|', (string) env('MERCATURA_ROBOTS_EXTRA', ''))))),
+
+    'staging' => [
+        'enabled' => (bool) env('MERCATURA_STAGING', false),
+        'user' => env('MERCATURA_STAGING_USER'),
+        'password' => env('MERCATURA_STAGING_PASSWORD'),
+        'except' => ['up', 'stripe/webhook', 'ordine/*/pagamento/*'],
+    ],
+
     'delivery' => [
         'cutoff_hour' => (int) env('MERCATURA_DELIVERY_CUTOFF_HOUR', 12),
         'holidays' => array_values(array_filter(array_map('trim', explode(',', (string) env('MERCATURA_DELIVERY_HOLIDAYS', '01-01,01-06,04-25,05-01,06-02,08-15,11-01,12-08,12-25,12-26'))))),

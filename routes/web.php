@@ -38,6 +38,7 @@ Route::get('/accedi', [FrontendLoginController::class, 'index'])->name('frontend
 Route::post('/login', [FrontendLoginController::class, 'attempt_login'])->name('frontend.login.attempt');
 Route::get('/logout', [FrontendLoginController::class, 'logout'])->name('frontend.auth.logout');
 // CONTENUTI
+Route::get('/robots.txt', [FrontendContentController::class, 'robots'])->name('frontend.robots');
 Route::get('/contenuti/{slug}', [FrontendContentController::class, 'page'])->name('frontend.contents.page');
 // BLOG
 Route::get('/blog', [FrontendBlogController::class, 'index'])->name('frontend.blog.index');
