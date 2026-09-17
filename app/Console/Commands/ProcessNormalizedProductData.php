@@ -41,6 +41,18 @@ class ProcessNormalizedProductData extends ImportCommand
      */
     public function handle(): void
     {
+        // Every product is saved several times here and the pipeline runs scout:import right after:
+        // syncing each save to the search engine would be thousands of useless remote calls.
+        Product::disableSearchSyncing();
+        try {
+            $this->process();
+        } finally {
+            Product::enableSearchSyncing();
+        }
+    }
+
+    private function process(): void
+    {
         // ===== INIZIALIZZAZIONE IMPORT =====
         $this->import_id = $this->argument('import_id') ? $this->argument('import_id') : time();
         $start = microtime(true);
@@ -48,10 +60,6 @@ class ProcessNormalizedProductData extends ImportCommand
         $this->db_log('Inizio import', 'Import iniziato alle '.date('H:i').' del '.date('d/m/Y'), 'warn');
 
         // Caricamento dati di riferimento
-        $meta_colors = DB::table('meta_colors')
-            ->select(DB::raw('*'))
-            ->get();
-
         $attributes = ProductAttribute::all();
 
         // Recupero prodotti normalizzati attivi negli ultimi 3 giorni

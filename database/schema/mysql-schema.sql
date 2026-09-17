@@ -129,7 +129,8 @@ CREATE TABLE `categories_import_aliases` (
   `category_ref` varchar(64) NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NULL DEFAULT NULL,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  KEY `categories_import_aliases_lookup_index` (`source`,`parent_category_ref`,`category_ref`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `category_product`;
@@ -142,7 +143,9 @@ CREATE TABLE `category_product` (
   `position` int(10) unsigned NOT NULL DEFAULT 0,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NULL DEFAULT NULL,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  KEY `category_product_product_id_index` (`product_id`),
+  KEY `category_product_category_id_index` (`category_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `content_home_slides`;
@@ -309,7 +312,9 @@ CREATE TABLE `customizations` (
   KEY `technique_label_index` (`technique_label`),
   KEY `printing_variants_source_pipeline_idx` (`source`,`pipeline`),
   KEY `variant_id_index` (`variant_id`),
-  KEY `customizations_family_index` (`family`)
+  KEY `customizations_family_index` (`family`),
+  KEY `customizations_variant_labels_index` (`source`,`source_variant_sku`,`technique_label`(96),`position_label`(96)),
+  KEY `customizations_supplier_codes_index` (`source`,`pipeline`,`source_product_sku`,`source_variant_sku`,`position_code`,`technique_main_code`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `failed_jobs`;
@@ -342,7 +347,9 @@ CREATE TABLE `import_logs` (
   `source_ref` varchar(32) DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NULL DEFAULT NULL,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  KEY `import_logs_import_id_index` (`import_id`(64)),
+  KEY `import_logs_context_created_at_index` (`context`(64),`created_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `jobs`;
@@ -540,7 +547,9 @@ CREATE TABLE `normalized_products` (
   `updated_at` timestamp NULL DEFAULT NULL,
   `last_seen_active` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
-  KEY `source_source_sku_index` (`source`,`source_id`)
+  KEY `source_source_sku_index` (`source`,`source_id`),
+  KEY `normalized_products_source_id_index` (`source_id`),
+  KEY `normalized_products_last_seen_active_index` (`last_seen_active`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `normalized_products_variants`;
@@ -584,8 +593,9 @@ CREATE TABLE `normalized_products_variants` (
   `updated_at` timestamp NULL DEFAULT NULL,
   `last_seen_active` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
-  KEY `product_id_index` (`id`),
-  KEY `source_id_index` (`source_id`) USING BTREE
+  KEY `product_id_index` (`product_id`),
+  KEY `source_id_index` (`source_id`) USING BTREE,
+  KEY `normalized_products_variants_last_seen_active_index` (`last_seen_active`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `normalized_products_variants_colors`;
@@ -883,7 +893,8 @@ CREATE TABLE `product_colors` (
   `updated_at` timestamp NULL DEFAULT NULL,
   `deleted_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
-  KEY `family_id` (`family_id`)
+  KEY `family_id` (`family_id`),
+  KEY `product_colors_label_index` (`label`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `product_colors_families`;
@@ -935,7 +946,8 @@ CREATE TABLE `product_sizes` (
   `updated_at` timestamp NULL DEFAULT NULL,
   `deleted_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
-  KEY `type_id_index` (`id`)
+  KEY `type_id_index` (`type_id`),
+  KEY `product_sizes_label_index` (`label`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `products`;
@@ -981,7 +993,8 @@ CREATE TABLE `products` (
   KEY `sku_index` (`sku`),
   KEY `slug_index` (`slug`),
   KEY `products_brand_id_foreign` (`brand_id`),
-  CONSTRAINT `products_brand_id_foreign` FOREIGN KEY (`brand_id`) REFERENCES `brands` (`id`) ON DELETE SET NULL
+  CONSTRAINT `products_brand_id_foreign` FOREIGN KEY (`brand_id`) REFERENCES `brands` (`id`) ON DELETE SET NULL,
+  KEY `products_source_source_sku_index` (`source`,`source_sku`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `products_variants`;
@@ -1004,9 +1017,10 @@ CREATE TABLE `products_variants` (
   `updated_at` timestamp NULL DEFAULT NULL,
   `deleted_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `sku_index` (`id`),
+  KEY `sku_index` (`sku`),
   KEY `product_id_index` (`product_id`),
-  KEY `source_source_sku_index` (`source`,`source_sku`)
+  KEY `source_source_sku_index` (`source`,`source_sku`),
+  KEY `products_variants_source_sku_index` (`source_sku`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `products_variants_attributes`;

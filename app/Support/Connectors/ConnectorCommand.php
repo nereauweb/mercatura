@@ -92,7 +92,14 @@ abstract class ConnectorCommand extends Command
             return null;
         }
 
-        return Customization::query()->updateOrCreate($keys, $values);
+        // Same outcome as updateOrCreate($keys, $values), without repeating the lookup above.
+        if ($existing instanceof Customization) {
+            $existing->fill($values)->save();
+
+            return $existing;
+        }
+
+        return Customization::query()->create(array_merge($keys, $values));
     }
 
     protected function markup(): MarkupRules

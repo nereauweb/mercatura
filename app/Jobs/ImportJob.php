@@ -144,7 +144,8 @@ abstract class ImportJob implements ShouldQueue
     protected function callCommand($command, $parameters = [])
     {
         try {
-            Artisan::call($command, $parameters);
+            // NullOutput: Artisan::call would otherwise keep every line of every stage command in memory for the whole run.
+            Artisan::call($command, $parameters, new \Symfony\Component\Console\Output\NullOutput);
 
             return true;
         } catch (\Exception $e) {

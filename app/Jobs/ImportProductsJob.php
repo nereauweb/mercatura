@@ -48,6 +48,7 @@ class ImportProductsJob extends ImportJob
      */
     public function handle(): void
     {
+        app(\App\Support\Connectors\MarkupRules::class)->flush();
         $start = microtime(true);
 
         $flags_output = $this->buildFlagsOutput();

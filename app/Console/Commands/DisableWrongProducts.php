@@ -28,6 +28,17 @@ class DisableWrongProducts extends Command
      */
     public function handle(): void
     {
+        // Runs between the product processing and scout:import: no per-save sync to the search engine.
+        Product::disableSearchSyncing();
+        try {
+            $this->process();
+        } finally {
+            Product::enableSearchSyncing();
+        }
+    }
+
+    private function process(): void
+    {
         $normalized_products_skus = NormalizedProduct::where('last_seen_active', '>', Carbon::now()->subDays(3)->toDateString())->pluck('source_id')->toArray();
         $products = Product::with('variants')
             ->whereIn('source', app(\App\Support\ImportConnectors::class)->allSourceValues())

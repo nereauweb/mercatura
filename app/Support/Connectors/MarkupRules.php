@@ -12,18 +12,37 @@ use App\Support\ImportConnectors;
  * Selling price from unit cost: markup bands in product_markups
  * (condition = quantity × cost) and quantity breaks in normalized_tiers_rules.
  * Connectors may adjust the percent for their own sources
- * (ImportConnector::markupPercent).
+ * (ImportConnector::markupPercent). Both tables are a handful of rows read
+ * millions of times by an import: they are held in memory, in id order (the
+ * order the former `first()` queries returned), and dropped when a row is
+ * saved or deleted and at the start of every import run.
  */
 final class MarkupRules
 {
+    /** @var list<ProductMarkup>|null */
+    private ?array $bands = null;
+
+    /** @var list<NormalizedTiersRule>|null */
+    private ?array $tierRules = null;
+
     public function __construct(private readonly ImportConnectors $connectors) {}
+
+    public function flush(): void
+    {
+        $this->bands = null;
+        $this->tierRules = null;
+    }
 
     public function rule(float $condition): ?ProductMarkup
     {
-        return ProductMarkup::query()
-            ->where('from_condition', '<', $condition)
-            ->where('to_condition', '>=', $condition)
-            ->first();
+        $this->bands ??= array_values(ProductMarkup::query()->orderBy('id')->get()->all());
+        foreach ($this->bands as $band) {
+            if ((float) $band->from_condition < $condition && (float) $band->to_condition >= $condition) {
+                return $band;
+            }
+        }
+
+        return null;
     }
 
     public function percent(float $condition, ?string $source, ?string $sku): float
@@ -50,7 +69,14 @@ final class MarkupRules
      */
     public function tiers(float $cost, ?string $source = null, ?string $sku = null): array
     {
-        $band = NormalizedTiersRule::query()->where('from_price', '<=', $cost)->where('to_price', '>', $cost)->first();
+        $this->tierRules ??= array_values(NormalizedTiersRule::query()->orderBy('id')->get()->all());
+        $band = null;
+        foreach ($this->tierRules as $rule) {
+            if ((float) $rule->from_price <= $cost && (float) $rule->to_price > $cost) {
+                $band = $rule;
+                break;
+            }
+        }
         if (! $band) {
             $single = $cost;
             if ($this->connectors->forSource($source)?->appliesMarkupToSingleTier($sku)) {

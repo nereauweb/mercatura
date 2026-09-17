@@ -53,6 +53,7 @@ class Import extends ImportCommand
     public function handle(): void
     {
         $this->applyRuntimeFlags();
+        app(\App\Support\Connectors\MarkupRules::class)->flush();
         $this->import_id = time();
         $start = microtime(true);
 

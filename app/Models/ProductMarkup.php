@@ -21,6 +21,14 @@ use Illuminate\Database\Eloquent\Model;
  */
 class ProductMarkup extends Model
 {
+    /** MarkupRules keeps these rows in memory: drop them when one changes. */
+    protected static function booted(): void
+    {
+        $flush = static fn () => app(\App\Support\Connectors\MarkupRules::class)->flush();
+        static::saved($flush);
+        static::deleted($flush);
+    }
+
     protected $table = 'product_markups';
 
     protected $fillable = ['from_condition', 'to_condition', 'value'];
