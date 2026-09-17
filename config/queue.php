@@ -38,7 +38,7 @@ return [
             'driver' => 'database',
             'table' => 'jobs',
             'queue' => 'default',
-            'retry_after' => 90,
+            'retry_after' => (int) env('QUEUE_RETRY_AFTER', 7500), // above the longest job: imports run up to ImportJob::$timeout (7200 s); a lower value would release a running import to a second attempt
             'after_commit' => false,
         ],
 
@@ -46,7 +46,7 @@ return [
             'driver' => 'beanstalkd',
             'host' => 'localhost',
             'queue' => 'default',
-            'retry_after' => 90,
+            'retry_after' => (int) env('QUEUE_RETRY_AFTER', 7500), // above the longest job: imports run up to ImportJob::$timeout (7200 s); a lower value would release a running import to a second attempt
             'block_for' => 0,
             'after_commit' => false,
         ],
@@ -66,7 +66,7 @@ return [
             'driver' => 'redis',
             'connection' => 'default',
             'queue' => env('REDIS_QUEUE', 'default'),
-            'retry_after' => 90,
+            'retry_after' => (int) env('QUEUE_RETRY_AFTER', 7500), // above the longest job: imports run up to ImportJob::$timeout (7200 s); a lower value would release a running import to a second attempt
             'block_for' => null,
             'after_commit' => false,
         ],

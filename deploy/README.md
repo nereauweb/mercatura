@@ -1,12 +1,13 @@
 # Deploy templates
 
 Starting points for a Mercatura installation on a plain Linux host (PHP 8.4
-FPM, nginx, MariaDB 10.11, a queue worker). Copy, rename and fill in the
+FPM, nginx or Apache 2.4, MariaDB 10.11, a queue worker). Copy, rename and fill in the
 placeholders; nothing here is required by the code.
 
 | File | Purpose |
 |---|---|
 | `nginx.conf.example` | Server block: `public/` as root, PHP-FPM, static asset caching |
+| `apache.conf.example` | The same for Apache 2.4 with php-fpm (`public/.htaccess` does the rewriting) |
 | `supervisor-queue.conf.example` | Queue worker kept alive by supervisor |
 | `crontab.example` | Laravel scheduler |
 | `deploy.sh` | Release steps to run after `git pull` (or from CI) |
