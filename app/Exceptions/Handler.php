@@ -128,25 +128,26 @@ class Handler extends ExceptionHandler
                     }
                     break;
             }
-        } else {
-            // Handle non-HTTP exceptions (like general PHP errors, etc.)
-            // These should be shown as 500 errors when APP_DEBUG is false
-            if (! config('app.debug')) {
-                try {
-                    $controller = App::make(FrontendContentController::class);
+        }
 
-                    return $controller->error($request, 500);
-                } catch (\Exception $e) {
-                    CaughtExceptionLogger::error('Exception Handler: FrontendContentController::error failed (non-HTTP exception path)', $e, [
-                        'status_code' => 500,
-                    ]);
+        // Not an HTTP exception. The framework knows how to answer several of them (a guest on a
+        // protected page is sent to the login, an expired CSRF token is a 419, a missing model a 404,
+        // a denied policy a 403, a throttled request a 429): let it, and keep the branded page only
+        // for what really is a server error.
+        $response = parent::render($request, $exception);
+        if ($response->getStatusCode() < 500) {
+            return $response;
+        }
+        try {
+            $controller = App::make(FrontendContentController::class);
 
-                    return response()->view('frontend.pages.error', ['statusCode' => 500], 500);
-                }
-            }
+            return $controller->error($request, 500);
+        } catch (\Exception $e) {
+            CaughtExceptionLogger::error('Exception Handler: FrontendContentController::error failed (non-HTTP exception path)', $e, [
+                'status_code' => 500,
+            ]);
 
-            // In development (APP_DEBUG=true), show the default Laravel error page with details
-            return parent::render($request, $exception);
+            return response()->view('frontend.pages.error', ['statusCode' => 500], 500);
         }
     }
 
