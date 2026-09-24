@@ -32,7 +32,7 @@ PR that introduces it, with the reason recorded in §7.
 | Bundler | Vite 8 with `laravel-vite-plugin` 3 *(§6 said Vite 6; the plugin's current major requires Vite 8, adopted in Phase 4a)* |
 | Forbidden | UIkit, Bootstrap, jQuery in new code *(CLAUDE.md)*. Legacy UIkit remains only in the frozen admin and in storefront areas not yet converted. |
 | Fonts | Self-hosted, subsetted, `font-display: swap`, metric-matched fallbacks *(CLAUDE.md)* |
-| Images | `spatie/laravel-medialibrary` 11 *(inherited, major bump in Phase 2)* with responsive conversions; WebP/AVIF from the image pipeline |
+| Images | `spatie/laravel-medialibrary` 11 *(inherited, major bump in Phase 2)*; named WebP conversions on `ProductVariant` (`thumb` 320, `web` 800, `large` 1600) and the same `web`/`large` sidecars for home slides on the public disk (not Spatie — slides store a bare filename). Originals kept as JPEG/PNG. Not Spatie `withResponsiveImages()` |
 
 ## 3. Packages
 
@@ -145,3 +145,4 @@ better option appears. Each entry names the trigger for revisiting.
 | Decision | Why it may change | Trigger |
 |---|---|---|
 | PDF via `spatie/laravel-pdf` + Browsershot (Chromium) | Output quality is good, but the server setup (Node, Puppeteer, Chromium and its libraries) is complex and fragile on shared hosting. | A pure-PHP or service-based renderer that reproduces the quote and order documents with equal fidelity and simpler deployment. `spatie/laravel-pdf` 2 (installed in Phase 2) is driver-based and ships a DomPdf driver with no external binary and a Cloudflare Browser Rendering driver: switching is a config change, so the evaluation in Phase 4(h) is a rendering-fidelity test, not a package swap. |
+| Named WebP conversions (`thumb`/`web`/`large`), no AVIF, no Spatie `withResponsiveImages()` | AVIF compresses better; a width scale would pick the file automatically. The catalogue is too large for a file per width step, and encode time of AVIF is not acceptable during import. | LCP or transfer still over budget after WebP; AVIF encode becomes cheap enough to run on the queue. |

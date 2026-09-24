@@ -1,4 +1,4 @@
-{{-- @mercatura-view frontend.pages.list @version 3 --}
+{{-- @mercatura-view frontend.pages.list @version 4 --}}
 {{-- Catalogue listing: category, brand or all products. Composes breadcrumb, sidebar navigation, bestsellers
      and the Livewire list with its filters. Data from FrontendListController::list_page.
      Stacks: catalog-before, catalog-after-bestsellers, catalog-after. --}}
@@ -18,16 +18,17 @@
 
 		<h1 class="text-3xl font-bold uppercase text-primary">{{ $page_title }}</h1>
 
-		@if(isset($bestsellers) && count($bestsellers) > 0)
+		@php $hasBestsellers = isset($bestsellers) && count($bestsellers) > 0; @endphp
+		@if($hasBestsellers)
 		<section class="my-6 rounded-card border border-border-muted p-4">
 			<h2 class="mb-3 text-center text-xl font-bold text-primary">{{ __('frontend.catalog.bestsellers') }}</h2>
-			<x-frontend::product.slider :products="$bestsellers" />
+			<x-frontend::product.slider :products="$bestsellers" :priority="true" />
 		</section>
 		@endif
 
 		@stack('catalog-after-bestsellers')
 
-		@livewire('frontend-product-list', ['category' => $category ? $category->id : false, 'brand' => $selected_brand ?: false], key('products-page'))
+		@livewire('frontend-product-list', ['category' => $category ? $category->id : false, 'brand' => $selected_brand ?: false, 'prioritizeFirstCard' => ! $hasBestsellers], key('products-page'))
 
 		@if($category)
 			{{-- CMS text may carry its own h1: the page already has one, so headings are shifted down one level. --}}

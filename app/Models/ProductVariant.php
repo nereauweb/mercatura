@@ -32,12 +32,38 @@ class ProductVariant extends Model implements HasMedia
         'next_stock_quantity' => 'integer',
     ];
 
+    public const MEDIA_CONVERSION_THUMB = 'thumb';
+
+    public const MEDIA_CONVERSION_WEB = 'web';
+
+    public const MEDIA_CONVERSION_LARGE = 'large';
+
     public function registerMediaConversions(?Media $media = null): void
     {
-        $this->addMediaConversion('thumb')
-            ->width(150)
-            ->height(150)
+        $this->addMediaConversion(self::MEDIA_CONVERSION_THUMB)
+            ->width(320)
+            ->height(320)
+            ->format('webp')
+            ->quality(80)
             ->nonQueued();
+
+        $this->addMediaConversion(self::MEDIA_CONVERSION_WEB)
+            ->queued()
+            ->width(800)
+            ->format('webp')
+            ->quality(80);
+
+        $this->addMediaConversion(self::MEDIA_CONVERSION_LARGE)
+            ->queued()
+            ->width(1600)
+            ->format('webp')
+            ->quality(80);
+    }
+
+    /** URL of a named conversion, falling back to the original when it has not been generated yet. */
+    public function conversionUrl(Media $media, string $conversion): string
+    {
+        return $media->hasGeneratedConversion($conversion) ? $media->getUrl($conversion) : $media->getUrl();
     }
 
     protected $table = 'products_variants';
@@ -99,7 +125,7 @@ class ProductVariant extends Model implements HasMedia
             return null;
         }
 
-        return $thumb && $media->hasGeneratedConversion('thumb') ? $media->getUrl('thumb') : $media->getUrl();
+        return $thumb ? $this->conversionUrl($media, self::MEDIA_CONVERSION_THUMB) : $media->getUrl();
     }
 
     public function cover($thumb_url = false)
@@ -109,7 +135,7 @@ class ProductVariant extends Model implements HasMedia
             return false;
         }
         if ($thumb_url) {
-            return $images[0]->getUrl('thumb');
+            return $this->conversionUrl($images[0], self::MEDIA_CONVERSION_THUMB);
         }
 
         return $images[0]->getUrl();

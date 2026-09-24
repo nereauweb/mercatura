@@ -1,4 +1,4 @@
-{{-- @mercatura-view livewire.frontend-product-list @version 2 --}}
+{{-- @mercatura-view livewire.frontend-product-list @version 3 --}}
 {{-- Filters panel + product grid + pagination. Filters apply immediately; wire:loading gives visual state
      while the smallest component (this one) re-renders. --}}
 @php
@@ -146,7 +146,7 @@
 		@if($products->count())
 			<ul class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4" wire:loading.class="opacity-60">
 				@foreach($products as $product)
-					<li wire:key="product-{{ $product->id }}"><x-frontend::product.card :product="$product" /></li>
+					<li wire:key="product-{{ $product->id }}"><x-frontend::product.card :product="$product" :eager="$loop->index < 4" :priority="$this->prioritizeFirstCard && $loop->first" /></li>
 				@endforeach
 			</ul>
 		@else

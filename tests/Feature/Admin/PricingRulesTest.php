@@ -6,6 +6,7 @@ namespace Tests\Feature\Admin;
 
 use App\Filament\Resources\System\Pricing\Pages\ManageProductMarkups;
 use App\Filament\Resources\System\Pricing\Pages\ManageProductPriceTiers;
+use App\Models\ImportData\NormalizedTiersRule;
 use App\Models\ProductMarkup;
 use App\Models\User;
 use Database\Seeders\CoreSeeder;
@@ -46,8 +47,21 @@ class PricingRulesTest extends TestCase
         Livewire::test(ManageProductMarkups::class)->callAction(TestAction::make('create')->table(), data: ['from_condition' => 100000000, 'to_condition' => 200000000, 'value' => 5])->assertHasNoActionErrors();
         $this->assertSame(1, ProductMarkup::query()->where('from_condition', 100000000)->count());
         Livewire::test(ManageProductMarkups::class)->callAction(TestAction::make('create')->table(), data: ['from_condition' => 50, 'to_condition' => 40, 'value' => 5])->assertHasActionErrors(['to_condition']);
+    }
 
-        Livewire::test(ManageProductPriceTiers::class)->assertOk();
+    public function test_quantity_tiers_are_seeded_and_listed(): void
+    {
+        $this->assertSame(count(CoreSeeder::QUANTITY_TIERS), NormalizedTiersRule::query()->count());
+
+        $row = NormalizedTiersRule::query()->where('from_price', '1.00')->firstOrFail();
+        $this->assertSame([1, 50, 100, 250], [
+            (int) $row->from_quantity_1,
+            (int) $row->from_quantity_2,
+            (int) $row->from_quantity_3,
+            (int) $row->from_quantity_4,
+        ]);
+
+        Livewire::test(ManageProductPriceTiers::class)->assertOk()->assertSee('2500');
     }
 
     public function test_changing_a_band_changes_the_configurator_total_at_once(): void

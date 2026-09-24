@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Support\CaughtExceptionLogger;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Storage;
+use Spatie\MediaLibrary\Conversions\FileManipulator;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class FixMediaFileExtensions extends Command
@@ -127,13 +128,8 @@ class FixMediaFileExtensions extends Command
                                 $media->generated_conversions = [];
                                 $media->save();
 
-                                // Rigenera thumbnail se il file esiste
                                 if ($disk->exists($newPath)) {
-                                    $variant->addMediaConversion('thumb')
-                                        ->width(150)
-                                        ->height(150)
-                                        ->nonQueued()
-                                        ->performOnCollections('image');
+                                    app(FileManipulator::class)->createDerivedFiles($media);
                                 }
                             }
                         } catch (\Exception $e) {

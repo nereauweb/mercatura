@@ -54,6 +54,9 @@ final class FrontendProductList extends Component
     /** @var list<int> */
     public array $products_ids = [];
 
+    /** First grid card is the page LCP when the listing has no bestseller slider above it. */
+    public bool $prioritizeFirstCard = true;
+
     /** Query-string state. */
     public string $urlBrand = '';
 
@@ -115,11 +118,12 @@ final class FrontendProductList extends Component
     public array $print_techniques = [];
 
     /** @param  list<int>  $products_ids */
-    public function mount(int|string|false $category = 0, string|false $brand = false, array $products_ids = []): void
+    public function mount(int|string|false $category = 0, string|false $brand = false, array $products_ids = [], bool $prioritizeFirstCard = true): void
     {
         $this->categoryId = $category ? (int) $category : null;
         $this->brand = $brand;
         $this->products_ids = array_map('intval', $products_ids);
+        $this->prioritizeFirstCard = $prioritizeFirstCard;
         $this->syncArraysFromUrl();
         $this->priceMinInput = (float) $this->min_price > 0 ? (string) $this->min_price : '';
         $this->priceMaxInput = (float) $this->max_price < self::PRICE_MAX ? (string) $this->max_price : '';

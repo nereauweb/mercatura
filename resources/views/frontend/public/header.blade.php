@@ -1,4 +1,4 @@
-{{-- @mercatura-view frontend.public.header @version 2 --}}
+{{-- @mercatura-view frontend.public.header @version 4 --}}
 {{-- Site header: utility bar, logo, brand contacts, search, cart. Identity from config/brand.php, copy from lang. --}}
 @php
     $brand = config('brand');
@@ -37,7 +37,7 @@
 		<div class="mx-auto max-w-7xl px-4 py-3">
 			<div class="flex items-center gap-4">
 				<a href="{{ route('frontend.home') }}" class="shrink-0">
-					<img src="{{ $brand['logo'] }}" alt="{{ __('frontend.header.logo_alt', ['brand' => $brand['name']]) }}" width="{{ $brand['logo_width'] }}" height="{{ $brand['logo_height'] }}" class="h-10 w-auto md:h-12" fetchpriority="high">
+					<img src="{{ $brand['logo'] }}" alt="{{ __('frontend.header.logo_alt', ['brand' => $brand['name']]) }}" width="{{ $brand['logo_width'] }}" height="{{ $brand['logo_height'] }}" class="h-10 w-auto md:h-12">
 				</a>
 
 				<div class="hidden flex-1 flex-col gap-2 md:flex">

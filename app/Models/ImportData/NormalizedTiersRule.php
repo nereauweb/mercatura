@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Model;
  * Quantity breaks generated at import for products whose supplier gives no
  * tiers: for a unit cost between from_price and to_price, the four
  * quantities at which a price list row is written (MarkupRules::tiers).
- * Edited in the admin (Sistema → Regole di prezzo: scaglioni).
+ * Seeded by CoreSeeder; edited in the admin (Sistema → Regole di prezzo: scaglioni).
  */
 class NormalizedTiersRule extends Model
 {

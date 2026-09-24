@@ -162,7 +162,7 @@ is about that.
 php artisan mercatura:skin-check {skin}      # lists overridable views; fails if the skin overrides a view that does not exist in core
 php artisan mercatura:skin-override {view}   # copies one view into resources/skins/{MERCATURA_SKIN}/ (installation tooling, works here for demo)
 php artisan migrate --seed                   # CoreSeeder + DemoSeeder: neutral demo shop
-php artisan db:seed --class=CoreSeeder       # roles, attributes, sizes, markup bands (installations)
+php artisan db:seed --class=CoreSeeder       # roles, attributes, sizes, markup bands, quantity breaks (installations)
 ```
 
 ## Repository layout (the parts that matter for the contract)

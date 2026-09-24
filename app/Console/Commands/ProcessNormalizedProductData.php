@@ -16,7 +16,8 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use Intervention\Image\Facades\Image;
+use Intervention\Image\ImageManager;
+use Throwable;
 
 class ProcessNormalizedProductData extends ImportCommand
 {
@@ -409,7 +410,8 @@ class ProcessNormalizedProductData extends ImportCommand
                                 file_put_contents($tempPath, $response->body());
                                 // Verifica che sia un'immagine valida
                                 try {
-                                    $img = Image::make($tempPath);
+                                    // Bypass Laravel's Image facade: it expects Intervention v4 (usingDriver).
+                                    $img = (new ImageManager(['driver' => 'gd']))->make($tempPath);
                                     // Ridimensiona se necessario
                                     if ($img->height() > 1600) {
                                         $img->heighten(1600);
@@ -436,7 +438,7 @@ class ProcessNormalizedProductData extends ImportCommand
                                     $variant->addMedia($tempPath)
                                         ->usingFileName($originalFilename)
                                         ->toMediaCollection('image');
-                                } catch (\Exception $e) {
+                                } catch (Throwable $e) {
                                     CaughtExceptionLogger::error('ProcessNormalizedProductData: variant image conversion failed', $e, [
                                         'variant_id' => $variant->id,
                                         'source_sku' => $variant->source_sku,
@@ -447,7 +449,7 @@ class ProcessNormalizedProductData extends ImportCommand
                                 }
                                 // Cleanup
                                 @unlink($tempPath);
-                            } catch (\Exception $e) {
+                            } catch (Throwable $e) {
                                 CaughtExceptionLogger::error('ProcessNormalizedProductData: variant image download/process failed', $e, [
                                     'variant_id' => $variant->id,
                                     'source_sku' => $variant->source_sku,
@@ -499,7 +501,7 @@ class ProcessNormalizedProductData extends ImportCommand
                     }
 
                     // ===== SEZIONE 5.8: disattivazione decisa dal connettore (fine serie, occasioni…) =====
-                    if (app(\App\Support\ImportConnectors::class)->forSource($product->source)?->shouldDeactivateVariant($variant) ?? false) {
+                    if ($normalized_variant instanceof \App\Models\ImportData\NormalizedProductVariant && (app(\App\Support\ImportConnectors::class)->forSource($product->source)?->shouldDeactivateVariant($normalized_variant) ?? false)) {
                         $variant->active = false;  // DISATTIVA VARIANTE
                         $variant_modified = true;  // Flag per salvare alla fine
                     }

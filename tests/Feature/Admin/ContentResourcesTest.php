@@ -105,12 +105,15 @@ class ContentResourcesTest extends TestCase
         $this->assertNotNull($slide->mobile_image);
         $this->assertStringNotContainsString('/', (string) $slide->background_image, 'bare file name, as the storefront expects');
         \Illuminate\Support\Facades\Cache::flush();
-        $this->assertStringNotContainsString('home_slides/'.$slide->background_image, $this->get('/')->assertOk()->getContent(), 'an inactive slide is not shown');
+        $this->assertStringNotContainsString(pathinfo((string) $slide->background_image, PATHINFO_FILENAME), $this->get('/')->assertOk()->getContent(), 'an inactive slide is not shown');
 
         $slide->update(['active' => true]);
         \Illuminate\Support\Facades\Cache::flush();
         $html = $this->get('/')->assertOk()->getContent();
-        $this->assertStringContainsString('home_slides/'.$slide->background_image, $html);
-        $this->assertStringContainsString('<source media="(max-width: 639px)" srcset="/storage/home_slides/'.$slide->mobile_image.'"', $html, 'the phone image is offered under 640 px');
+        $web = pathinfo((string) $slide->background_image, PATHINFO_FILENAME).'-web.webp';
+        $this->assertStringContainsString('home_slides/conversions/'.$web, $html);
+        $this->assertStringContainsString('800w', $html);
+        $this->assertStringContainsString('<source media="(max-width: 639px)"', $html, 'the phone image is offered under 640 px');
+        $this->assertStringContainsString(pathinfo((string) $slide->mobile_image, PATHINFO_FILENAME).'-web.webp', $html);
     }
 }

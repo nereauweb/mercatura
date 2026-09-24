@@ -127,7 +127,7 @@ class Product extends Model
             if (! $cover) {
                 return false;
             }
-            $this->cover_url = $full_image ? $cover->getUrl() : $cover->getUrl('thumb');
+            $this->cover_url = $full_image ? $cover->getUrl() : $main_variant->conversionUrl($cover, ProductVariant::MEDIA_CONVERSION_THUMB);
             $this->cover_url = str_replace(url('/'), '', $this->cover_url);
             $this->save();
 

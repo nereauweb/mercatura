@@ -1,4 +1,4 @@
-{{-- @mercatura-view frontend.components.home.slideshow @version 1 --}}
+{{-- @mercatura-view frontend.components.home.slideshow @version 2 --}}
 {{-- Hero slideshow from content_home_slides. The first slide is server-rendered and is the LCP candidate;
      the others are hidden until Alpine takes over. Fixed height: nothing shifts. --}}
 @props(['slides'])
@@ -13,10 +13,7 @@
     @foreach($slides as $slide)
         <div @if(!$loop->first) x-cloak @endif x-show="index === {{ $loop->index }}" x-transition.opacity.duration.500ms class="absolute inset-0" style="background-color: {{ $slide->background_color }}" role="group" aria-roledescription="slide" aria-label="{{ $loop->iteration }} / {{ count($slides) }}">
             @if($slide->background_image)
-                <picture>
-                    @if($slide->mobile_image)<source media="(max-width: 639px)" srcset="/storage/home_slides/{{ $slide->mobile_image }}">@endif
-                    <img src="/storage/home_slides/{{ $slide->background_image }}" alt="{{ trim(strip_tags($slide->title_text.' '.$slide->subtitle_text)) }}" width="1200" height="420" class="{{ $slide->mobile_image ? '' : 'hidden sm:block' }} h-full w-full object-cover" @if($loop->first) fetchpriority="high" decoding="sync" @else loading="lazy" decoding="async" @endif>
-                </picture>
+                <x-frontend::home.slide-image :slide="$slide" :priority="$loop->first" :mobile-max="639" :width="1200" :height="420" :alt="trim(strip_tags($slide->title_text.' '.$slide->subtitle_text))" :img-class="($slide->mobile_image ? '' : 'hidden sm:block ').'h-full w-full object-cover'" />
             @endif
             <div class="absolute left-0 top-0 max-w-lg p-6 md:p-8">
                 <p class="text-xl font-bold uppercase leading-tight {{ $token($slide->subtitle_color) }}" style="{{ $inline($slide->subtitle_color) }}">{!! $slide->subtitle_text !!}</p>

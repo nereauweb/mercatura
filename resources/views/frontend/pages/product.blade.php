@@ -1,4 +1,4 @@
-{{-- @mercatura-view frontend.pages.product @version 3 --}}
+{{-- @mercatura-view frontend.pages.product @version 4 --}}
 {{-- Product page for one variant: gallery, identity, colours, description, CTAs, print info, price tables,
      details, configurator, related products, selling points. Data: $product, $article, $page (ProductPageData).
      Stacks: product-before, product-after-price, product-after-description, product-after-tables, product-after. --}}
@@ -75,6 +75,12 @@
 	@if($product->brand)<meta property="product:brand" content="{{ $product->brand }}" />@endif
 	@if($ogImage)<meta property="og:image:width" content="{{ $ogImage['width'] }}" /><meta property="og:image:height" content="{{ $ogImage['height'] }}" /><meta property="og:image:type" content="{{ $ogImage['type'] }}" />@endif
 @endsection
+
+@push('head')
+	@if(! empty($page['gallery'][0]['web']))
+	<link rel="preload" as="image" href="{{ $page['gallery'][0]['web'] }}" imagesrcset="{{ $page['gallery'][0]['web'] }} 800w, {{ $page['gallery'][0]['large'] }} 1600w" imagesizes="(max-width: 767px) 92vw, 28rem" fetchpriority="high">
+	@endif
+@endpush
 
 @section('content')
 	<div id="product" class="mx-auto max-w-7xl px-4 py-4" @if($modal) x-data="productConfiguratorModal(@js($modalConfig))" @else x-data="productConfigurator(@js($configuratorConfig))" @endif>

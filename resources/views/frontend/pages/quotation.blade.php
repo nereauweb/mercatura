@@ -20,7 +20,7 @@
 			'sizeId' => isset($article) ? (int) ($article->size_id ?? 0) : null,
 			'stock' => isset($article) ? $article->product->color_variants_stock($article->color_id) : null,
 			'quantity' => old('new_product.quantity', $quotation['new_product']['quantity'] ?? 0),
-			'image' => isset($article) ? $article->cover() : '',
+			'image' => isset($article) ? $article->cover(true) : '',
 		];
 		$types = \App\Models\Customer::CUSTOMER_TYPES;
 		$activities = \App\Models\Customer::$activities;
@@ -85,11 +85,11 @@
 			<section class="mt-6">
 				<h2 class="text-xl font-bold text-primary">{{ __('frontend.quotation.configure') }}</h2>
 				<div class="mt-3 grid gap-4 md:grid-cols-4">
-					<div class="text-center"><img :src="image" src="{{ $article->cover() }}" alt="{{ $article->product->name }}" width="200" height="200" class="mx-auto h-40 w-auto object-contain"></div>
+					<div class="text-center"><img :src="image" src="{{ $article->cover(true) }}" alt="{{ $article->product->name }}" width="200" height="200" class="mx-auto h-40 w-auto object-contain"></div>
 					<div class="md:col-span-3">
 						<input type="hidden" name="new_product[name]" value="{{ $article->product->name }}">
 						<input type="hidden" name="new_product[sku]" value="{{ $article->product->sku }}">
-						<input type="hidden" name="new_product[image]" :value="image" value="{{ $article->cover() }}">
+						<input type="hidden" name="new_product[image]" :value="image" value="{{ $article->cover(true) }}">
 						<h3 class="font-bold">{{ $article->product->name }}</h3>
 						<p class="text-sm text-text-muted">{{ __('frontend.product.code') }} <strong>{{ $article->product->sku }}</strong></p>
 						<div class="mt-3 grid gap-3 sm:grid-cols-3">

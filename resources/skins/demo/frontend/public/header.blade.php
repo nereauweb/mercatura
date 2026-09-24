@@ -1,8 +1,8 @@
-{{-- @mercatura-view frontend.public.header @version 2 --}}
+{{-- @mercatura-view frontend.public.header @version 4 --}}
 {{-- Demo skin: the core header plus a ribbon that shows the skin is active. Logo and contacts already
      come from brand.php, so the override changes one thing only. Pages push the skin stylesheet. --}}
 <div class="mercatura-demo-ribbon" style="background:#fde68a;color:#78350f;font:600 13px/1.6 system-ui,sans-serif;text-align:center;text-transform:uppercase;letter-spacing:.04em">{{ config('brand.name') }} · skin demo</div>
-{{-- @mercatura-view frontend.public.header @version 2 --}}
+{{-- @mercatura-view frontend.public.header @version 4 --}}
 {{-- Site header: utility bar, logo, brand contacts, search, cart. Identity from config/brand.php, copy from lang. --}}
 @php
     $brand = config('brand');
@@ -38,7 +38,7 @@
 		<div class="mx-auto max-w-7xl px-4 py-3">
 			<div class="flex items-center gap-4">
 				<a href="{{ route('frontend.home') }}" class="shrink-0">
-					<img src="{{ $brand['logo'] }}" alt="{{ __('frontend.header.logo_alt', ['brand' => $brand['name']]) }}" width="{{ $brand['logo_width'] }}" height="{{ $brand['logo_height'] }}" class="h-10 w-auto md:h-12" fetchpriority="high">
+					<img src="{{ $brand['logo'] }}" alt="{{ __('frontend.header.logo_alt', ['brand' => $brand['name']]) }}" width="{{ $brand['logo_width'] }}" height="{{ $brand['logo_height'] }}" class="h-10 w-auto md:h-12">
 				</a>
 
 				<div class="hidden flex-1 flex-col gap-2 md:flex">

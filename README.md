@@ -26,7 +26,7 @@ npm install && npm run build
 php artisan serve
 ```
 
-`migrate --seed` runs `CoreSeeder` (roles, attributes, sizes, markup bands)
+`migrate --seed` runs `CoreSeeder` (roles, attributes, sizes, markup bands, quantity breaks)
 and `DemoSeeder`: a neutral catalogue of 24 products with pictures generated
 at seed time, printing options, CMS pages, home slides, a blog, customers
 with orders and quotations. No external account is needed: the defaults use

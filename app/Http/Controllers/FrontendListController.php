@@ -134,8 +134,11 @@ class FrontendListController extends Controller
 
     public function get_variant_cover(Request $request, $id)
     {
-        $variant = ProductVariant::find($id);
+        $variant = ProductVariant::query()->find($id);
+        if ($variant === null) {
+            abort(404);
+        }
 
-        return $variant->cover();
+        return $variant->cover(true) ?: '';
     }
 }

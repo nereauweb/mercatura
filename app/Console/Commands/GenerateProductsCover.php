@@ -19,7 +19,7 @@ class GenerateProductsCover extends Command
      *
      * @var string
      */
-    protected $description = 'Generate products cover';
+    protected $description = 'Rewrite products.cover_url from the main variant thumb. Prefer mercatura:regenerate-product-images after changing conversions.';
 
     /**
      * Execute the console command.

@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 # Mercatura — release steps. Run from the application root after the code is in place.
+# Needs PHP 8.4 and Node 22 on PATH (Vite 8). On Debian, keep system Node 18 and
+# prefix: sudo -u www-data env PATH="/opt/node22/bin:/usr/local/bin:/usr/bin:/bin" bash deploy/deploy.sh
 set -euo pipefail
 
 PHP="${PHP:-php8.4}"

@@ -57,7 +57,7 @@ final class FrontendQuickQuoteController extends Controller
             'product_id' => $article->product->id,
             'name' => $article->product->name,
             'sku' => $article->product->sku,
-            'image' => $article->cover() ?: '',
+            'image' => $article->cover(true) ?: '',
             'color' => $article->color->label ?? '',
             'size' => $article->size->label ?? __('frontend.cart.one_size'),
             'quantity' => (int) ($data['quantity'] ?? 0),
@@ -93,7 +93,7 @@ final class FrontendQuickQuoteController extends Controller
             $product = $this->product($row);
             $variant = $product?->color_variants->first(fn (ProductVariant $v): bool => $v->color?->label === $data['color']);
             if ($variant !== null) {
-                $row['image'] = $variant->cover() ?: $row['image'];
+                $row['image'] = $variant->cover(true) ?: $row['image'];
             }
         }
         $products[$id] = $row;

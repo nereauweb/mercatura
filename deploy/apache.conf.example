@@ -1,6 +1,11 @@
 # Mercatura — Apache 2.4 virtual host (Debian: /etc/apache2/sites-available/mercatura.conf)
-# Modules: a2enmod rewrite headers expires proxy_fcgi setenvif ssl http2 ; a2enconf php8.4-fpm
-# PHP through php8.4-fpm (mpm_event), not mod_php. Replace example.com and the paths.
+# The filename MUST end in .conf: Debian includes only sites-enabled/*.conf.
+# Enable with a2ensite, then apache2ctl configtest && systemctl reload apache2.
+# Modules: a2enmod rewrite headers expires proxy_fcgi setenvif ssl http2.
+# PHP through php8.4-fpm (mpm_event), not mod_php. SetHandler is per vhost on
+# purpose: on a host that also runs php8.2-fpm (or libapache2-mod-php), do not
+# a2enconf php8.4-fpm globally and do not a2dismod php / switch the MPM.
+# Replace example.com and the paths.
 
 <VirtualHost *:80>
     ServerName example.com

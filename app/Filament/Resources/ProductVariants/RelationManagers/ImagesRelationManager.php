@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\ProductVariants\RelationManagers;
 
+use App\Models\ProductVariant;
 use App\Support\CatalogCache;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\TextInput;
@@ -40,7 +41,13 @@ final class ImagesRelationManager extends RelationManager
             ->modifyQueryUsing(fn (Builder $query) => $query->where('collection_name', 'image'))
             ->defaultSort('order_column')
             ->columns([
-                ImageColumn::make('preview')->label(__('admin.catalog.cover'))->getStateUsing(fn (Media $record): string => $record->getUrl('thumb'))->square()->size(48),
+                ImageColumn::make('preview')->label(__('admin.catalog.cover'))->getStateUsing(function (Media $record): string {
+                    $model = $record->model;
+
+                    return $model instanceof ProductVariant
+                        ? $model->conversionUrl($record, ProductVariant::MEDIA_CONVERSION_THUMB)
+                        : $record->getUrl();
+                })->square()->size(48),
                 TextColumn::make('file_name')->label(__('admin.order.actions.file')),
                 TextColumn::make('alt')->label(__('admin.catalog.alt'))->getStateUsing(fn (Media $record): ?string => $record->getCustomProperty('alt'))->placeholder('-'),
             ])

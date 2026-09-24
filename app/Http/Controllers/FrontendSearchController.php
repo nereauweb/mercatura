@@ -13,12 +13,11 @@ class FrontendSearchController extends Controller
         $products = [];
         $products_data = Product::limit(10)->where('name', 'LIKE', '%'.$request->terms.'%')->orWhere('sku', 'LIKE', '%'.$request->terms.'%')->get();
         foreach ($products_data as $product) {
-            $cover = $product->cover();
             $products[] = [
                 'id' => $product->id,
                 'name' => $product->name,
                 'sku' => $product->sku,
-                'cover' => $cover ? $cover->getUrl() : '',
+                'cover' => $product->cover(true) ?: '',
                 'slug' => $product->slug(),
                 'price' => $product->formatted_min_price(),
             ];

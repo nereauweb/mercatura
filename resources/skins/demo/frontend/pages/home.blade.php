@@ -1,4 +1,4 @@
-{{-- @mercatura-view frontend.pages.home @version 2 --}}
+{{-- @mercatura-view frontend.pages.home @version 4 --}}
 {{-- Demo skin: a compact home built from brand config, lang keys and the core product card component.
      It proves a page-level override; the core home is untouched. --}}
 @extends('frontend.public.layout')

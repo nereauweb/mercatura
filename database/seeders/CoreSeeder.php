@@ -16,8 +16,8 @@ use Spatie\Permission\PermissionRegistrar;
 /**
  * Reference rows every installation needs, demo or not: roles, the product
  * attributes the storefront reads (config mercatura.catalog.attributes),
- * size types with the "one size" row, and the markup bands used by the
- * pricing helpers. Idempotent: existing rows are kept.
+ * size types with the "one size" row, the markup bands and the quantity
+ * breaks used by the pricing helpers. Idempotent: existing rows are kept.
  */
 class CoreSeeder extends Seeder
 {
@@ -50,6 +50,19 @@ class CoreSeeder extends Seeder
         [0, 100, 100.0], [100, 150, 90.0], [150, 200, 80.0], [200, 250, 65.0], [250, 350, 60.0],
         [350, 400, 55.0], [400, 450, 50.0], [450, 500, 45.0], [500, 550, 40.0], [550, 600, 35.0],
         [600, 1000, 30.0], [1000, 2500, 25.0], [2500, 5000, 20.0], [5000, 10000, 15.0], [10000, 100000000, 10.0],
+    ];
+
+    /**
+     * Quantity breaks when the supplier gives no fasce (MarkupRules::tiers):
+     * [from unit cost, to unit cost, qty1, qty2, qty3, qty4].
+     */
+    public const QUANTITY_TIERS = [
+        [0.00, 0.20, 1, 500, 1000, 2500],
+        [0.20, 0.40, 1, 250, 500, 1000],
+        [0.40, 1.00, 1, 100, 250, 500],
+        [1.00, 2.50, 1, 50, 100, 250],
+        [2.50, 10.00, 1, 25, 50, 100],
+        [10.00, 1000.00, 1, 5, 25, 50],
     ];
 
     public const SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
@@ -85,6 +98,22 @@ class CoreSeeder extends Seeder
                 $rows[] = ['from_condition' => $from, 'to_condition' => $to, 'value' => $percent, 'created_at' => now()];
             }
             DB::table('product_markups')->insert($rows);
+        }
+
+        if (DB::table('normalized_tiers_rules')->count() === 0) {
+            $rows = [];
+            foreach (self::QUANTITY_TIERS as [$from, $to, $q1, $q2, $q3, $q4]) {
+                $rows[] = [
+                    'from_price' => $from,
+                    'to_price' => $to,
+                    'from_quantity_1' => $q1,
+                    'from_quantity_2' => $q2,
+                    'from_quantity_3' => $q3,
+                    'from_quantity_4' => $q4,
+                    'created_at' => now(),
+                ];
+            }
+            DB::table('normalized_tiers_rules')->insert($rows);
         }
     }
 

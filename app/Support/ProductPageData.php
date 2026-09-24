@@ -19,7 +19,7 @@ final class ProductPageData
     /**
      * @return array{
      *   breadcrumbs: list<array{name: string, url: string}>,
-     *   gallery: list<array{full: string, thumb: string}>,
+     *   gallery: list<array{full: string, thumb: string, web: string, large: string, alt: string}>,
      *   colors: list<array{variant_id: int, sku: string, label: string, code: string, url: string, current: bool}>,
      *   configurator: array{colors: list<array<string, mixed>>, positions: list<array<string, mixed>>, has_printing: bool, has_packaging: bool, min_quantity: int},
      *   price_table: array{mode: string, columns: list<string>, rows: list<array{label: string, cells: list<string>}>, printed_columns: list<string>, printed_rows: list<array{label: string, cells: list<string>}>, printed_note: string|null, minCustomizationQuantity: int},
@@ -60,12 +60,14 @@ final class ProductPageData
         return $items;
     }
 
-    /** @return list<array{full: string, thumb: string}> */
+    /** @return list<array{full: string, thumb: string, web: string, large: string, alt: string}> */
     private static function gallery(ProductVariant $article): array
     {
         return $article->getMedia('image')->map(fn ($media) => [
             'full' => $media->getUrl(),
-            'thumb' => $media->hasGeneratedConversion('thumb') ? $media->getUrl('thumb') : $media->getUrl(),
+            'thumb' => $article->conversionUrl($media, ProductVariant::MEDIA_CONVERSION_THUMB),
+            'web' => $article->conversionUrl($media, ProductVariant::MEDIA_CONVERSION_WEB),
+            'large' => $article->conversionUrl($media, ProductVariant::MEDIA_CONVERSION_LARGE),
             'alt' => (string) ($media->getCustomProperty('alt') ?? ''),
         ])->values()->all();
     }
@@ -158,12 +160,10 @@ final class ProductPageData
         $lastFrom = 0;
         $count = 0;
         foreach ($prices as $price) {
-            if ($price->from_quantity > 1 || $single) {
-                if (! $perSize || $count < 4) {
-                    $neutralColumns[] = $price->from_quantity.($perSize ? '' : '+');
-                    $neutralCells[] = $format($price->price);
-                    $count++;
-                }
+            if (! $perSize || $count < 4) {
+                $neutralColumns[] = $price->from_quantity.($perSize ? '' : '+');
+                $neutralCells[] = $format($price->price);
+                $count++;
             }
         }
         $count = 0;
@@ -176,10 +176,11 @@ final class ProductPageData
                 $printedCells[] = $format($article->price_per_quantity($price->from_quantity, false, false, true));
                 $lastFrom = $price->from_quantity;
                 $count++;
-            } elseif ($price->from_quantity == 1 && $minPrint > 1 && $minPrint != $lastFrom) {
-                $printedColumns[] = $minPrint.'+';
-                $printedCells[] = $format($article->price_per_quantity($minPrint, false, false, true));
-                $lastFrom = $minPrint;
+            } elseif ($price->from_quantity == 1 && $minPrint != $lastFrom && ($minPrint > 1 || $single)) {
+                $qty = max(1, $minPrint);
+                $printedColumns[] = $qty.'+';
+                $printedCells[] = $format($article->price_per_quantity($qty, false, false, true));
+                $lastFrom = $qty;
                 $count++;
             }
         }
@@ -197,7 +198,7 @@ final class ProductPageData
                 $cells = [];
                 $count = 0;
                 foreach ($sizeVariant->ordered_prices() as $price) {
-                    if ($price->from_quantity > 1 && $count < 4) {
+                    if ($count < 4) {
                         $cells[] = $format($price->price);
                         $count++;
                     }
@@ -216,9 +217,10 @@ final class ProductPageData
                         $cells[] = $format($sizeVariant->price_per_quantity($price->from_quantity, false, false, true));
                         $lastFrom = $price->from_quantity;
                         $count++;
-                    } elseif ($price->from_quantity == 1 && $sizeMin > 1 && $sizeMin != $lastFrom) {
-                        $cells[] = $format($sizeVariant->price_per_quantity($sizeMin, false, false, true));
-                        $lastFrom = $sizeMin;
+                    } elseif ($price->from_quantity == 1 && $sizeMin != $lastFrom && ($sizeMin > 1 || $sizeVariant->prices->count() === 1)) {
+                        $qty = max(1, $sizeMin);
+                        $cells[] = $format($sizeVariant->price_per_quantity($qty, false, false, true));
+                        $lastFrom = $qty;
                         $count++;
                     }
                 }

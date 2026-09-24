@@ -1,4 +1,4 @@
-{{-- @mercatura-view frontend.pages.home @version 2 --}}
+{{-- @mercatura-view frontend.pages.home @version 4 --}}
 {{-- Home: hero slideshow, selling points, promo products, top categories, green products, newsletter.
      Data from FrontendContentController: $slides, $promo, $green; $nav_categories shared by AppServiceProvider.
      Stacks: home-before, home-after-hero, home-after-promo, home-after. --}}
@@ -15,6 +15,10 @@
 @section('head_meta')
 	<x-frontend::seo.meta :title="$pageTitle" :description="__('frontend.meta.default_description')" :url="\App\Support\CanonicalUrl::absolute('/')" />
 @endsection
+
+@push('head')
+	<x-frontend::home.hero-preload :slide="isset($slides) ? $slides->first() : null" :mobile-max="639" />
+@endpush
 
 @section('content')
 	<h1 class="sr-only">{{ $pageTitle }}</h1>

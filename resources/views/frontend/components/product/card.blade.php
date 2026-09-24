@@ -1,7 +1,7 @@
-{{-- @mercatura-view frontend.components.product.card @version 1 --}}
+{{-- @mercatura-view frontend.components.product.card @version 2 --}}
 {{-- Product card: thumbnail, badges, name, sku, colour dots that swap the thumbnail, starting price, quote CTA.
-     Slots: after-price. --}}
-@props(['product'])
+     Slots: after-price. eager/priority: first-row LCP candidates (listing, slider). --}}
+@props(['product', 'eager' => false, 'priority' => false])
 @php
     $cover = $product->cover(true);
     $url = route('frontend.product.show.by_slug', ['slug' => $product->slug]);
@@ -25,7 +25,7 @@
     <div class="relative flex h-40 items-center justify-center p-3">
         @if($cover)
             <a href="{{ $url }}" title="{{ $product->name }}">
-                <img :src="cover" src="{{ $cover }}" alt="{{ $product->get_seo_title() }}" width="150" height="150" loading="lazy" decoding="async" class="mx-auto max-h-32 w-auto object-contain">
+                <img :src="cover" src="{{ $cover }}" alt="{{ $product->get_seo_title() }}" width="150" height="150" loading="{{ ($eager || $priority) ? 'eager' : 'lazy' }}" @if($priority) fetchpriority="high" @endif decoding="async" class="mx-auto max-h-32 w-auto object-contain">
             </a>
         @endif
         @if($badges)

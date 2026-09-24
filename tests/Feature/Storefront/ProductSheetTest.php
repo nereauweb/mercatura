@@ -32,6 +32,8 @@ final class ProductSheetTest extends TestCase
 
         $prices = $this->get($base.'listino')->assertOk()->getContent();
         $this->assertStringContainsString(__('frontend.product.price_neutral'), $prices);
+        $this->assertStringContainsString(__('frontend.product.price_printed'), $prices);
+        $this->assertStringContainsString(__('frontend.product.printed'), $prices);
 
         $this->get($base.'altro')->assertNotFound();
         $this->get('/prodotti/'.$f->product->slug.'/NOPE/scheda/dettagli')->assertNotFound();
