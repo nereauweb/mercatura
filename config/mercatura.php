@@ -157,7 +157,7 @@ return [
         'enabled' => (bool) env('MERCATURA_STAGING', false),
         'user' => env('MERCATURA_STAGING_USER'),
         'password' => env('MERCATURA_STAGING_PASSWORD'),
-        'except' => ['up', 'stripe/webhook', 'ordine/*/pagamento/*'],
+        'except' => ['up', 'stripe/webhook', 'ordine/*/pagamento/*', 'skins/*', 'build/*', 'storage/*'],
     ],
 
     'delivery' => [
