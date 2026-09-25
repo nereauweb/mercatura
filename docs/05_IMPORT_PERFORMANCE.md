@@ -130,3 +130,62 @@ file, last one wins). Nothing to change until A/B are applied.
    "variants skipped / rewritten".
 3. One weekly run on staging to measure both the forced (first-run) time and
    the steady-state time.
+
+## 6. Lifecycle: products and customizations that leave the source
+
+Requirement (26/09/2026): when a product or a customization disappears from
+the supplier's data it must be deactivated, not deleted, and reactivated if it
+comes back.
+
+### Products and variants: already covered
+
+`normalized_products` / variants carry `last_seen_active`, updated at every
+run in which the source lists them. `app:ProcessNormalizedProductData` only
+processes rows seen in the last 3 days and sets updated variants active;
+`app:DisableWrongProducts` deactivates products and variants not seen for more
+than 3 days (or without price, main variant or image). A product that
+reappears is processed again and becomes active. The 3-day tolerance absorbs
+a supplier feed missing for a day. Rows are never deleted. Nothing to build;
+the tolerance can become a config value (`mercatura.import.missing_days`) if
+the client wants a different window.
+
+### Customizations: to build
+
+Today the two connectors behave differently and neither deactivates:
+
+- Sipec `json_v3` deletes, product by product, the customizations no longer
+  in the feed (`deleteStalePrintings`), together with areas, options, tiers.
+- PF Concept never removes a vanished customization: it stays in the
+  configurator until `cleanup:customizations` deletes it 90 days after the last
+  import that touched it (`updated_at`, `mercatura.customizations.cleanup_days`).
+
+Proposal (core + both connectors, same data model as the products):
+
+1. Columns on `customizations`: `active` (bool, default 1) and `last_seen_at`
+   (datetime). Manual and locked rows (`isProtectedFromImport`) are never
+   touched by the import.
+2. Every connector run marks as seen (`last_seen_at = run start`) every
+   customization present in the source, including the variants the
+   fingerprint of option A skips (one bulk update by ids, no rewrite).
+3. A core reconcile step after the customizations stage (in
+   `cleanup:customizations`, which already runs there): importable rows of
+   the live pipeline with `last_seen_at` older than the run → `active = 0`;
+   rows seen in the run → `active = 1` (reactivation). Deletion only after
+   `cleanup_days` from `last_seen_at`, or never if the client prefers. Sipec's
+   immediate delete becomes the same deactivation.
+4. `CustomizationPipeline::apply()` (the single filter behind
+   `Product::customizations()`, `ProductVariant::customizations()` and the
+   catalogue filters) adds `active = 1`, so the storefront, the configurator
+   and the quick quote stop offering a deactivated customization at once. The
+   admin relation manager shows every row with an "inactive since" badge.
+5. Orders and quotations keep their own copies of the chosen customization
+   (`order_item_customizations`), so history is unaffected.
+
+- Impact: none on run time (one bulk update and one reconcile query per run).
+- Risk: **low**. The storefront change is one `where` in the single filter,
+  covered by the configurator and quick-quote tests; the connectors change
+  only what they do with vanished rows (deactivate instead of delete or
+  ignore). Same tolerance rule as the products (a row missing for one run is
+  not deactivated until the configured number of days).
+- Effort: ~1 day, best done together with option A since both touch the same
+  loop.
