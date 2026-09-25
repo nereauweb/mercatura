@@ -30,9 +30,11 @@ Route::post('/newsletter/registrati/successo', [FrontendContactsController::clas
 Route::get('/registrati', [FrontendLoginController::class, 'register_form'])->name('frontend.auth.register');
 Route::post('/registrati', [FrontendLoginController::class, 'register'])->name('frontend.auth.register.submit');
 Route::post('/password-reset/request', [FrontendLoginController::class, 'request_reset_password'])->name('frontend.password_reset.request');
+// Reachable while logged in too: the token from the mail proves the mailbox, and a
+// customer who asked for the reset from a browser that is still logged in must not get lost.
 Route::get('/reset-password/{token}', function (string $token) {
     return view('frontend.auth.password-reset', ['token' => $token]);
-})->middleware('guest')->name('password.reset');
+})->name('password.reset');
 Route::post('/password-reset/submit', [FrontendLoginController::class, 'reset_password'])->name('frontend.password_reset.submit');
 Route::get('/accedi', [FrontendLoginController::class, 'index'])->name('frontend.auth.login');
 Route::post('/login', [FrontendLoginController::class, 'attempt_login'])->name('frontend.login.attempt');

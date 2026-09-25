@@ -80,6 +80,8 @@ class TransactionalMailTest extends TestCase
         $this->assertSame('Negozio', $vars['brand_name']);
         $this->assertStringEndsWith('/skins/x/logo.png', $vars['brand_logo_url'], 'the raster mail logo, absolute');
         $this->assertSame('info@example.com', $vars['brand_email']);
+        $this->assertSame(route('frontend.contacts.index'), $vars['contacts_link'], 'footer link present in every template');
+        $this->assertSame(route('frontend.product.list'), $vars['catalogue_url']);
         $this->artisan('mail:mandrill-push', ['dir' => storage_path('framework/testing/none'), '--dry-run' => true])->assertFailed();
     }
 

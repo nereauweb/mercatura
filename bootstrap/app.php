@@ -45,7 +45,8 @@ $app = Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->redirectGuestsTo(fn (Request $request) => $request->expectsJson() ? null : route('frontend.auth.login'));
-        $middleware->redirectUsersTo('/dashboard');
+        // A logged-in user opening a guest page (login, register) lands on the reserved area.
+        $middleware->redirectUsersTo(fn () => route('frontend.auth.index'));
 
         $middleware->alias([
             'role' => RoleMiddleware::class,

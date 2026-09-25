@@ -106,6 +106,9 @@ final class MandrillTransactionalMailer implements TransactionalMailer
             'brand_logo_url' => $logo === '' ? '' : (str_starts_with($logo, 'http') ? $logo : url($logo)),
             'brand_email' => (string) ($brand['contact']['email'] ?? ''),
             'brand_phone' => (string) ($brand['contact']['phone'] ?? ''),
+            // Defaults for the footer/CTA links of every template; a flow may override them.
+            'contacts_link' => route('frontend.contacts.index'),
+            'catalogue_url' => route('frontend.product.list'),
         ];
     }
 
@@ -153,12 +156,10 @@ final class MandrillTransactionalMailer implements TransactionalMailer
     private function mergeVars(): array
     {
         $vars = [];
-        // The installation's identity, so one template set serves any skin (logo, name, site, contacts).
+        // The installation's identity, so one template set serves any skin (logo, name, site, contacts);
+        // the flow's attributes win over the defaults with the same name.
         $brand = (array) config('brand');
-        foreach (self::brandVars($brand) as $name => $content) {
-            $vars[] = ['name' => $name, 'content' => $content];
-        }
-        foreach ($this->attributes as $name => $content) {
+        foreach (array_merge(self::brandVars($brand), $this->attributes) as $name => $content) {
             $vars[] = [
                 'name' => $name,
                 'content' => $content,

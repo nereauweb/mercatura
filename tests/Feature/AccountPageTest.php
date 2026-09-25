@@ -56,6 +56,14 @@ final class AccountPageTest extends TestCase
         }
     }
 
+    public function test_a_logged_in_user_opening_a_guest_page_lands_on_the_account_page(): void
+    {
+        $user = \App\Models\User::factory()->create();
+        $this->actingAs($user)->get('/accedi')->assertRedirect(route('frontend.auth.index'));
+        // The reset link from the mail works even when the browser is still logged in.
+        $this->actingAs($user)->get('/reset-password/token-x')->assertOk();
+    }
+
     public function test_account_pages_require_login(): void
     {
         foreach (['/area-riservata', '/profilo', '/ordini', '/preventivi', '/messaggi'] as $url) {
