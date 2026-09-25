@@ -37,7 +37,10 @@ final class BladeTransactionalMailer implements TransactionalMailer
 
     public function to(string $email): self
     {
-        $this->recipients[] = $email;
+        // The technical and the merchant address are often the same mailbox: one message, not two.
+        if (! in_array($email, $this->recipients, true)) {
+            $this->recipients[] = $email;
+        }
 
         return $this;
     }

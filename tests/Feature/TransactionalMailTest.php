@@ -6,6 +6,7 @@ namespace Tests\Feature;
 
 use App\Contracts\TransactionalMailer;
 use App\Drivers\Mail\BladeTransactionalMailer;
+use App\Support\MailSampleData;
 use App\Support\MailTemplateCatalog;
 use Illuminate\Mail\Transport\ArrayTransport;
 use Tests\Support\LegacyContent;
@@ -80,5 +81,16 @@ class TransactionalMailTest extends TestCase
         $this->assertStringEndsWith('/skins/x/logo.png', $vars['brand_logo_url'], 'the raster mail logo, absolute');
         $this->assertSame('info@example.com', $vars['brand_email']);
         $this->artisan('mail:mandrill-push', ['dir' => storage_path('framework/testing/none'), '--dry-run' => true])->assertFailed();
+    }
+
+    public function test_the_same_address_given_twice_receives_one_message(): void
+    {
+        $mailer = $this->app->make(TransactionalMailer::class);
+        foreach (MailSampleData::attributes() as $k => $v) {
+            $mailer->attribute($k, $v);
+        }
+        $mailer->to('admin@example.com')->to('admin@example.com')->send('contact_admin');
+        $sent = $this->arrayTransport()->messages()->last();
+        $this->assertCount(1, $sent->getOriginalMessage()->getTo());
     }
 }

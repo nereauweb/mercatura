@@ -13,8 +13,16 @@ final class BrevoTransactionalMailer implements TransactionalMailer
 {
     public function __construct(private readonly MailTemplateCatalog $catalog) {}
 
+    /** @var list<string> */
+    private array $recipients = [];
+
     public function to(string $email): self
     {
+        // The technical and the merchant address are often the same mailbox: one message, not two.
+        if (in_array($email, $this->recipients, true)) {
+            return $this;
+        }
+        $this->recipients[] = $email;
         Template::to($email);
 
         return $this;
@@ -35,6 +43,7 @@ final class BrevoTransactionalMailer implements TransactionalMailer
 
     public function reset(): self
     {
+        $this->recipients = [];
         Template::reset();
 
         return $this;
