@@ -103,6 +103,46 @@ class ConnectorFrameworkTest extends TestCase
         $this->assertFalse(CustomizationPipeline::isLive(new Customization(['source' => 'Acme', 'pipeline' => 'v1'])));
     }
 
+    public function test_connector_commands_take_the_flags_published_by_the_import_wrapper(): void
+    {
+        $registry = new ImportConnectors;
+        $registry->register($this->fake());
+        $this->app->instance(ImportConnectors::class, $registry);
+        $seen = new \stdClass;
+        \Illuminate\Support\Facades\Artisan::registerCommand(new class($seen) extends \App\Support\Connectors\ConnectorCommand
+        {
+            protected $signature = 'acme:download {import_id?}';
+
+            protected ?string $connector = 'acme';
+
+            public function __construct(private \stdClass $seen)
+            {
+                parent::__construct();
+            }
+
+            public function handle(): void
+            {
+                foreach (\App\Support\Connectors\ImportFlags::KEYS as $key) {
+                    $this->seen->{$key} = $this->{$key};
+                }
+            }
+        });
+
+        // Defaults when nothing is published (a command run by hand).
+        \App\Support\Connectors\ImportFlags::forget();
+        $this->artisan('acme:download')->assertSuccessful();
+        $this->assertFalse($seen->process_customization_data);
+        $this->assertTrue($seen->download_data);
+
+        // The wrapper's choices (weekly printing run, forced update, no download) reach the connector command.
+        \App\Support\Connectors\ImportFlags::publish(new \App\Support\Connectors\ImportFlags(download_data: false, full_products_update: true, process_customization_data: true));
+        $this->artisan('acme:download')->assertSuccessful();
+        $this->assertTrue($seen->process_customization_data, 'the printing flag is what the PF Concept import checks before storing its print feeds');
+        $this->assertTrue($seen->full_products_update);
+        $this->assertFalse($seen->download_data);
+        \App\Support\Connectors\ImportFlags::forget();
+    }
+
     public function test_disabled_connectors_are_registered_but_not_enabled(): void
     {
         $registry = new ImportConnectors;

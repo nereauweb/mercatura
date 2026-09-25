@@ -126,6 +126,15 @@ abstract class ImportJob implements ShouldQueue
      */
     protected function runConnectorStage(string $stage): void
     {
+        // The job's choices reach the connector commands, which are separate Artisan calls.
+        \App\Support\Connectors\ImportFlags::publish(new \App\Support\Connectors\ImportFlags(
+            download_data: (bool) $this->download_data,
+            update_live: (bool) $this->update_live,
+            process_product_data: (bool) $this->process_product_data,
+            full_products_update: (bool) $this->full_products_update,
+            update_categories: (bool) $this->update_categories,
+            process_customization_data: (bool) $this->process_customization_data,
+        ));
         $source = (string) ($this->process_source ?? 'all');
         $connectors = app(ImportConnectors::class);
         $matching = $source === 'all' ? $connectors->all() : array_values(array_filter($connectors->all(), fn ($c) => in_array(strtolower($source), array_map('strtolower', $c->sourceValues()), true)));

@@ -53,6 +53,7 @@ class Import extends ImportCommand
     public function handle(): void
     {
         $this->applyRuntimeFlags();
+        $this->publishFlags();
         app(\App\Support\Connectors\MarkupRules::class)->flush();
         $this->import_id = time();
         $start = microtime(true);
@@ -93,6 +94,19 @@ class Import extends ImportCommand
         $time_elapsed_secs = microtime(true) - $start;
         $this->db_log('end', 'Processo di import finito alle '.date('H:i').' del '.date('d/m/Y').', durata totale: '.round($time_elapsed_secs / 60, 2).' minuti ('.round($time_elapsed_secs / 60 / 60, 2).' h)', 'success');
 
+    }
+
+    /** The connector commands run by the stages read the same flags as this wrapper. */
+    protected function publishFlags(): void
+    {
+        \App\Support\Connectors\ImportFlags::publish(new \App\Support\Connectors\ImportFlags(
+            download_data: (bool) $this->download_data,
+            update_live: (bool) $this->update_live,
+            process_product_data: (bool) $this->process_product_data,
+            full_products_update: (bool) $this->full_products_update,
+            update_categories: (bool) $this->update_categories,
+            process_customization_data: (bool) $this->process_customization_data,
+        ));
     }
 
     protected function applyRuntimeFlags(): void

@@ -43,6 +43,14 @@ abstract class ConnectorCommand extends Command
     {
         parent::initialize($input, $output);
 
+        // A connector's stage command runs as a separate Artisan call: it takes the flags the
+        // wrapper (app:import options, panel job choices) published for this run.
+        if ($this->connector !== null && ($flags = ImportFlags::current()) !== null) {
+            foreach (ImportFlags::KEYS as $key) {
+                $this->{$key} = $flags->{$key};
+            }
+        }
+
         if ($this->connector !== null && ! app(ImportConnectors::class)->isEnabled($this->connector)) {
             throw new RuntimeException("Connector [{$this->connector}] is disabled: set MERCATURA_CONNECTOR_".strtoupper($this->connector).'=true to run '.$this->getName().'.');
         }

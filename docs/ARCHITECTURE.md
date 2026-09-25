@@ -466,7 +466,11 @@ prices, attributes, media, categories).
   `$this->app->resolving(ImportConnectors::class, ...)`. Commands extend
   `App\Support\Connectors\ConnectorCommand` (import log rows, pricing
   helpers, connector guard) and set `$connector` so they refuse to run while
-  the flag is off.
+  the flag is off. The wrapper (`app:import` options, or the panel job's
+  choices) publishes an `App\Support\Connectors\ImportFlags` instance before
+  running the stages, and every connector command copies those flags in
+  `initialize()`: this is how `--process-customization-data=true` reaches
+  `import:PFv3`, which stores the PF print feeds only under that flag.
 - **Switching on.** The package's own `connector-<key>.enabled` (env
   `MERCATURA_CONNECTOR_<KEY>=true`), overridable by
   `mercatura.features.connectors.<key>`; the core config names no supplier.
