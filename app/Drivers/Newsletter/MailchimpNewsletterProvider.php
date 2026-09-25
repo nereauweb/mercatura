@@ -39,15 +39,29 @@ final class MailchimpNewsletterProvider implements NewsletterProvider
         $listId = $this->listId();
         $hash = $this->hash($email);
 
+        $member = null;
         try {
-            $this->lists->getListMember($listId, $hash);
-            throw new AlreadySubscribedException('Contact already subscribed');
-        } catch (AlreadySubscribedException $e) {
-            throw $e;
+            $member = $this->lists->getListMember($listId, $hash);
         } catch (Throwable $e) {
             if (! $this->isNotFound($e)) {
                 throw $e;
             }
+        }
+
+        if ($member !== null) {
+            $status = is_object($member) ? (string) ($member->status ?? '') : (string) (((array) $member)['status'] ?? '');
+            if (in_array($status, ['subscribed', 'pending'], true)) {
+                throw new AlreadySubscribedException('Contact already subscribed');
+            }
+            // Unsubscribed, cleaned or archived contact: Mailchimp only takes it back through its
+            // own confirmation (compliance state), so it becomes pending and receives the opt-in mail.
+            $this->lists->setListMember($listId, $hash, [
+                'email_address' => $email,
+                'status' => 'pending',
+                'merge_fields' => $this->mergeFields($contact),
+            ]);
+
+            return;
         }
 
         try {
