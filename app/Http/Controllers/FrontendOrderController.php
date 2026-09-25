@@ -23,7 +23,8 @@ class FrontendOrderController extends Controller
 
     public function show(Request $request, $id)
     {
-        $order = Order::find($id);
+        // Only the customer's own orders: the id in the URL is not a proof of ownership.
+        $order = Order::query()->where('user_id', Auth::id())->findOrFail($id);
 
         return view('frontend.customer.order', compact('order'));
     }

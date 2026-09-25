@@ -90,6 +90,20 @@ class FrontendContactsController extends Controller
         $mailer->to(config('emails.technical'));
         $mailer->to(config('emails.merchant'));
         $mailer->send('contact_admin');
+        // The message is kept for the admin "Messaggi" list (read/unread) and the customer's own list.
+        Message::create([
+            'name' => $request->name,
+            'surname' => $request->surname,
+            'email' => $request->email,
+            'phone' => $request->phone,
+            'company' => $request->company,
+            'activity' => $request->activity,
+            'subject' => $request->subject,
+            'message' => $request->message,
+            'consent_gdpr' => $request->boolean('consent_gdpr'),
+            'consent_terms' => $request->boolean('consent_terms'),
+            'subscribe_newsletter' => $request->boolean('subscribe_newsletter'),
+        ]);
         FrontendDebugLog::contatto('contact_send:completed');
 
         if ($request->subscribe_newsletter == 1) {

@@ -71,6 +71,25 @@ final class AccountPageTest extends TestCase
         }
     }
 
+    public function test_a_customer_cannot_open_another_customers_order(): void
+    {
+        $owner = \App\Models\User::factory()->create();
+        $other = \App\Models\User::factory()->create();
+        $customerId = \App\Models\Customer::query()->create(['user_id' => $owner->id, 'email' => $owner->email, 'name' => 'Anna', 'surname' => 'Rossi', 'customer_type' => 'Privato'])->id;
+        $order = \App\Models\Order::query()->create(['user_id' => $owner->id, 'customer_id' => $customerId, 'status' => 'requested', 'payment_method' => 'bank_transfer', 'payment_status' => 'unpaid', 'items_price' => 10, 'delivery_cost' => 0, 'total_price' => 10, 'total_tax' => 2.2, 'total_taxed_price' => 12.2]);
+        $this->actingAs($owner)->get('/ordine/'.$order->id)->assertOk();
+        $this->actingAs($other)->get('/ordine/'.$order->id)->assertNotFound();
+    }
+
+    public function test_the_contact_form_sends_the_admin_mail_and_keeps_the_message(): void
+    {
+        $before = \App\Models\Message::query()->count();
+        $this->post('/contattaci/invia', ['name' => 'Anna', 'surname' => 'Rossi', 'email' => 'anna@example.com', 'phone' => '0123456789', 'subject' => 'Info', 'message' => 'Un messaggio di prova.', 'consent_gdpr' => '1'])
+            ->assertOk();
+        $this->assertDatabaseHas('messages', ['email' => 'anna@example.com', 'subject' => 'Info', 'read_at' => null]);
+        $this->assertSame($before + 1, \App\Models\Message::query()->count(), 'one row per submission');
+    }
+
     public function test_contact_and_newsletter_forms_carry_honeypot_and_consents(): void
     {
         $html = $this->get('/contattaci')->assertOk()->getContent();
