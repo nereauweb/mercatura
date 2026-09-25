@@ -130,7 +130,8 @@ final class Imports extends Page
                 }),
             Action::make('reindex')->label(__('admin.imports.reindex'))->icon(Heroicon::OutlinedMagnifyingGlass)->color('gray')->requiresConfirmation()
                 ->action(function (): void {
-                    Artisan::call('app:RegenerateSearchIndex');
+                    // Queued: thousands of products go to the search engine from the worker, not from this request.
+                    Artisan::queue('app:RegenerateSearchIndex');
                     Notification::make()->title(__('admin.imports.reindex_done'))->success()->send();
                 }),
         ];

@@ -25,6 +25,9 @@ class RegenerateSearchIndex extends Command
      */
     public function handle(): void
     {
-        $this->call('scout:import', ['model' => 'App\Models\Product']);
+        // Same as scout:import for products, without depending on Scout's console-only commands
+        // (they are not registered when this runs from a queued job or a web request).
+        \App\Models\Product::makeAllSearchable();
+        $this->info('Products sent to the search index.');
     }
 }

@@ -68,6 +68,13 @@ class ImportsPageTest extends TestCase
         Queue::assertPushed(ImportProductsJob::class, 1);
     }
 
+    public function test_the_search_reindex_is_queued_not_run_in_the_request(): void
+    {
+        Queue::fake();
+        Livewire::test(Imports::class)->callAction('reindex')->assertHasNoActionErrors()->assertNotified();
+        Queue::assertPushed(\Illuminate\Foundation\Console\QueuedCommand::class, 1);
+    }
+
     public function test_category_aliases_can_be_assigned(): void
     {
         $category = Category::query()->create(['name' => 'Alias target', 'slug' => 'alias-target', 'active' => 1]);

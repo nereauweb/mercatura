@@ -435,7 +435,7 @@ return [
         'restart_queue' => 'Riavvia worker',
         'restart_queue_done' => 'Riavvio del worker richiesto',
         'reindex' => 'Rigenera indice di ricerca',
-        'reindex_done' => 'Indice di ricerca rigenerato',
+        'reindex_done' => 'Rigenerazione indice di ricerca avviata in coda',
         'alias' => 'Alias categoria',
         'aliases' => 'Alias categorie',
         'alias_source' => 'Fonte',
