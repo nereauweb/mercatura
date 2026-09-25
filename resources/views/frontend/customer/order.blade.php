@@ -49,7 +49,9 @@
 								</div>
 							</div>
 							@endif
-							<p class="mt-3 flex items-center gap-2 text-sm"><x-frontend::icon name="clock" class="h-4 w-4 text-primary" />{{ __('frontend.account.expected_delivery') }} <strong class="text-primary">{{ date('d/m/Y', strtotime('+5 days')) }}</strong></p>
+							@if($item->shipping_date)
+							<p class="mt-3 flex items-center gap-2 text-sm"><x-frontend::icon name="clock" class="h-4 w-4 text-primary" />{{ __('frontend.account.expected_delivery') }} <strong class="text-primary">{{ \Illuminate\Support\Carbon::parse($item->shipping_date)->format('d/m/Y') }}</strong></p>
+							@endif
 							<table class="mt-3 w-full text-sm">
 								<thead><tr class="text-left text-text-muted"><th class="px-2 py-1 font-medium">{{ __('frontend.cart.quantity') }}</th><th class="px-2 py-1 font-medium">{{ __('frontend.cart.unit_price') }}</th><th class="px-2 py-1 font-medium">{{ __('frontend.cart.total_price') }}</th></tr></thead>
 								<tbody><tr class="border-t border-border-muted font-semibold"><td class="px-2 py-1">{{ __('frontend.cart.pieces', ['count' => $item->quantity]) }}</td><td class="px-2 py-1">€ {{ $money($item->unit_price) }} <span class="font-normal text-text-muted">{{ __('frontend.cart.each_plus_vat') }}</span></td><td class="px-2 py-1">€ {{ $money($item->price) }} <span class="font-normal text-text-muted">{{ __('frontend.cart.plus_vat') }}</span></td></tr></tbody>

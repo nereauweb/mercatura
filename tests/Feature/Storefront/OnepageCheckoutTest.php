@@ -117,6 +117,9 @@ final class OnepageCheckoutTest extends TestCase
         $this->assertSame(1, OrderItemCustomization::query()->where('item_id', $item->id)->count());
         $this->assertSame([], session('cart'), 'the cart is cleared after a bank transfer');
         $this->get(route('frontend.checkout.finalized_page'))->assertOk()->assertSee(__('frontend.checkout.bank_title'));
+        $detail = $this->get('/ordine/'.$order->id)->assertOk()->getContent();
+        $this->assertStringContainsString(\Illuminate\Support\Carbon::parse($item->shipping_date)->format('d/m/Y'), $detail, 'the order page shows the shipping date promised on the line');
+        $this->assertStringNotContainsString(date('d/m/Y', strtotime('+5 days')), $detail, 'no placeholder date');
     }
 
     public function test_a_failing_mail_provider_does_not_undo_a_placed_order(): void
