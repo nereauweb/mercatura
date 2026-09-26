@@ -434,6 +434,8 @@ class ProcessNormalizedProductData extends ImportCommand
                                         $originalFilename .= '.'.$extension;
                                     }
 
+                                    // A JPEG libmagic cannot read would get no conversions: re-encode it first.
+                                    \App\Support\ImageSanitizer::prepare($tempPath);
                                     // Salva in Media Library usando il filename originale
                                     $variant->addMedia($tempPath)
                                         ->usingFileName($originalFilename)
