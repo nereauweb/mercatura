@@ -46,6 +46,17 @@ return [
     ],
 
     /*
+    | Newsletter sign-ups. double_opt_in=false: the consent given on the site's
+    | forms is the opt-in and the contact is created as subscribed; true: the
+    | contact is created as pending and the provider sends its own confirmation
+    | mail (Mailchimp). Contacts that had unsubscribed always come back as
+    | pending, whatever the setting.
+    */
+    'newsletter' => [
+        'double_opt_in' => (bool) env('NEWSLETTER_DOUBLE_OPT_IN', false),
+    ],
+
+    /*
     | Hosted payment gateways: checkout payment method → PaymentGateway driver.
     | Methods listed in checkout.payment_methods without a gateway here
     | (bank_transfer) complete the order without redirecting.

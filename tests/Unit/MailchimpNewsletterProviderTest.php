@@ -40,6 +40,17 @@ class MailchimpNewsletterProviderTest extends TestCase
         $this->provider->subscribe(['email' => 'new@example.com', 'name' => 'Anna', 'surname' => 'Rossi', 'phone' => '0123', 'customer_type' => 'Azienda', 'company' => 'ACME', 'activity' => '']);
     }
 
+    public function test_double_opt_in_creates_new_contacts_as_pending(): void
+    {
+        config(['mercatura.newsletter.double_opt_in' => true]);
+        $this->lists->shouldReceive('getListMember')->once()->andThrow(new RuntimeException('[404] Resource Not Found'));
+        $this->lists->shouldReceive('addListMember')->once()->withArgs(fn (string $list, array $body) => $body['status'] === 'pending');
+        $this->provider->subscribe(['email' => 'new@example.com', 'name' => 'Anna']);
+
+        $this->lists->shouldReceive('setListMember')->once()->withArgs(fn (string $list, string $hash, array $body) => $body['status_if_new'] === 'pending');
+        $this->provider->syncContact(['email' => 'sync@example.com']);
+    }
+
     public function test_a_subscribed_or_pending_member_is_reported_as_already_subscribed(): void
     {
         foreach (['subscribed', 'pending'] as $status) {

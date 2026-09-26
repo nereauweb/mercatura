@@ -67,7 +67,7 @@ final class MailchimpNewsletterProvider implements NewsletterProvider
         try {
             $this->lists->addListMember($listId, [
                 'email_address' => $email,
-                'status' => 'subscribed',
+                'status' => $this->newStatus(),
                 'merge_fields' => $this->mergeFields($contact),
             ]);
         } catch (Throwable $e) {
@@ -97,9 +97,15 @@ final class MailchimpNewsletterProvider implements NewsletterProvider
         $email = $this->email($contact);
         $this->lists->setListMember($this->listId(), $this->hash($email), [
             'email_address' => $email,
-            'status_if_new' => 'subscribed',
+            'status_if_new' => $this->newStatus(),
             'merge_fields' => $this->mergeFields($contact),
         ]);
+    }
+
+    /** New contacts: subscribed (the site's consent is the opt-in) or pending (Mailchimp sends its confirmation). */
+    private function newStatus(): string
+    {
+        return config('mercatura.newsletter.double_opt_in', false) ? 'pending' : 'subscribed';
     }
 
     /**
