@@ -189,3 +189,25 @@ Proposal (core + both connectors, same data model as the products):
   not deactivated until the configured number of days).
 - Effort: ~1 day, best done together with option A since both touch the same
   loop.
+
+## 7. Results after B, A and the lifecycle (26/09/2026, staging)
+
+Core 2.6.1, pfconcept 1.5.0, sipec 1.5.0. Same catalogue as §1.
+
+| Run | PF printing stage | Whole weekly run | Notes |
+|---|---|---|---|
+| Before (25/09) | 330 min | 6.3 h | row-by-row, no fingerprints |
+| First run with the new code (forced rewrite: no fingerprint stored yet) | **51 min** | **1.6 h** | identical output: 296,510 PF customizations, 412,119 areas, 709,769 options, 7,000,703 tiers, the same counts as the day before; log 10 MB instead of 70 |
+| Steady state (nothing changed at the supplier) | **2.3 min** | ≈ 40 min (the products part, unchanged) | 22,140 variants skipped, 296,510 rows marked seen, no write to areas, options or tiers |
+
+The golden test of the connector (`connectors/pfconcept/tests/PfPrintingGoldenTest.php`)
+holds the guarantee on the produced data: the tree written by the new code
+equals the snapshot of the old one on an 8-product staging sample, the
+steady-state run leaves it untouched, a supplier price change rewrites the
+affected variants and `--force` lands on the same result.
+
+What the weekly run costs now: the products part (≈ 40 min, the same as the
+nightly plus the PF print feeds) and a few minutes of printing, plus the
+rewrite of the variants whose supplier data, prices or markup bands changed
+(≈ 51 min when everything changes). The lifecycle reconcile at the end
+reported nothing to deactivate or reactivate on a stable feed.
