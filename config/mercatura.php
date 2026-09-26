@@ -71,6 +71,31 @@ return [
     |   price table with one row per size (e.g. items priced by capacity).
     */
     'catalog' => [
+        /*
+        | Hex codes for the colour labels the suppliers send without one
+        | (catalog:color-codes, run after every products import). Lower-case
+        | label => hex without #. A composite label ("blu/bianco", "nero-rosso")
+        | is resolved part by part and stored as "HEX1/HEX2", the two-colour
+        | swatch the storefront renders. Installations extend or override
+        | the list in their own config.
+        */
+        'color_codes' => [
+            'bianco' => 'FFFFFF', 'nero' => '000000', 'rosso' => 'E30613', 'blu' => '1F3A93', 'azzurro' => '5DADE2',
+            'verde' => '2E8B57', 'giallo' => 'FFD700', 'arancio' => 'FF7F00', 'arancione' => 'FF7F00', 'grigio' => '9E9E9E',
+            'marrone' => '7B4A2D', 'rosa' => 'F4A6C8', 'viola' => '7B3F9E', 'fucsia' => 'E5007E', 'bordeaux' => '7B1E2D',
+            'oro' => 'D4AF37', 'argento' => 'C0C0C0', 'bronzo' => 'CD7F32', 'naturale' => 'E8DCC0', 'beige' => 'D9C7A5',
+            'celeste' => '9BD3EE', 'lilla' => 'C8A2C8', 'prugna' => '6E2C4E', 'ruggine' => 'B7410E', 'indaco' => '4B0082',
+            'jeans' => '4F6D9A', 'royal' => '2F4F8F', 'blu royal' => '2F4F8F', 'bluette' => '3B5BA5', 'navy' => '204060',
+            'blue navy' => '204060', 'blu navy' => '204060', 'trasparente' => 'F2F2F2', 'mimetico' => '6B8E23/4B5320',
+            'tricolore it' => '009246/CE2B37', 'tricolore fr' => '0055A4/EF4135', 'urban grey' => '808A8D', 'steel blue' => '4682B4',
+            'verde acqua' => '66CDAA', 'verde acqua chiaro' => 'AFEEEE', 'verde matcha' => '9BB07F', 'verde mela' => '8DB600',
+            'verde menta' => '98FF98', 'verde petrolio' => '006D6F', 'verde prato' => '4CAF50', 'verde scuro' => '1B5E20',
+            'verde smeraldo' => '50C878', 'verde chiaro' => '90EE90', 'giallo chiaro' => 'FFF59D', 'grigio chiaro' => 'D3D3D3',
+            'grigio scuro' => '555555', 'grigio ghiaccio' => 'DDE3E8', 'grigio verde' => '8F9E8B', 'blu grigio' => '6C7A89',
+            'blu petrolio' => '1F4E5F', 'blu notte' => '0B1F3A', 'blu scuro' => '0B1F3A', 'blu chiaro' => '7FA8D8',
+            'azzurro chiaro' => 'A9D6F5', 'rosa chiaro' => 'F8C8DC', 'rosso mattone' => '9B3B2E', 'rosso scuro' => '8B0000',
+            'mela' => '8DB600', 'multicolore' => 'FF0000/0000FF',
+        ],
         'attributes' => [
             'brand' => (int) env('MERCATURA_ATTR_BRAND', 3),
             'material' => (int) env('MERCATURA_ATTR_MATERIAL', 4),

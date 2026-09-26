@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Filament\Resources\Taxonomy;
 
 use App\Models\ProductColor;
-use App\Models\ProductColorFamily;
 use App\Support\CatalogCache;
 use BackedEnum;
 use Filament\Actions\CreateAction;
@@ -21,7 +20,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 
-/** Colours (hex code, optional family). Rows in use cannot be deleted. */
+/** Colours (hex code, any number of families). Rows in use cannot be deleted. */
 final class ProductColorResource extends Resource
 {
     protected static ?string $model = ProductColor::class;
@@ -52,7 +51,7 @@ final class ProductColorResource extends Resource
         return $schema->columns(2)->components([
             TextInput::make('label')->label(__('admin.catalog.label'))->required()->maxLength(128),
             TextInput::make('code')->label(__('admin.catalog.code'))->maxLength(512)->helperText(__('admin.catalog.code_hint')),
-            Select::make('family_id')->label(__('admin.catalog.family'))->options(fn (): array => ProductColorFamily::query()->orderBy('label')->pluck('label', 'id')->all())->searchable()->native(false)->nullable(),
+            Select::make('families')->label(__('admin.catalog.families'))->relationship('families', 'label')->multiple()->preload()->searchable()->native(false)->nullable(),
         ]);
     }
 
@@ -65,7 +64,7 @@ final class ProductColorResource extends Resource
                 TextColumn::make('id')->label(__('admin.common.id'))->sortable(),
                 TextColumn::make('label')->label(__('admin.catalog.label'))->searchable()->sortable(),
                 TextColumn::make('code')->label(__('admin.catalog.code'))->placeholder('-'),
-                TextColumn::make('family.label')->label(__('admin.catalog.family'))->placeholder('-'),
+                TextColumn::make('families.label')->label(__('admin.catalog.families'))->badge()->placeholder('-'),
                 TextColumn::make('variants_count')->label(__('admin.catalog.in_use_count'))->sortable(),
             ])
             ->recordActions([

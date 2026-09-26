@@ -3,7 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ProductColorFamily extends Model
@@ -17,8 +17,9 @@ class ProductColorFamily extends Model
         'code',
     ];
 
-    public function colors(): HasMany
+    /** @return BelongsToMany<ProductColor, $this> */
+    public function colors(): BelongsToMany
     {
-        return $this->hasMany(ProductColor::class, 'family_id');
+        return $this->belongsToMany(ProductColor::class, 'product_colors_families_colors', 'family_id', 'color_id')->withTimestamps();
     }
 }

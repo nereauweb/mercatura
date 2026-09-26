@@ -81,6 +81,7 @@ class Import extends ImportCommand
         if ($this->process_product_data) {
             $this->runConnectorStage(ImportConnector::STAGE_PRODUCTS);
             $this->call('app:ProcessNormalizedProductData', ['import_id' => $this->import_id]);
+            $this->call('catalog:color-codes');
             $this->call('app:DisableWrongProducts');
             $this->call('scout:import', ['model' => 'App\Models\Product']);
             ImportStageCompleted::dispatch((int) $this->import_id, ImportConnector::STAGE_PRODUCTS);

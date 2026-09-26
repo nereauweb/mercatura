@@ -3,7 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -14,14 +14,19 @@ class ProductColor extends Model
     protected $table = 'product_colors';
 
     protected $fillable = [
-        'family_id',
         'label',
         'code',
     ];
 
-    public function family(): BelongsTo
+    /**
+     * The families the colour belongs to: one for a plain colour, several for a
+     * composite one ("blu/bianco").
+     *
+     * @return BelongsToMany<ProductColorFamily, $this>
+     */
+    public function families(): BelongsToMany
     {
-        return $this->belongsTo(ProductColorFamily::class, 'family_id');
+        return $this->belongsToMany(ProductColorFamily::class, 'product_colors_families_colors', 'color_id', 'family_id')->withTimestamps();
     }
 
     public function aliases(): HasMany
