@@ -100,6 +100,9 @@ abstract class ConnectorCommand extends Command
             return null;
         }
 
+        // Listed by the source in this run: seen now, and active again if it had been switched off.
+        $values += ['last_seen_at' => now(), 'active' => true];
+
         // Same outcome as updateOrCreate($keys, $values), without repeating the lookup above.
         if ($existing instanceof Customization) {
             $existing->fill($values)->save();
@@ -108,6 +111,49 @@ abstract class ConnectorCommand extends Command
         }
 
         return Customization::query()->create(array_merge($keys, $values));
+    }
+
+    /**
+     * Fingerprint of everything a variant's customizations are computed from
+     * (the supplier's rows, the variant's prices, the markup bands, the command's
+     * version): equal fingerprints mean the rows already stored are still right.
+     *
+     * @param  array<string, mixed>  $inputs
+     */
+    protected function customizationFingerprint(array $inputs): string
+    {
+        return hash('sha256', (string) json_encode([
+            'command' => static::class.'@'.static::FINGERPRINT_VERSION,
+            'markup' => $this->markup()->fingerprint(),
+            'inputs' => $inputs,
+        ]));
+    }
+
+    /** Bumped whenever the command changes what it writes for the same inputs. */
+    public const FINGERPRINT_VERSION = 1;
+
+    /**
+     * True when the variant's importable customizations (of the given pipeline)
+     * exist and all carry this fingerprint: nothing to rewrite.
+     */
+    protected function customizationsUnchanged(string $source, string $variantSku, string $hash, ?string $pipeline = null): bool
+    {
+        $rows = Customization::query()->importable()->where('source', $source)->where('source_variant_sku', $variantSku)
+            ->when($pipeline !== null, fn ($q) => $q->where('pipeline', $pipeline))
+            ->pluck('source_hash');
+
+        return $rows->isNotEmpty() && $rows->every(fn ($h) => $h === $hash);
+    }
+
+    /**
+     * The variant's customizations were listed by the source in this run: seen
+     * now and active, without touching areas, options or tiers.
+     */
+    protected function touchCustomizations(string $source, string $variantSku, ?string $pipeline = null): int
+    {
+        return Customization::query()->importable()->where('source', $source)->where('source_variant_sku', $variantSku)
+            ->when($pipeline !== null, fn ($q) => $q->where('pipeline', $pipeline))
+            ->update(['last_seen_at' => now(), 'active' => true, 'updated_at' => \Illuminate\Support\Facades\DB::raw('`updated_at`')]);
     }
 
     protected function markup(): MarkupRules

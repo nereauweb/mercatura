@@ -13,7 +13,10 @@ use Illuminate\Database\Eloquent\Builder;
  * A connector may keep several printing pipelines in customizations
  * (e.g. an older price list next to a new API feed) and declare which one
  * is live (ImportConnector::customizationPipelines). The storefront only reads
- * live rows; sources without a declaration are always live.
+ * live rows; sources without a declaration are always live. It also reads
+ * only active rows: a customization the source stopped listing is switched
+ * off by cleanup:customizations (and back on when it reappears); the admin
+ * lists every row through the relations that pass $onlyActive = false.
  */
 final class CustomizationPipeline
 {
@@ -21,8 +24,11 @@ final class CustomizationPipeline
      * @param  Builder<Customization>  $query
      * @return Builder<Customization>
      */
-    public static function apply(Builder $query): Builder
+    public static function apply(Builder $query, bool $onlyActive = true): Builder
     {
+        if ($onlyActive) {
+            $query->where($query->qualifyColumn('active'), true);
+        }
         foreach (app(ImportConnectors::class)->all() as $connector) {
             $pipelines = $connector->customizationPipelines();
             if ($pipelines === null) {

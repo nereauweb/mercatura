@@ -59,9 +59,10 @@ class Customization extends Model
         'source', 'pipeline', 'family', 'locked', 'source_product_sku', 'normalized_product_id', 'product_id', 'source_variant_sku', 'normalized_variant_id', 'variant_id',
         'technique_label', 'position_label', 'position_code', 'technique_main_code', 'image', 'is_default', 'processing_days', 'has_packaging',
         'minimum_quantity', 'max_colors', 'max_print_position', 'packaging_code', 'supplier_data',
+        'active', 'last_seen_at', 'source_hash',
     ];
 
-    protected $casts = ['supplier_data' => 'array', 'locked' => 'boolean'];
+    protected $casts = ['supplier_data' => 'array', 'locked' => 'boolean', 'active' => 'boolean', 'last_seen_at' => 'datetime'];
 
     public const MANUAL_SOURCE = 'own';
 

@@ -116,11 +116,14 @@ return [
     ],
 
     /*
-    | Customizations (docs/03_CUSTOMIZATIONS.md). cleanup_days: a customization
-    | of a live pipeline that no import has touched for this many days is
-    | deleted by cleanup:customizations (run after every customizations import).
+    | Customizations (docs/03_CUSTOMIZATIONS.md §7). missing_days: a customization
+    | of a live pipeline that the source stopped listing for this many days is
+    | deactivated by cleanup:customizations (run after every customizations
+    | import) and reactivated when it reappears; cleanup_days: after this many
+    | days without being listed it is deleted (0 = never).
     */
     'customizations' => [
+        'missing_days' => (int) env('MERCATURA_CUSTOMIZATIONS_MISSING_DAYS', 3),
         'cleanup_days' => (int) env('MERCATURA_CUSTOMIZATIONS_CLEANUP_DAYS', 90),
     ],
 

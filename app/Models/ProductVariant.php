@@ -351,6 +351,19 @@ class ProductVariant extends Model implements HasMedia
         return $relation;
     }
 
+    /**
+     * Live-pipeline rows including the inactive ones (admin).
+     *
+     * @return HasMany<\App\Models\Customizations\Customization, $this>
+     */
+    public function allCustomizations(): HasMany
+    {
+        $relation = $this->HasMany(\App\Models\Customizations\Customization::class, 'variant_id');
+        CustomizationPipeline::apply($relation->getQuery(), false);
+
+        return $relation;
+    }
+
     public function maxCustomizationMinimumQuantity()
     {
         return $this->highestMinimumCustomization->minimum_quantity;

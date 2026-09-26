@@ -719,3 +719,37 @@ is the smallest rule that covers both cases.
   changing a route").
 - Whether v2c.6 (admin editing) is part of v2c or a later phase.
 - Whether the public release waits for v2c.5 (recommended).
+
+## 10. Lifecycle of imported customizations (core 2.6, 26/09/2026)
+
+Requirement: a customization the supplier stops listing is deactivated, not
+deleted, and reactivated if it reappears — the rule the products already
+follow through `last_seen_active` and `app:DisableWrongProducts`.
+
+- `customizations.last_seen_at`: set by `ConnectorCommand::upsertCustomization()`
+  (every row a connector writes) and by `touchCustomizations()` (rows a
+  connector leaves untouched because their fingerprint did not change).
+  Both also set `active = true`, so a row listed again is reactivated by the
+  very import that sees it. Existing rows were backfilled from `updated_at`.
+- `cleanup:customizations` (run after every customizations stage, by
+  `app:import` and by the panel job) reconciles: importable rows of the live
+  pipeline not listed for `mercatura.customizations.missing_days` (default 3)
+  → `active = false`; rows listed again → `active = true`; rows not listed for
+  `cleanup_days` (default 90, 0 = never) → deleted with their tree. Manual
+  (`source = own`) and locked rows are never touched. The switches do not
+  change `updated_at`, which keeps meaning "last data change".
+- `CustomizationPipeline::apply()` adds `active = 1`, so the storefront
+  relations (`Product::customizations()`, `ProductVariant::customizations()`)
+  and the catalogue filters stop offering a deactivated row at once; the admin
+  relation manager reads `ProductVariant::allCustomizations()` and shows the
+  "Attiva" and "Vista il" columns. Orders and quotations keep their own copy
+  of the chosen customization, so history is unaffected.
+- `customizations.source_hash`: `ConnectorCommand::customizationFingerprint()`
+  hashes the supplier's rows the connector passes, the markup bands
+  (`MarkupRules::fingerprint()`) and the command's `FINGERPRINT_VERSION`;
+  `customizationsUnchanged()` tells the connector it can skip the variant
+  (all its importable rows carry the same hash), `touchCustomizations()`
+  marks them seen. Connectors bump `FINGERPRINT_VERSION` when they change what
+  they write for the same inputs. Sipec no longer deletes the printings a
+  product lost (the reconcile deactivates them); PF Concept skips unchanged
+  variants and rewrites the others (docs/05_IMPORT_PERFORMANCE.md).

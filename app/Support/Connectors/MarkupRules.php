@@ -33,6 +33,14 @@ final class MarkupRules
         $this->tierRules = null;
     }
 
+    /** Changes whenever a markup band changes: part of the connectors' customization fingerprints. */
+    public function fingerprint(): string
+    {
+        $this->bands ??= array_values(ProductMarkup::query()->orderBy('id')->get()->all());
+
+        return hash('sha256', (string) json_encode(array_map(fn (ProductMarkup $b) => $b->only(['from_condition', 'to_condition', 'value']), $this->bands)));
+    }
+
     public function rule(float $condition): ?ProductMarkup
     {
         $this->bands ??= array_values(ProductMarkup::query()->orderBy('id')->get()->all());

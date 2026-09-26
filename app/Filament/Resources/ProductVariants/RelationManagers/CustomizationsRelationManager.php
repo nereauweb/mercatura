@@ -33,7 +33,7 @@ use Illuminate\Database\Eloquent\Model;
  */
 final class CustomizationsRelationManager extends RelationManager
 {
-    protected static string $relationship = 'customizations';
+    protected static string $relationship = 'allCustomizations';
 
     public static function getTitle(Model $ownerRecord, string $pageClass): string
     {
@@ -94,6 +94,8 @@ final class CustomizationsRelationManager extends RelationManager
                 IconColumn::make('is_default')->label(__('admin.catalog.customization.default'))->boolean(),
                 TextColumn::make('source')->label(__('admin.catalog.customization.source'))->badge()->formatStateUsing(fn (string $state, Customization $record): string => $record->isManual() ? __('admin.catalog.customization.manual') : $state)->color(fn (Customization $record): string => $record->isManual() ? 'success' : 'gray'),
                 IconColumn::make('locked')->label(__('admin.catalog.customization.locked'))->boolean()->visible(fn (): bool => true),
+                IconColumn::make('active')->label(__('admin.catalog.customization.active'))->boolean()->tooltip(fn (Customization $record): ?string => $record->active ? null : __('admin.catalog.customization.inactive_hint')),
+                TextColumn::make('last_seen_at')->label(__('admin.catalog.customization.last_seen'))->dateTime('d/m/Y')->placeholder('-')->toggleable(),
             ])
             ->headerActions([
                 CreateAction::make()->modalWidth('5xl')

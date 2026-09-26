@@ -196,6 +196,9 @@ return [
         'customization' => [
             'title' => 'Personalizzazioni',
             'singular' => 'Personalizzazione',
+            'active' => 'Attiva',
+            'inactive_hint' => 'Disattivata dall\'import: il fornitore non la elenca più. Torna attiva se ricompare.',
+            'last_seen' => 'Vista il',
             'hint' => 'Le personalizzazioni ricevute dagli import vengono aggiornate a ogni import; proteggile per conservare le modifiche. Quelle create qui non vengono mai toccate dagli import.',
             'family_hint' => 'Facoltativa: famiglia della lavorazione (es. embroidery, engraving), usata come filtro.',
             'areas' => 'Aree',
