@@ -127,11 +127,15 @@ class CustomizationLifecycleTest extends TestCase
 
         $sku = $f->a->sku;
         $this->assertFalse($command->unchanged($sku, $hash), 'no fingerprint stored yet');
-        Customization::query()->where('source_variant_sku', $sku)->update(['source_hash' => $hash, 'active' => false, 'last_seen_at' => now()->subDays(30)]);
+        Customization::query()->where('source_variant_sku', $sku)->update(['source_hash' => $hash, 'last_seen_at' => now()->subDays(30)]);
         $this->assertTrue($command->unchanged($sku, $hash));
+        Customization::query()->whereKey($f->embroideryA->id)->update(['active' => false, 'source_hash' => 'dropped-earlier']);
+        $this->assertTrue($command->unchanged($sku, $hash), 'rows the source dropped earlier (inactive) do not force a rewrite');
+        Customization::query()->whereKey($f->embroideryA->id)->update(['active' => true]);
+        $this->assertFalse($command->unchanged($sku, $hash), 'an active row with another fingerprint does');
+        Customization::query()->whereKey($f->embroideryA->id)->update(['source_hash' => $hash]);
         $this->assertSame(2, $command->touch($sku));
-        $this->assertTrue($f->screenA->fresh()->active, 'touched rows are seen and active again');
-        $this->assertTrue($f->screenA->fresh()->last_seen_at->isToday());
+        $this->assertTrue($f->screenA->fresh()->last_seen_at->isToday(), 'touched rows are seen today');
 
         Customization::query()->whereKey($f->screenA->id)->update(['locked' => true, 'source_hash' => 'other']);
         $this->assertTrue($command->unchanged($sku, $hash), 'locked rows are not the import\'s business');

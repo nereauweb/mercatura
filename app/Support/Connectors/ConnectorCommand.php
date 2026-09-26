@@ -133,12 +133,13 @@ abstract class ConnectorCommand extends Command
     public const FINGERPRINT_VERSION = 1;
 
     /**
-     * True when the variant's importable customizations (of the given pipeline)
-     * exist and all carry this fingerprint: nothing to rewrite.
+     * True when the variant's active importable customizations (of the given
+     * pipeline) exist and all carry this fingerprint: nothing to rewrite. Rows
+     * the source dropped earlier are inactive and stay out of the decision.
      */
     protected function customizationsUnchanged(string $source, string $variantSku, string $hash, ?string $pipeline = null): bool
     {
-        $rows = Customization::query()->importable()->where('source', $source)->where('source_variant_sku', $variantSku)
+        $rows = Customization::query()->importable()->where('active', true)->where('source', $source)->where('source_variant_sku', $variantSku)
             ->when($pipeline !== null, fn ($q) => $q->where('pipeline', $pipeline))
             ->pluck('source_hash');
 
