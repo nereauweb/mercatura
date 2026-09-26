@@ -318,7 +318,7 @@ final class ProductPageData
                 'areas' => $customization->areas->pluck('label')->filter()->unique()->values()->all(),
                 'max_colors' => $maxColors,
                 'colors_numeric' => $maxColors !== null && ctype_digit($maxColors),
-                'processing_days' => $customization->processing_days !== null ? (int) $customization->processing_days : null,
+                'processing_days' => (int) $customization->processing_days > 0 ? (int) $customization->processing_days : null,
             ];
         }
         usort($cards, fn ($a, $b) => [$a['technique'], $a['position']] <=> [$b['technique'], $b['position']]);
