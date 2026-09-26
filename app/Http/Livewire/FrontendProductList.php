@@ -366,7 +366,7 @@ final class FrontendProductList extends Component
                 });
             })
             ->when($this->urlPurchase !== '', fn ($q) => $q->whereIn('source', app(\App\Support\ImportConnectors::class)->find($this->urlPurchase)?->sourceValues() ?? [$this->urlPurchase]))
-            ->when($this->is_new, fn ($q) => $q->where('products.created_at', '>', now()->subMonth()))
+            ->when($this->is_new, fn ($q) => $q->where('products.created_at', '>', Product::newSince()))
             ->when($this->is_sale, fn ($q) => $q->whereHas('variants', fn ($sq) => $sq->whereIn('isSale', [1, 2])))
             ->when($this->is_green, fn ($q) => $q->where('isGreen', true))
             ->when($this->is_promo, fn ($q) => $q->where('isPromo', true))

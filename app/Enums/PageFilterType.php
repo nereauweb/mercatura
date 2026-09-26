@@ -17,6 +17,7 @@ enum PageFilterType: string implements HasLabel
     case IsBestseller = 'is_bestseller';
     case IsGreen = 'is_green';
     case IsPromo = 'is_promo';
+    case IsNew = 'is_new';
 
     public function getLabel(): string
     {
@@ -29,6 +30,7 @@ enum PageFilterType: string implements HasLabel
             self::IsBestseller => 'Bestseller',
             self::IsGreen => 'Green',
             self::IsPromo => 'In promozione',
+            self::IsNew => 'Novità',
         };
     }
 }

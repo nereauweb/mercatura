@@ -373,6 +373,8 @@ return [
         'filter_bestseller' => 'Bestseller',
         'filter_green' => 'Green',
         'filter_promo' => 'In promozione',
+        'filter_new' => 'Novità (creati negli ultimi :days giorni)',
+        'filter_new_hint' => 'Finestra mobile: la pagina mostra sempre i prodotti più recenti, senza aggiornare la data. La durata si imposta con MERCATURA_CATALOG_NEW_DAYS.',
         'filter_products' => 'Prodotti specifici',
         'filter_hint' => 'Con una categoria selezionata vale solo la categoria (regola del negozio); altrimenti si combinano attributi, data e flag.',
         'from_path' => 'Da (percorso vecchio)',

@@ -82,6 +82,9 @@ return [
     |   price table with one row per size (e.g. items priced by capacity).
     */
     'catalog' => [
+        // A product counts as "novità" for this many days after its creation (badge, listing filter, CMS page filter).
+        'new_days' => (int) env('MERCATURA_CATALOG_NEW_DAYS', 30),
+
         /*
         | Hex codes for the colour labels the suppliers send without one
         | (catalog:color-codes, run after every products import). Lower-case

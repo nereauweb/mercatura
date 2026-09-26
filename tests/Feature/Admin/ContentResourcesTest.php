@@ -59,17 +59,17 @@ class ContentResourcesTest extends TestCase
             ->fillForm([
                 'title' => 'Novità test', 'slug' => 'novita-test', 'active' => true, 'navbar' => true, 'text' => '<p>Testo</p>',
                 'products' => true, 'filter_categories' => [$category->id], 'filter_green' => true,
-                'filter_attributes' => [['attribute_id' => 17, 'value' => 'penna']], 'filter_created_after' => '2026-01-01 00:00',
+                'filter_attributes' => [['attribute_id' => 17, 'value' => 'penna']], 'filter_created_after' => '2026-01-01 00:00', 'filter_new' => true,
             ])
             ->call('create')->assertHasNoFormErrors();
 
         $page = Page::query()->where('slug', 'novita-test')->firstOrFail();
         $types = $page->contents()->pluck('filter_type')->sort()->values()->all();
-        $this->assertSame(['attribute_id_value', 'category_id', 'created_after_value', 'is_green'], $types);
+        $this->assertSame(['attribute_id_value', 'category_id', 'created_after_value', 'is_green', 'is_new'], $types);
         $this->get('/contenuti/novita-test')->assertOk()->assertSee('Novità test');
 
         Livewire::test(EditPage::class, ['record' => $page->id])
-            ->assertSchemaStateSet(['filter_categories' => [$category->id], 'filter_green' => true])
+            ->assertSchemaStateSet(['filter_categories' => [$category->id], 'filter_green' => true, 'filter_new' => true])
             ->fillForm(['products' => false])
             ->call('save')->assertHasNoFormErrors();
         $this->assertSame(0, $page->contents()->count());
@@ -115,5 +115,24 @@ class ContentResourcesTest extends TestCase
         $this->assertStringContainsString('800w', $html);
         $this->assertStringContainsString('<source media="(max-width: 639px)"', $html, 'the phone image is offered under 640 px');
         $this->assertStringContainsString(pathinfo((string) $slide->mobile_image, PATHINFO_FILENAME).'-web.webp', $html);
+    }
+
+    public function test_the_novita_filter_is_a_moving_window_over_the_creation_date(): void
+    {
+        config(['mercatura.catalog.new_days' => 30]);
+        $page = Page::query()->create(['title' => 'Novità', 'slug' => 'novita-window', 'active' => 1, 'navbar' => 0, 'products' => 1, 'text' => '<p>x</p>']);
+        \App\Models\PageContent::query()->create(['page_id' => $page->id, 'filter_type' => 'is_new', 'filter_target' => null, 'filter_value' => '1']);
+        $fresh = \App\Models\Product::query()->create(['sku' => 'NEW-1', 'source' => 'own', 'source_sku' => 'NEW-1', 'name' => 'Nuovo', 'slug' => 'nuovo-1', 'active' => 1, 'forced_status' => 'none']);
+        $old = \App\Models\Product::query()->create(['sku' => 'OLD-1', 'source' => 'own', 'source_sku' => 'OLD-1', 'name' => 'Vecchio', 'slug' => 'vecchio-1', 'active' => 1, 'forced_status' => 'none']);
+        \App\Models\Product::query()->whereKey($old->id)->update(['created_at' => now()->subDays(45)]);
+
+        $ids = $page->products_ids()->all();
+        $this->assertContains($fresh->id, $ids);
+        $this->assertNotContains($old->id, $ids);
+        $this->assertTrue($fresh->fresh()->isNew());
+        $this->assertFalse($old->fresh()->isNew());
+
+        config(['mercatura.catalog.new_days' => 60]);
+        $this->assertContains($old->id, $page->fresh()->products_ids()->all(), 'the window follows the config');
     }
 }

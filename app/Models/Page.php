@@ -92,6 +92,9 @@ class Page extends Model
             })
             ->when($this->is_green_filter_value() > 0, function ($q) {
                 return $q->where('isGreen', 1);
+            })
+            ->when($this->is_new_filter_value() > 0, function ($q) {
+                return $q->where('created_at', '>', Product::newSince());
             });
         /*
         ->when(!empty($this->brands), function ($q) {
@@ -138,6 +141,19 @@ class Page extends Model
         $filter = $this->created_after_filter;
 
         return $filter ? $filter->filter_value : '';
+    }
+
+    /** @return HasOne<PageContent, $this> */
+    public function is_new_filter(): HasOne
+    {
+        return $this->hasOne(PageContent::class, 'page_id', 'id')->where('filter_type', 'is_new');
+    }
+
+    public function is_new_filter_value()
+    {
+        $filter = $this->is_new_filter;
+
+        return $filter ? $filter->filter_value : 0;
     }
 
     /** @return HasOne<PageContent, $this> */

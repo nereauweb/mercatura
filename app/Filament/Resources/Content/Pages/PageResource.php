@@ -104,6 +104,7 @@ final class PageResource extends Resource
                         Toggle::make('filter_bestseller')->label(__('admin.content.filter_bestseller'))->inline(false),
                         Toggle::make('filter_green')->label(__('admin.content.filter_green'))->inline(false),
                         Toggle::make('filter_promo')->label(__('admin.content.filter_promo'))->inline(false),
+                        Toggle::make('filter_new')->label(__('admin.content.filter_new', ['days' => (int) config('mercatura.catalog.new_days', 30)]))->helperText(__('admin.content.filter_new_hint'))->inline(false),
                     ]),
                 ]),
                 Tab::make(__('admin.content.tabs.seo'))->columns(2)->schema(ProductForm::seoFields()),

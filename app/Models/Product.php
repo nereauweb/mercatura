@@ -404,10 +404,13 @@ class Product extends Model
 
     public function isNew()
     {
-        return strtotime($this->created_at) > strtotime('-1 month');
-        /*
-        return Cache::remember('product_' . $this->id . '_is_new', now()->addDays(1), function () { return strtotime($this->created_at) > strtotime('-1 week'); });
-*/
+        return strtotime($this->created_at) > self::newSince()->getTimestamp();
+    }
+
+    /** Products created after this moment are "novità" (config mercatura.catalog.new_days). */
+    public static function newSince(): \Illuminate\Support\Carbon
+    {
+        return now()->subDays(max(1, (int) config('mercatura.catalog.new_days', 30)));
     }
 
     public function isSale()
