@@ -50,7 +50,10 @@ class ColorTaxonomyTest extends TestCase
 
     public function test_missing_colour_codes_are_filled_from_the_map_and_existing_ones_kept(): void
     {
-        $map = ['blu' => '1F3A93', 'bianco' => 'FFFFFF', 'blu royal' => '2F4F8F'];
+        $map = ['blu' => '1F3A93', 'bianco' => 'FFFFFF', 'blu royal' => '2F4F8F', 'blu notte' => '0B1F3A', 'royal' => '2F4F8F'];
+        $this->assertSame('0B1F3A', CatalogColorCodes::resolve('Blu-notte', $map), 'a hyphen inside a known two-word colour is not a split');
+        $this->assertSame('2F4F8F', CatalogColorCodes::resolve('Blu-royal', $map));
+        $this->assertSame('FFFFFF/2F4F8F', CatalogColorCodes::resolve('Bianco/blu royal', $map));
         $this->assertSame('1F3A93', CatalogColorCodes::resolve('Blu', $map));
         $this->assertSame('2F4F8F', CatalogColorCodes::resolve('Blu royal', $map), 'multi-word labels match as a whole first');
         $this->assertSame('1F3A93/FFFFFF', CatalogColorCodes::resolve('Blu/bianco', $map));

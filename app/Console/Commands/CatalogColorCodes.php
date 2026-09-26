@@ -58,8 +58,11 @@ class CatalogColorCodes extends Command
     public static function resolve(string $label, array $map): ?string
     {
         $key = mb_strtolower(trim($label));
-        if (isset($map[$key])) {
-            return $map[$key];
+        // "blu-notte" is the single colour "blu notte" when the map knows it, not blu + notte.
+        foreach ([$key, preg_replace('/\s*-\s*/u', ' ', $key)] as $whole) {
+            if (isset($map[$whole])) {
+                return $map[$whole];
+            }
         }
         $parts = preg_split('/\s*[\/\-]\s*/u', $key) ?: [];
         if (count($parts) < 2) {
