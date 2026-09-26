@@ -76,6 +76,7 @@ final class PageResource extends Resource
                     TextInput::make('slug')->label(__('admin.content.slug'))->required()->maxLength(64)->unique(ignoreRecord: true)->alphaDash()->helperText(__('admin.catalog.slug_hint')),
                     Toggle::make('active')->label(__('admin.content.active'))->default(true)->inline(false),
                     Toggle::make('navbar')->label(__('admin.content.navbar'))->inline(false),
+                    Toggle::make('topbar')->label(__('admin.content.topbar'))->helperText(__('admin.content.topbar_hint'))->inline(false),
                     TextInput::make('position')->label(__('admin.content.position'))->numeric()->default(0),
                     FileUpload::make('cover')->label(__('admin.content.cover'))->image()->disk('public')->directory(self::COVER_DIR)->visibility('public'),
                     TextInput::make('cta_text')->label(__('admin.content.cta_text'))->maxLength(32),

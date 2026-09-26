@@ -13,7 +13,7 @@ class Page extends Model
     use HasSeoFields;
     use RedirectsOldSlugs;
 
-    protected $casts = ['active' => 'boolean', 'navbar' => 'boolean', 'products' => 'boolean', 'noindex' => 'boolean', 'position' => 'integer'];
+    protected $casts = ['active' => 'boolean', 'navbar' => 'boolean', 'topbar' => 'boolean', 'products' => 'boolean', 'noindex' => 'boolean', 'position' => 'integer'];
 
     public static function pathForSlug(string $slug): string
     {
@@ -34,6 +34,7 @@ class Page extends Model
         'extra_text',
         'active',
         'navbar',
+        'topbar',
         'position',
         'slug',
         'seo_title', // string

@@ -121,4 +121,17 @@ final class StorefrontChromeTest extends TestCase
         $this->assertStringNotContainsString('text-sm font-semibold uppercase text-primary hover:text-accent">Chi siamo</a>', $html, 'gone from the category bar');
         $this->assertMatchesRegularExpression('#/contenuti/chi-siamo-test" class="hover:underline">Chi siamo</a>\s*<a href="[^"]*/contattaci" class="hover:underline">#', $html, 'in the utility bar, left of Contatti');
     }
+
+    public function test_pages_flagged_topbar_in_the_admin_are_in_the_utility_bar(): void
+    {
+        config(['brand.utility_pages' => []]);
+        \App\Models\Page::query()->create(['title' => 'Chi siamo', 'slug' => 'chi-siamo-flag', 'active' => 1, 'navbar' => 1, 'topbar' => 1, 'position' => 2, 'products' => 0, 'text' => '<p>Storia</p>']);
+        \App\Models\Page::query()->create(['title' => 'Servizi', 'slug' => 'servizi-flag', 'active' => 1, 'navbar' => 0, 'topbar' => 1, 'position' => 1, 'products' => 0, 'text' => '<p>x</p>']);
+        \App\Models\Page::query()->create(['title' => 'Nascosta', 'slug' => 'nascosta-flag', 'active' => 0, 'navbar' => 0, 'topbar' => 1, 'position' => 0, 'products' => 0, 'text' => '<p>x</p>']);
+        \Illuminate\Support\Facades\Cache::flush();
+        $html = $this->get('/')->assertOk()->getContent();
+        $this->assertMatchesRegularExpression('#/contenuti/servizi-flag" class="hover:underline">Servizi</a>\s*<a href="[^"]*/contenuti/chi-siamo-flag" class="hover:underline">Chi siamo</a>\s*<a href="[^"]*/contattaci"#', $html, 'by position, left of Contacts');
+        $this->assertDoesNotMatchRegularExpression('#/contenuti/chi-siamo-flag" class="text-sm font-semibold#', $html, 'a topbar page leaves the category bar even when navbar is set');
+        $this->assertStringNotContainsString('nascosta-flag', $html, 'inactive pages stay out');
+    }
 }

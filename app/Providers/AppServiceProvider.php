@@ -84,14 +84,26 @@ class AppServiceProvider extends ServiceProvider
         $nav_extra_pages = Cache::remember('nav_extra_pages', now()->addHour(1), function () {
             return Page::where('navbar', 1)->get()->toArray();
         });
-        // Pages the installation shows in the header's utility bar (config brand.utility_pages, in that order), not in the category bar.
+        // Pages shown in the header's utility bar (next to Contacts): the ones flagged "topbar" in the
+        // admin, by position, plus the slugs an installation lists in config brand.utility_pages (legacy).
         $utilitySlugs = (array) config('brand.utility_pages', []);
-        $nav_utility_pages = $utilitySlugs === [] ? [] : Cache::remember('nav_utility_pages_'.md5(implode(',', $utilitySlugs)), now()->addHour(), function () use ($utilitySlugs) {
-            $pages = Page::query()->whereIn('slug', $utilitySlugs)->where('active', 1)->get(['slug', 'title'])->keyBy('slug');
+        $nav_utility_pages = Cache::remember('nav_utility_pages_'.md5(implode(',', $utilitySlugs)), now()->addHour(), function () use ($utilitySlugs) {
+            $flagged = Page::query()->where('topbar', 1)->where('active', 1)->orderBy('position')->orderBy('id')->get(['slug', 'title']);
+            $listed = $utilitySlugs === [] ? collect() : Page::query()->whereIn('slug', $utilitySlugs)->where('active', 1)->get(['slug', 'title'])->keyBy('slug');
+            $pages = [];
+            foreach ($flagged as $page) {
+                $pages[$page->slug] = ['slug' => $page->slug, 'title' => $page->title];
+            }
+            foreach ($utilitySlugs as $slug) {
+                if ($listed->has($slug) && ! isset($pages[$slug])) {
+                    $pages[$slug] = ['slug' => $slug, 'title' => $listed[$slug]->title];
+                }
+            }
 
-            return array_values(array_filter(array_map(fn (string $slug) => $pages->has($slug) ? ['slug' => $slug, 'title' => $pages[$slug]->title] : null, $utilitySlugs)));
+            return array_values($pages);
         });
-        $nav_extra_pages = array_values(array_filter($nav_extra_pages, fn (array $page) => ! in_array($page['slug'], $utilitySlugs, true)));
+        $utilityInBar = array_column($nav_utility_pages, 'slug');
+        $nav_extra_pages = array_values(array_filter($nav_extra_pages, fn (array $page) => ! in_array($page['slug'], $utilityInBar, true)));
 
         $brands = Cache::remember('all_brands', now()->addDays(3), function () {
             return Product::select('brand')->distinct()->where('active', 1)->whereNot('brand', 'Unbranded')->whereNot('brand', '0')->pluck('brand');

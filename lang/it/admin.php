@@ -356,6 +356,8 @@ return [
         'cta_text' => 'Testo pulsante',
         'cta_link' => 'Link pulsante',
         'navbar' => 'Nel menu',
+        'topbar' => 'Nella barra in alto',
+        'topbar_hint' => 'Link nella barra superiore accanto a Contatti; una pagina qui non compare nel menu delle categorie.',
         'active' => 'Attiva',
         'position' => 'Posizione',
         'slug' => 'Slug',
