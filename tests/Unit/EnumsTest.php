@@ -32,7 +32,9 @@ class EnumsTest extends TestCase
         $this->assertEqualsCanonicalizing(array_column(PaymentStatus::cases(), 'value'), $this->enumValues('orders', 'payment_status'));
         $this->assertEqualsCanonicalizing(array_column(PaymentMethod::cases(), 'value'), $this->enumValues('orders', 'payment_method'));
         $this->assertEqualsCanonicalizing(array_column(CustomerType::cases(), 'value'), $this->enumValues('customers', 'customer_type'));
-        $this->assertEqualsCanonicalizing(array_column(PageFilterType::cases(), 'value'), $this->enumValues('pages_contents', 'filter_type'));
+        // pages_contents.filter_type is a string since core 2.10: the enum in code is the only list, checked for its shape.
+        $this->assertSame([], $this->enumValues('pages_contents', 'filter_type'), 'no database enum to keep in sync any more');
+        $this->assertContains('is_new', array_column(PageFilterType::cases(), 'value'));
     }
 
     /** @return list<string> */
