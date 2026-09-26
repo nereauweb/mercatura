@@ -215,7 +215,7 @@ class FrontendProductController extends Controller
      */
     public function sheet(Request $request, string $slug, string $sku, string $tab)
     {
-        if (! in_array($tab, ['dettagli', 'disponibilita', 'listino'], true)) {
+        if (! in_array($tab, ['dettagli', 'disponibilita', 'listino', 'personalizzazioni'], true)) {
             abort(404);
         }
         $article = ProductVariant::query()->where('sku', $sku)->where('active', 1)->first();
@@ -229,6 +229,7 @@ class FrontendProductController extends Controller
             return match ($tab) {
                 'dettagli' => view('frontend.components.product.sheet-details', ['details' => ProductPageData::detailsRows($product, $article, $hasPrinting), 'defaultCustomization' => ProductPageData::defaultCustomization($article), 'packaging' => ProductPageData::packagingRows($article)])->render(),
                 'disponibilita' => view('frontend.components.product.stock-table', ['rows' => ProductPageData::stockTable($product), 'article' => $article])->render(),
+                'personalizzazioni' => view('frontend.components.product.customization-options', ['cards' => ProductPageData::customizationOptions($article)])->render(),
                 default => view('frontend.components.product.price-table', ['table' => ProductPageData::priceTableRows($product, $article), 'quoteUrl' => route('frontend.quotation.configure', ['id' => $article->id])])->render(),
             };
         });

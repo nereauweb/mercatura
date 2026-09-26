@@ -296,6 +296,37 @@ final class ProductPageData
     }
 
     /**
+     * Every decoration the article offers, one card per technique and position
+     * (the "Opzioni di personalizzazione" sheet): the supplier's position image
+     * when it has one, the print area, the colours allowed, the processing days.
+     *
+     * @return list<array{technique: string, position: string, image: string|null, width_mm: int|null, height_mm: int|null, circle: bool, areas: list<string>, max_colors: string|null, colors_numeric: bool, processing_days: int|null}>
+     */
+    public static function customizationOptions(ProductVariant $article): array
+    {
+        $cards = [];
+        foreach ($article->customizations()->with('areas')->get() as $customization) {
+            $sized = $customization->areas->first(fn ($a) => (int) $a->width_mm > 0);
+            $maxColors = $customization->max_colors !== null && trim((string) $customization->max_colors) !== '' ? trim((string) $customization->max_colors) : null;
+            $cards[] = [
+                'technique' => ucfirst((string) $customization->technique_label),
+                'position' => ucfirst((string) $customization->position_label),
+                'image' => filled($customization->image) ? (string) $customization->image : null,
+                'width_mm' => $sized ? (int) $sized->width_mm : null,
+                'height_mm' => $sized && (int) $sized->height_mm > 0 ? (int) $sized->height_mm : null,
+                'circle' => $sized ? $sized->type === 'circle' : false,
+                'areas' => $customization->areas->pluck('label')->filter()->unique()->values()->all(),
+                'max_colors' => $maxColors,
+                'colors_numeric' => $maxColors !== null && ctype_digit($maxColors),
+                'processing_days' => $customization->processing_days !== null ? (int) $customization->processing_days : null,
+            ];
+        }
+        usort($cards, fn ($a, $b) => [$a['technique'], $a['position']] <=> [$b['technique'], $b['position']]);
+
+        return $cards;
+    }
+
+    /**
      * Stock per colour and size of the whole product (the "Disponibilità" tab).
      *
      * @return list<array{color: string, code: string, sizes: list<array{variant_id: int, sku: string, label: string, stock: int, next_stock_quantity: int, next_stock_date: string|null}>}>

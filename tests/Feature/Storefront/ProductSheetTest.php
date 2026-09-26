@@ -35,6 +35,21 @@ final class ProductSheetTest extends TestCase
         $this->assertStringContainsString(__('frontend.product.price_printed'), $prices);
         $this->assertStringContainsString(__('frontend.product.printed'), $prices);
 
+        // Customization options: one card per technique and position, the print area, the colours, the processing days;
+        // the fixture has no supplier image, so every card carries the neutral placeholder.
+        $options = $this->get($base.'personalizzazioni')->assertOk()->getContent();
+        $this->assertStringContainsString(e(__('frontend.product.customization_options.note')), $options);
+        $this->assertStringContainsString('Serigrafia', $options);
+        $this->assertStringContainsString('100 mm', $options, 'width of the 10x10 area');
+        $this->assertStringContainsString(__('frontend.product.customization_options.no_image'), $options);
+        $this->assertStringNotContainsString('<img', $options, 'no image, only the placeholder');
+        \App\Models\Customizations\Customization::query()->whereKey($f->screenA->id)->update(['image' => 'https://example.com/pos.jpg', 'max_colors' => '4']);
+        \Illuminate\Support\Facades\Cache::flush();
+        $options = $this->get($base.'personalizzazioni')->assertOk()->getContent();
+        $this->assertStringContainsString('src="https://example.com/pos.jpg"', $options);
+        $this->assertStringContainsString('x-on:error="broken = true"', $options, 'a broken supplier image falls back to the placeholder');
+        $this->assertStringContainsString(__('frontend.product.customization_options.max_colors', ['count' => 4]), $options);
+
         $this->get($base.'altro')->assertNotFound();
         $this->get('/prodotti/'.$f->product->slug.'/NOPE/scheda/dettagli')->assertNotFound();
 
