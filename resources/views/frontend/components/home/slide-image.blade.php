@@ -1,9 +1,14 @@
 {{-- @mercatura-view frontend.components.home.slide-image @version 1 --}}
-{{-- Hero <picture>: WebP srcset 800w/1600w, optional phone <source>. Original JPEG kept as fallback. --}}
+{{-- Hero <picture>: WebP srcset 800w/1600w, optional phone <source>. Original JPEG kept as fallback.
+     Without a phone image the desktop banner is not shown on phones: the slide's background colour, texts and
+     button stay (a wide banner would collide with the copy on a narrow screen). --}}
 @props(['slide', 'priority' => false, 'mobileMax' => 639, 'width' => 1600, 'height' => 420, 'alt' => '', 'imgClass' => 'h-full w-full object-cover'])
 @php
     $background = \App\Support\HomeSlideImages::banner($slide->background_image);
     $mobile = $slide->mobile_image ? \App\Support\HomeSlideImages::banner($slide->mobile_image) : null;
+    if ($mobile === null) {
+        $imgClass .= (int) $mobileMax >= 700 ? ' hidden md:block' : ' hidden sm:block';
+    }
 @endphp
 <picture {{ $attributes }}>
     @if($mobile)

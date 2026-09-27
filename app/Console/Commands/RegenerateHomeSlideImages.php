@@ -24,8 +24,14 @@ final class RegenerateHomeSlideImages extends Command
             HomeSlideImages::convert($slide->mobile_image);
             $count++;
         });
+        $tiles = 0;
+        \App\Models\ContentHomeTile::query()->withTrashed()->each(function (\App\Models\ContentHomeTile $tile) use (&$tiles): void {
+            \App\Support\HomeTileImages::convert($tile->image);
+            $tiles++;
+        });
         Cache::forget('home_slides');
-        $this->info("Converted images for {$count} slides.");
+        Cache::forget('home_tiles');
+        $this->info("Converted images for {$count} slides and {$tiles} tiles.");
 
         return self::SUCCESS;
     }

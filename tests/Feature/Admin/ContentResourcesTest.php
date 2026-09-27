@@ -135,4 +135,37 @@ class ContentResourcesTest extends TestCase
         config(['mercatura.catalog.new_days' => 60]);
         $this->assertContains($old->id, $page->fresh()->products_ids()->all(), 'the window follows the config');
     }
+
+    public function test_home_tiles_are_managed_in_the_admin_and_replace_the_category_cards(): void
+    {
+        Livewire::test(\App\Filament\Resources\Content\HomeTiles\Pages\ManageHomeTiles::class)->callAction(TestAction::make('create')->table(), data: [
+            'title' => 'Shopper personalizzate', 'link' => '/categorie/shopper', 'image' => UploadedFile::fake()->image('tile.jpg', 1200, 675), 'position' => 1, 'active' => true,
+        ])->assertHasNoFormErrors();
+        $tile = \App\Models\ContentHomeTile::query()->latest('id')->firstOrFail();
+        $this->assertStringNotContainsString('/', (string) $tile->image, 'bare file name');
+        $this->assertTrue(\Illuminate\Support\Facades\Storage::disk('public')->exists('home_tiles/conversions/'.pathinfo((string) $tile->image, PATHINFO_FILENAME).'-web.webp'), 'WebP conversion generated on save');
+        \Illuminate\Support\Facades\Cache::flush();
+        $html = $this->get('/')->assertOk()->getContent();
+        $this->assertStringContainsString('Shopper personalizzate', $html);
+        $this->assertStringContainsString('/storage/home_tiles/conversions/', $html, 'the storefront serves the WebP srcset');
+        $this->assertStringNotContainsString(__('frontend.home.categories_link'), $html, 'tiles replace the category cards');
+
+        $tile->update(['active' => false]);
+        \Illuminate\Support\Facades\Cache::flush();
+        $this->assertStringNotContainsString('Shopper personalizzate', $this->get('/')->assertOk()->getContent());
+    }
+
+    public function test_a_slide_without_a_phone_image_hides_the_banner_on_phones(): void
+    {
+        ContentHomeSlide::query()->delete();
+        $slide = ContentHomeSlide::query()->create(['title_text' => 'Solo colore', 'background_image' => 'wide.jpg', 'background_color' => '#123456', 'position' => 1, 'active' => true]);
+        \Illuminate\Support\Facades\Cache::flush();
+        $html = $this->get('/')->assertOk()->getContent();
+        $this->assertMatchesRegularExpression('#<img src="/storage/home_slides/wide.jpg"[^>]*class="[^"]*hidden sm:block#', $html, 'the desktop banner is hidden on phones');
+        $slide->update(['mobile_image' => 'phone.jpg']);
+        \Illuminate\Support\Facades\Cache::flush();
+        $html = $this->get('/')->assertOk()->getContent();
+        $this->assertStringContainsString('<source media="(max-width: 639px)"', $html);
+        $this->assertDoesNotMatchRegularExpression('#<img src="/storage/home_slides/wide.jpg"[^>]*hidden sm:block#', $html);
+    }
 }

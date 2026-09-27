@@ -41,7 +41,9 @@
 
 		@stack('home-after-promo')
 
-		@if($homeCategories)
+		@if(count($tiles ?? []))
+		<x-frontend::home.tiles :tiles="$tiles" :title="__('frontend.home.categories_title')" />
+		@elseif($homeCategories)
 		<section class="my-10 text-center">
 			<h2 class="text-2xl font-bold uppercase text-primary">{{ __('frontend.home.categories_title') }}</h2>
 			<ul class="mt-6 grid gap-6 text-left sm:grid-cols-2 md:grid-cols-3">

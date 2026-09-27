@@ -20,6 +20,9 @@ class FrontendContentController extends Controller
         $slides = Cache::remember('home_slides', now()->addDays(1), function () {
             return ContentHomeSlide::query()->where('active', 1)->orderBy('position')->get();
         });
+        $tiles = Cache::remember('home_tiles', now()->addDays(1), function () {
+            return \App\Models\ContentHomeTile::query()->where('active', 1)->orderBy('position')->orderBy('id')->get();
+        });
         /*
         $bestsellers = Cache::remember('home_bestellers', now()->addDays(1), function () {
                     return Product::where('active',1)
@@ -42,7 +45,7 @@ class FrontendContentController extends Controller
                 ->with(['color_variants.color', 'main_variant_relationship'])
                 ->inRandomOrder()->limit(16)->get();
         });
-        $rendered_page = view('frontend.pages.home', compact('promo', 'green', 'slides'))->render();
+        $rendered_page = view('frontend.pages.home', compact('promo', 'green', 'slides', 'tiles'))->render();
 
         // Cache::put('homepage', $rendered_page, now()->addDays(1));
         return $rendered_page;
