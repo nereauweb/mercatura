@@ -12,10 +12,8 @@
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
 
-    # Redirect Trailing Slashes If Not A Folder...
-    RewriteCond %{REQUEST_FILENAME} !-d
-    RewriteCond %{REQUEST_URI} (.+)/$
-    RewriteRule ^ %1 [L,R=301]
+    # Trailing slashes are handled by the application (App\Http\Middleware\NormalizeTrailingSlash):
+    # one redirect to the canonical path, or straight to a legacy redirect's target.
 
     # Send Requests To Front Controller...
     RewriteCond %{REQUEST_FILENAME} !-d

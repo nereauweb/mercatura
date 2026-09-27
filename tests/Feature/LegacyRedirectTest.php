@@ -64,4 +64,27 @@ class LegacyRedirectTest extends TestCase
         $this->get('/old-list.html?x=1')->assertRedirect('/prodotti?sale=1');
         $this->assertSame('/prodotti?sale=1', \App\Models\LegacyRedirect::for('/old-list.html')?->to_path);
     }
+
+    public function test_trailing_slashes_are_redirected_once_and_legacy_paths_go_straight_to_their_target(): void
+    {
+        // The HTTP test helper strips trailing slashes, so the middleware is exercised directly.
+        $run = fn (string $uri) => (new \App\Http\Middleware\NormalizeTrailingSlash)->handle(\Illuminate\Http\Request::create($uri), fn () => response('next', 200));
+
+        $this->assertSame('next', $run('/contattaci')->getContent(), 'no slash: passes through');
+        $this->assertSame('next', $run('/')->getContent(), 'the root passes through');
+        $this->assertSame(301, $run('/contattaci/')->getStatusCode());
+        $this->assertStringEndsWith('/contattaci', $run('/contattaci/')->headers->get('Location'));
+        $this->assertStringEndsWith('/contattaci?x=1', $run('/contattaci/?x=1')->headers->get('Location'), 'query kept');
+
+        \App\Models\LegacyRedirect::record('/chi-siamo', '/contenuti/chi-siamo');
+        $this->assertStringEndsWith('/contenuti/chi-siamo', $run('/chi-siamo/')->headers->get('Location'), 'straight to the legacy target, no chain');
+        $this->assertSame(1, \App\Models\LegacyRedirect::for('/chi-siamo')?->hits);
+
+        \App\Models\LegacyRedirect::record('/catalogsearch/result', '/search/{q}');
+        $this->assertStringEndsWith('/search/penne', $run('/catalogsearch/result/?q=penne')->headers->get('Location'));
+
+        \App\Models\LegacyRedirect::record('/vecchio-catalogo', '', 410);
+        $this->assertSame(410, $run('/vecchio-catalogo/')->getStatusCode());
+        $this->assertStringNotContainsString('Redirect Trailing Slashes', (string) file_get_contents(public_path('.htaccess')), 'Apache no longer redirects before the application');
+    }
 }

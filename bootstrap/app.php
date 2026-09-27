@@ -32,6 +32,9 @@ $app = Application::configure(basePath: dirname(__DIR__))
             | Request::HEADER_X_FORWARDED_PROTO
             | Request::HEADER_X_FORWARDED_AWS_ELB);
 
+        // Trailing slashes are normalised by the application (one redirect, legacy targets resolved), not by Apache.
+        $middleware->web(prepend: [\App\Http\Middleware\NormalizeTrailingSlash::class]);
+
         $middleware->encryptCookies(except: [
             'laravel_cookie_consent',
             'cookies_analytics',
