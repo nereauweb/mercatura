@@ -14,6 +14,7 @@ use Filament\Actions\EditAction;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -53,8 +54,9 @@ final class LegacyRedirectResource extends Resource
             TextInput::make('from_path')->label(__('admin.content.from_path'))->required()->maxLength(512)->unique(ignoreRecord: true)
                 ->dehydrateStateUsing(fn (string $state): string => LegacyRedirect::normalizePath($state)),
             TextInput::make('to_path')->label(__('admin.content.to_path'))->maxLength(512)
-                ->dehydrateStateUsing(fn (?string $state): ?string => $state !== null && $state !== '' ? (str_starts_with($state, 'http') ? $state : LegacyRedirect::normalizePath($state)) : null),
+                ->dehydrateStateUsing(fn (?string $state): ?string => $state !== null && $state !== '' ? LegacyRedirect::normalizeTarget($state) : null),
             Select::make('status_code')->label(__('admin.content.status_code'))->options([301 => '301', 302 => '302', 410 => '410'])->default(301)->required()->native(false),
+            Toggle::make('keep_query')->label(__('admin.content.keep_query'))->helperText(__('admin.content.keep_query_hint'))->inline(false),
         ]);
     }
 
@@ -105,7 +107,8 @@ final class LegacyRedirectResource extends Resource
             }
             $to = trim((string) ($row[1] ?? ''));
             $code = (int) ($row[2] ?? 301) ?: 301;
-            LegacyRedirect::record($from, $to !== '' ? $to : '/', in_array($code, [301, 302, 410], true) ? $code : 301);
+            $keepQuery = filter_var(trim((string) ($row[3] ?? '')), FILTER_VALIDATE_BOOLEAN);
+            LegacyRedirect::record($from, $to !== '' ? $to : '/', in_array($code, [301, 302, 410], true) ? $code : 301, $keepQuery);
             $count++;
         }
         fclose($handle);

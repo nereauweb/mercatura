@@ -380,6 +380,8 @@ return [
         'from_path' => 'Da (percorso vecchio)',
         'to_path' => 'A (percorso o URL nuovo)',
         'status_code' => 'Codice',
+        'keep_query' => 'Conserva i parametri',
+        'keep_query_hint' => 'Inoltra la query string della richiesta alla destinazione (es. ?brand=X); {nome} nella destinazione prende il valore di quel parametro.',
         'hits' => 'Visite',
         'last_hit_at' => 'Ultima visita',
         'import_csv' => 'Importa CSV',

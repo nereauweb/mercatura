@@ -48,4 +48,28 @@ class LegacyRedirectImportTest extends TestCase
     {
         $this->artisan('mercatura:redirects-import', ['file' => '/nonexistent.csv'])->assertFailed();
     }
+
+    public function test_bulk_mode_loads_a_large_map_with_the_keep_query_column(): void
+    {
+        $path = tempnam(sys_get_temp_dir(), 'map').'.csv';
+        $lines = ['from,to,status,keep_query'];
+        for ($i = 1; $i <= 2500; $i++) {
+            $lines[] = "/old-{$i}.html,/prodotti/new-{$i},301,0";
+        }
+        $lines[] = '/products,/prodotti,301,1';
+        $lines[] = '/gone.html,,410,0';
+        file_put_contents($path, implode("\n", $lines));
+
+        $this->artisan('mercatura:redirects-import', ['file' => $path, '--bulk' => true])->expectsOutputToContain('Redirects written: 2502')->assertSuccessful();
+        $this->assertSame('/prodotti/new-2500', \App\Models\LegacyRedirect::for('/old-2500.html')?->to_path);
+        $this->assertTrue(\App\Models\LegacyRedirect::for('/products')?->keep_query);
+        $this->assertSame(410, \App\Models\LegacyRedirect::for('/gone.html')?->status_code);
+
+        // A second load replaces rows in place.
+        file_put_contents($path, "/old-1.html,/prodotti/changed,301,0\n");
+        $this->artisan('mercatura:redirects-import', ['file' => $path, '--bulk' => true])->assertSuccessful();
+        $this->assertSame('/prodotti/changed', \App\Models\LegacyRedirect::for('/old-1.html')?->to_path);
+        $this->assertSame(2502, \App\Models\LegacyRedirect::query()->where('from_path', 'like', '/old-%')->count() + 2);
+        @unlink($path);
+    }
 }

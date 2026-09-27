@@ -257,11 +257,12 @@ class Handler extends ExceptionHandler
             return null;
         }
         $redirect->registerHit();
-        if ($redirect->status_code === 410 || $redirect->to_path === null) {
+        $target = $redirect->targetFor($request->query->all());
+        if ($redirect->status_code === 410 || $target === null) {
             return response()->view('frontend.pages.not_found', [], 410);
         }
 
-        return redirect($redirect->to_path, $redirect->status_code === 302 ? 302 : 301);
+        return redirect($target, $redirect->status_code === 302 ? 302 : 301);
     }
 
     public function register(): void
