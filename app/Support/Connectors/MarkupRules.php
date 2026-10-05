@@ -53,6 +53,17 @@ final class MarkupRules
         return null;
     }
 
+    /**
+     * The value a line's markup band is chosen on: quantity × (neutral unit cost, plus the
+     * unit cost of the chosen customizations when config pricing.markup_basis is 'line').
+     */
+    public static function condition(int|float $quantity, float $neutralUnitCost, float $customizationUnitCost = 0.0): float
+    {
+        $basis = (string) config('mercatura.pricing.markup_basis', 'line');
+
+        return (float) $quantity * ($neutralUnitCost + ($basis === 'neutral' ? 0.0 : max(0.0, $customizationUnitCost)));
+    }
+
     public function percent(float $condition, ?string $source, ?string $sku): float
     {
         $rule = $this->rule($condition);

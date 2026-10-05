@@ -361,6 +361,9 @@ final class ProductPageData
         $quantity = max(1, $quantity);
         $original = (float) $article->price_per_quantity($quantity, true);
         $markup = (float) $article->get_markup_percent($quantity, $original);
+        // Each option is shown at the percent its own cost leads to (pricing.markup_basis); the line
+        // itself is priced by LinePricer with every chosen option together.
+        $percentFor = fn (float $unitCost): float => (float) $article->get_markup_percent($quantity, $original, $unitCost);
         $positions = [];
         $packaging = false;
         foreach ($article->customizations()->with('areas.options.tiers')->get()->groupBy('position_label')->sortKeys() as $label => $group) {
@@ -371,7 +374,8 @@ final class ProductPageData
                 foreach ($customization->areas as $area) {
                     $options = [];
                     foreach ($area->options as $option) {
-                        $costs = $option->priceFor($quantity, 1, (bool) $customization->has_packaging, false, $markup);
+                        $optionCost = (float) $option->priceFor($quantity, 1, false, true)['unit_price'];
+                        $costs = $option->priceFor($quantity, 1, (bool) $customization->has_packaging, false, $percentFor($optionCost));
                         $options[] = [
                             'id' => (int) $option->id,
                             'label' => $option->label(),

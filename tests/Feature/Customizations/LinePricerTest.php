@@ -55,6 +55,8 @@ final class LinePricerTest extends TestCase
 
     public function test_setup_multiplier_zero_counts_as_one_and_the_surcharge_follows_config(): void
     {
+        // Transcribed from the controllers of 2026-09 (docs/03 §4.3): the band on the neutral value.
+        config(['mercatura.pricing.markup_basis' => 'neutral']);
         $this->seed(CoreSeeder::class);
         $f = CustomizationFixture::create();
         config(['mercatura.pricing.under_minimum_surcharge' => 25]);
@@ -67,5 +69,32 @@ final class LinePricerTest extends TestCase
         $this->assertEqualsWithDelta(25.0, $line->surcharge, 0.001);
         // 20 × 18.00 + print 20 × 1.80 + setup 60 + surcharge 25
         $this->assertEqualsWithDelta(481.0, $line->price, 0.001);
+    }
+
+    public function test_the_markup_band_follows_the_line_value_customizations_included(): void
+    {
+        $this->seed(CoreSeeder::class);
+        $f = CustomizationFixture::create();
+        // 120 pieces: neutral 8.00 → 960 € (band 600-1000, 30 %); with the 0.60 € print → 1032 € (band 1000-2500, 25 %).
+        config(['mercatura.pricing.markup_basis' => 'line']);
+        $line = app(LinePricer::class)->price([[$f->a->id, 120]], [$f->screenOneColorA->id], false);
+        $this->assertSame(25.0, $line->articles[0]->markupPercent);
+        $this->assertEqualsWithDelta(10.0, $line->articles[0]->unitPrice, 0.001, '8.00 + 25 %');
+        $this->assertEqualsWithDelta(0.75, $line->articles[0]->customizations[0]->unitPrice, 0.001, '0.60 + 25 %');
+        $this->assertSame(30.0, app(LinePricer::class)->price([[$f->a->id, 120]], [], false)->articles[0]->markupPercent, 'without customizations the band is the neutral one');
+
+        config(['mercatura.pricing.markup_basis' => 'neutral']);
+        $line = app(LinePricer::class)->price([[$f->a->id, 120]], [$f->screenOneColorA->id], false);
+        $this->assertSame(30.0, $line->articles[0]->markupPercent, 'the previous rule, switchable from config');
+        $this->assertEqualsWithDelta(10.4, $line->articles[0]->unitPrice, 0.001);
+        $this->assertEqualsWithDelta(0.78, $line->articles[0]->customizations[0]->unitPrice, 0.001);
+
+        // The stored tiers (import) and the configurator options follow the same rule.
+        config(['mercatura.pricing.markup_basis' => 'line']);
+        $tier = $f->screenOneColorA->tiers()->where('from_quantity', 100)->firstOrFail();
+        $this->assertEqualsWithDelta(0.75, $tier->applyMarkup($f->a, 120), 0.001);
+        $options = \App\Support\ProductPageData::configuratorOptions($f->a, 120);
+        $unit = collect($options['positions'])->flatMap(fn ($p) => $p['techniques'])->flatMap(fn ($t) => $t['areas'])->flatMap(fn ($a) => $a['options'])->firstWhere('id', $f->screenOneColorA->id)['unit_price'];
+        $this->assertEqualsWithDelta(0.75, $unit, 0.001);
     }
 }

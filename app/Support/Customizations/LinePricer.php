@@ -14,7 +14,9 @@ use App\Support\Connectors\CustomizationPipeline;
  * demo seeder.
  *
  * - The article tier and the markup band are chosen by the quantity of the
- *   whole line; every article's price is cost + markup.
+ *   whole line; the band's value includes the unit cost of the chosen
+ *   customizations when config pricing.markup_basis is 'line'; every
+ *   article's price is cost + markup.
  * - Each chosen option is re-resolved on every article (the equivalent
  *   technique + position + size + option of that variant) and priced on the
  *   line quantity's tier with the article's markup; packaging, when asked,
@@ -56,14 +58,20 @@ final class LinePricer
             $variant = ProductVariant::query()->findOrFail((int) $variantId);
             $articleQuantity = (int) $articleQuantity;
             $original = (float) $variant->price_per_quantity($quantity, true);
-            $markupPercent = (float) $variant->get_markup_percent($quantity, $original);
+            $resolved = [];
+            $customizationUnitCost = 0.0;
+            foreach ($options as $chosen) {
+                $resolved[$chosen->id] = $option = $chosen->equivalentFor($variant->id);
+                $customizationUnitCost += (float) $option->priceFor($quantity, 1, false, true)['unit_price'];
+            }
+            $markupPercent = (float) $variant->get_markup_percent($quantity, $original, $customizationUnitCost);
             $unitPrice = $original + round($original * ($markupPercent / 100), 2);
             $articlePrice = $articleQuantity * $unitPrice;
             $articleAdditional = $articleQuantity * (float) $variant->additional_unit_costs_per_quantity($articleQuantity);
 
             $customizations = [];
             foreach ($options as $chosen) {
-                $option = $chosen->equivalentFor($variant->id);
+                $option = $resolved[$chosen->id];
                 $costs = $option->priceFor($quantity, $articleQuantity, $packaging, false, $markupPercent);
                 $customizations[] = new PricedArticleCustomization(
                     chosen: $chosen,

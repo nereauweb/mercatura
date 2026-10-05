@@ -233,7 +233,12 @@ class ProductVariant extends Model implements HasMedia
         return $this->highestPrice->price ?? 0;
     }
 
-    public function get_markup_percent($quantity, $original_price = false)
+    /**
+     * The markup percent of a line of this article: the band is chosen on the line value
+     * (MarkupRules::condition), which includes the unit cost of the chosen customizations
+     * when config pricing.markup_basis is 'line'.
+     */
+    public function get_markup_percent($quantity, $original_price = false, float $customization_unit_cost = 0.0)
     {
         if (! $original_price) {
             $original_price = 0;
@@ -245,7 +250,7 @@ class ProductVariant extends Model implements HasMedia
             }
         }
 
-        return app(MarkupRules::class)->percent((float) $quantity * (float) $original_price, $this->source, $this->sku);
+        return app(MarkupRules::class)->percent(MarkupRules::condition($quantity, (float) $original_price, $customization_unit_cost), $this->source, $this->sku);
     }
 
     public function price_per_quantity($quantity, $use_original_price = false, $markup_percent = false, $with_default_printing = false, $with_default_princing_setup = false)
@@ -258,9 +263,7 @@ class ProductVariant extends Model implements HasMedia
                 if ($use_original_price) {
                     return $original_price;
                 }
-                if (! $markup_percent) {
-                    $markup_percent = $this->get_markup_percent($quantity, $original_price);
-                }
+                $neutral_price = $original_price;
 
                 $default_print_color = null;
                 if ($with_default_printing) {
@@ -308,6 +311,10 @@ class ProductVariant extends Model implements HasMedia
                             }
                         }
                     }
+                }
+                if (! $markup_percent) {
+                    // The band follows the line value, customization included (pricing.markup_basis).
+                    $markup_percent = $this->get_markup_percent($quantity, $neutral_price, (float) $original_price - (float) $neutral_price);
                 }
                 $markup = round($original_price * ($markup_percent / 100), 2);
                 if ($with_default_princing_setup && $default_print_color) {

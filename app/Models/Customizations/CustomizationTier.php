@@ -41,7 +41,7 @@ class CustomizationTier extends Model
             $article = $this->option->area->customization->variant;
         }
         $articleOriginalPrice = $article->price_per_quantity($quantity, true);
-        $markupPercent = $article->get_markup_percent($quantity, $articleOriginalPrice);
+        $markupPercent = $article->get_markup_percent($quantity, $articleOriginalPrice, (float) $this->original_price);
         $this->price = round($this->original_price * (1 + ($markupPercent / 100)), 2);
         if ($this->packaging_original_price > 0) {
             $this->packaging_price = round($this->packaging_original_price * (1 + ($markupPercent / 100)), 2);

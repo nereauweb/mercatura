@@ -19,6 +19,8 @@ final class ConfiguratorJsonTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        // Numbers transcribed from the 2026-09 controllers (docs/03 §4.3): the band on the neutral value.
+        config(['mercatura.pricing.markup_basis' => 'neutral']);
         $this->seed(CoreSeeder::class);
         $this->f = CustomizationFixture::create();
     }

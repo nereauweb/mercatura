@@ -393,7 +393,10 @@ packaging, surcharge) and the option snapshot per article (used by
 total_quantity = Σ quantity
 per article:
   original      = variant->price_per_quantity(total_quantity, true)
-  markup%       = variant->get_markup_percent(total_quantity, original)   // MarkupRules band
+  print_cost    = Σ chosen options' tier.original_price for total_quantity   // 0 without customizations
+  markup%       = MarkupRules band on MarkupRules::condition(total_quantity, original, print_cost)
+                  // = total_quantity × (original + print_cost) with pricing.markup_basis = line (since 05/10/2026),
+                  //   total_quantity × original with 'neutral' (the rule before)
   unit          = original + round(original * markup% / 100, 2)
   line price    = quantity * unit
   additional    = quantity * variant->additional_unit_costs_per_quantity(quantity)   // SIAE, VAT-free

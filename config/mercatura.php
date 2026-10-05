@@ -148,6 +148,10 @@ return [
     | flat surcharge.
     */
     'pricing' => [
+        // The value the markup band is chosen on, per article of a configured line:
+        // 'line' = (neutral unit cost + unit cost of the chosen customizations) × quantity (decision of 05/10/2026);
+        // 'neutral' = neutral unit cost × quantity (the previous rule). The percent then applies to both components.
+        'markup_basis' => env('MERCATURA_MARKUP_BASIS', 'line'),
         'vat_rate' => (float) env('MERCATURA_VAT_RATE', 0.22),
         'delivery_cost' => (float) env('MERCATURA_DELIVERY_COST', 16),
         'free_delivery_from' => (float) env('MERCATURA_FREE_DELIVERY_FROM', 500),
