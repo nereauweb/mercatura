@@ -45,7 +45,8 @@ final class MarkupRules
     {
         $this->bands ??= array_values(ProductMarkup::query()->orderBy('id')->get()->all());
         foreach ($this->bands as $band) {
-            if ((float) $band->from_condition < $condition && (float) $band->to_condition >= $condition) {
+            // A band starts at from_condition included and ends before the next one ("a partire da, incluso").
+            if ((float) $band->from_condition <= $condition && (float) $band->to_condition > $condition) {
                 return $band;
             }
         }

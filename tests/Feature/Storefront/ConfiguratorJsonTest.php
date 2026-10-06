@@ -70,6 +70,6 @@ final class ConfiguratorJsonTest extends TestCase
         $small = $this->postJson('/prodotti/configuratore/riepilogo', ['articles' => [[$this->f->a->id, 20]], 'printings' => [$this->f->screenOneColorA->id], 'has_packaging' => 0])->assertOk()->json();
         $this->assertEqualsWithDelta(40.0, $small['surcharge'], 0.001);
         $this->assertEqualsWithDelta(16.0, $small['shipping'], 0.001);
-        $this->assertEqualsWithDelta(487.0, $small['taxable'], 0.001);
+        $this->assertEqualsWithDelta(454.0, $small['taxable'], 0.001, '438 of goods, print, setup, start and surcharge plus 16 of shipping');
     }
 }

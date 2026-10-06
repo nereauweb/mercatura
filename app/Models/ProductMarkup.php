@@ -7,8 +7,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * A markup band: for an order value (quantity × unit cost) between
- * from_condition (exclusive) and to_condition (inclusive), the selling price is
+ * A markup band: for an order value (quantity × unit cost) from
+ * from_condition (inclusive) up to to_condition (exclusive), the selling price is
  * the cost plus `value` percent. The same bands serve the import (on the
  * quantities of the price-list tiers) and the storefront (on the quantity
  * actually bought). Read through App\Support\Connectors\MarkupRules; edited

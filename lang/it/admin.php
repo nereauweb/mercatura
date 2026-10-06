@@ -21,7 +21,7 @@ return [
         'markups' => 'Regole di prezzo: markup',
         'markups_hint' => 'Ricarico applicato al costo del fornitore in base al valore dell\'ordine (quantità × costo unitario). Le stesse fasce valgono in import, sulle quantità degli scaglioni di listino, e a carrello e configuratore, sulla quantità effettiva. Una modifica agisce subito sui prezzi calcolati e sui listini al prossimo import.',
         'from_value' => 'Valore ordine da',
-        'from_value_hint' => 'Escluso: la fascia parte da questo valore in su.',
+        'from_value_hint' => 'Incluso: la fascia vale da questo valore (compreso) fino al valore successivo (escluso).',
         'to_value' => 'Valore ordine fino a',
         'percent' => 'Ricarico',
         'overlap' => 'La fascia si sovrappone a un\'altra.',

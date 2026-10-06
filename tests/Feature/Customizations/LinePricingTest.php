@@ -13,7 +13,7 @@ use Tests\TestCase;
  * Characterisation of the line pricing (docs/03_CUSTOMIZATIONS.md §4.3):
  * the configurator summary and the cart must keep producing these exact
  * numbers through every v2c phase. Expected values are computed by hand
- * from the fixture (CoreSeeder markup bands: 800 € → 30 %, 200 € → 80 %).
+ * from the fixture (CoreSeeder markup bands: 800 € → 30 %, 200 € → 65 %: a band starts at its value, included).
  */
 final class LinePricingTest extends TestCase
 {
@@ -88,22 +88,22 @@ final class LinePricingTest extends TestCase
 
     public function test_under_minimum_adds_the_flat_surcharge(): void
     {
-        // 20 pieces: tier 1 → 10.00, band 200 → 80 % (band 150–200 wins: to_condition >= 200); unit 18.00.
+        // 20 pieces: tier 1 → 10.00, band 200 → 65 % (the 200–250 band starts at 200, included); unit 16.50.
         $payload = ['articles' => [[$this->f->a->id, 20]], 'printings' => [$this->f->screenOneColorA->id], 'has_packaging' => 0];
 
         $summary = $this->summary($payload);
-        $this->assertSame('471,00&nbsp;&euro;', $summary['total_price'], '360 + print 36 + surcharge 40 + start 5 + setup 30');
-        $this->assertSame('103,62&nbsp;&euro;', $summary['total_vat']);
-        $this->assertSame('23,65&nbsp;&euro;', $summary['unit_price'], '(471 + 2) / 20');
+        $this->assertSame('438,00&nbsp;&euro;', $summary['total_price'], '330 + print 33 + surcharge 40 + start 5 + setup 30');
+        $this->assertSame('96,36&nbsp;&euro;', $summary['total_vat']);
+        $this->assertSame('22,00&nbsp;&euro;', $summary['unit_price'], '(438 + 2) / 20');
         $this->assertSame('Sotto soglia minima (50 pz)', $summary['lines'][2]['column_1']);
         $this->assertSame('40,00&nbsp;&euro;', $summary['lines'][2]['column_3']);
 
         $cart = $this->cart(['line1' => $payload]);
-        $this->assertEqualsWithDelta(471.00, $cart['items_price'], 0.001);
+        $this->assertEqualsWithDelta(438.00, $cart['items_price'], 0.001);
         $this->assertEqualsWithDelta(16.0, $cart['delivery_cost'], 0.001);
-        $this->assertEqualsWithDelta(487.00, $cart['total_price'], 0.001);
-        $this->assertEqualsWithDelta(107.14, $cart['tax'], 0.001);
-        $this->assertEqualsWithDelta(596.14, $cart['total_taxed_price'], 0.001, '487 + 107.14 + additional 2');
+        $this->assertEqualsWithDelta(454.00, $cart['total_price'], 0.001);
+        $this->assertEqualsWithDelta(99.88, $cart['tax'], 0.001);
+        $this->assertEqualsWithDelta(555.88, $cart['total_taxed_price'], 0.001, '454 + 99.88 + additional 2');
     }
 
     public function test_setup_multiplier_scales_the_setup(): void
@@ -140,12 +140,12 @@ final class LinePricingTest extends TestCase
         $payload = ['articles' => [[$this->f->a->id, 50]], 'printings' => [], 'has_packaging' => 0];
 
         $summary = $this->summary($payload);
-        // 50 pieces: tier 50 → 9.00, band 450 → 50 % (band 400–450 wins: to_condition >= 450); unit 13.50.
-        $this->assertSame('675,00&nbsp;&euro;', $summary['total_price']);
+        // 50 pieces: tier 50 → 9.00, band 450 → 45 % (the 450–500 band starts at 450, included); unit 13.05.
+        $this->assertSame('652,50&nbsp;&euro;', $summary['total_price']);
         $this->assertCount(1, $summary['lines']);
 
         $cart = $this->cart(['line1' => $payload]);
-        $this->assertEqualsWithDelta(675.00, $cart['items_price'], 0.001);
+        $this->assertEqualsWithDelta(652.50, $cart['items_price'], 0.001);
         $this->assertSame([], $cart['items'][0]['printings']);
         $this->assertSame(12, $cart['delivery_days']);
     }

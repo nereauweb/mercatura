@@ -67,8 +67,8 @@ final class LinePricerTest extends TestCase
         $this->assertEqualsWithDelta(60.0, $line->customizations[0]->setupPrice, 0.001);
         $this->assertTrue($line->underMinimum());
         $this->assertEqualsWithDelta(25.0, $line->surcharge, 0.001);
-        // 20 × 18.00 + print 20 × 1.80 + setup 60 + surcharge 25
-        $this->assertEqualsWithDelta(481.0, $line->price, 0.001);
+        // 20 × 16.50 + print 20 × 1.65 + setup 60 + surcharge 25 (200 € is the start of the 65 % band, included)
+        $this->assertEqualsWithDelta(448.0, $line->price, 0.001);
     }
 
     public function test_the_markup_band_follows_the_line_value_customizations_included(): void
