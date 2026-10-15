@@ -309,6 +309,16 @@ remove it; the Filament modals are hidden for the frame. Checked in Chrome
 (tab capture auto-accepted): button disabled until consent, preview shown,
 report stored with consent and a PNG of the page without the dialog.
 
+*Fix 2026-10-15 (v2.20.1), after testing on staging:* opened from the footer
+(R5) the dialog sits over the bottom of the page and the page does not scroll
+under a modal, so the capture always showed the footer. "Cattura schermata"
+now enters a capture mode (`pickAndCapture`): the dialog (or the Filament
+modal) hides, the scroll lock is lifted, a bar fixed at the bottom asks to
+scroll to the problem and press "Cattura", whose click starts the browser
+prompt; then the dialog comes back with the preview and the lock is
+restored. Escape or "Annulla" return to the dialog unchanged. The storefront
+loads the capture module on first use (dynamic import), not with the bundle.
+
 **R7 — Retention and documentation.**
 Scheduled pruning of attachments (§4), installation docs (settings, consent
 text to review, privacy notice), demo seeder rows for the panel.

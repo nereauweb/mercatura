@@ -49,6 +49,75 @@ export async function captureScreen(hide = () => {}, show = () => {}) {
     }
 }
 
+/**
+ * Capture mode: the report dialog is hidden, the page scrolls again and a
+ * small bar fixed at the bottom lets the user reach the area of the problem
+ * before taking the frame (a report opened from the footer would otherwise
+ * capture the footer). The bar's own click starts the browser prompt, so the
+ * user gesture the Screen Capture API requires is there.
+ *
+ * @param {{ hide: () => void, show: () => void, labels: { text: string, capture: string, cancel: string } }} options
+ * @returns {Promise<File|null>}  null when the user cancels; rejects like captureScreen()
+ */
+export function pickAndCapture({ hide = () => {}, show = () => {}, labels }) {
+    const html = document.documentElement;
+    const body = document.body;
+    const saved = { htmlOverflow: html.style.overflow, bodyOverflow: body.style.overflow, bodyLocked: body.classList.contains('overflow-hidden') };
+    hide();
+    html.style.overflow = '';
+    body.style.overflow = '';
+    body.classList.remove('overflow-hidden');
+
+    const restore = () => {
+        html.style.overflow = saved.htmlOverflow;
+        body.style.overflow = saved.bodyOverflow;
+        if (saved.bodyLocked) body.classList.add('overflow-hidden');
+        show();
+    };
+
+    const bar = document.createElement('div');
+    bar.setAttribute('role', 'dialog');
+    bar.setAttribute('aria-label', labels.capture);
+    bar.dataset.reportCaptureBar = '';
+    bar.style.cssText = 'position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:2147483000;display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;max-width:calc(100vw - 32px);padding:10px 14px;border-radius:12px;background:#111827;color:#fff;font:14px/1.4 system-ui,sans-serif;box-shadow:0 10px 30px rgba(0,0,0,.35)';
+    const text = document.createElement('span');
+    text.textContent = labels.text;
+    const button = (label, primary) => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.textContent = label;
+        b.style.cssText = `cursor:pointer;border:0;border-radius:9999px;padding:6px 14px;font:600 14px system-ui,sans-serif;${primary ? 'background:#f97316;color:#fff' : 'background:transparent;color:#fff;text-decoration:underline'}`;
+        return b;
+    };
+    const take = button(labels.capture, true);
+    const cancel = button(labels.cancel, false);
+    bar.append(text, take, cancel);
+    body.append(bar);
+    take.focus();
+
+    return new Promise((resolve, reject) => {
+        const close = () => {
+            bar.remove();
+            document.removeEventListener('keydown', onKey, true);
+        };
+        const onKey = (event) => {
+            if (event.key === 'Escape') {
+                event.stopPropagation();
+                close();
+                restore();
+                resolve(null);
+            }
+        };
+        document.addEventListener('keydown', onKey, true);
+        cancel.addEventListener('click', () => { close(); restore(); resolve(null); });
+        take.addEventListener('click', () => {
+            close();
+            // The page stays where the user scrolled; the dialog comes back only after the frame.
+            captureScreen(() => {}, restore).then(resolve, reject);
+        });
+    });
+}
+
 /** Adds a file to the Filament FileUpload (FilePond) found inside `container`. */
 export function addToFilePond(container, file) {
     const field = container && container.querySelector('[x-data^="fileUploadFormComponent"]');
@@ -57,4 +126,4 @@ export function addToFilePond(container, file) {
     return data.pond.addFile(file);
 }
 
-window.mercaturaReportCapture = { captureSupported, captureScreen, addToFilePond };
+window.mercaturaReportCapture = { captureSupported, captureScreen, pickAndCapture, addToFilePond };

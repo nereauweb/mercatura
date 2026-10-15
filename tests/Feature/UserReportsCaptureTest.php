@@ -92,7 +92,8 @@ final class UserReportsCaptureTest extends TestCase
     {
         $this->actingAs($this->customer)->get('/')->assertOk()
             ->assertSee(__('frontend.reports.capture.consent'))
-            ->assertSee('takeCapture()', false);
+            ->assertSee('takeCapture()', false)
+            ->assertSee('captureBar', false);
 
         config(['mercatura.reports.access' => ReportAccess::PUBLIC]);
         $this->app->instance(CaptchaProvider::class, new class implements CaptchaProvider

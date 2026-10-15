@@ -1,4 +1,5 @@
-import { captureScreen, captureSupported } from '../report-capture';
+// The capture module is loaded on first use: most reports never take a capture.
+const captureSupported = () => !!(navigator.mediaDevices && typeof navigator.mediaDevices.getDisplayMedia === 'function');
 
 /**
  * Report dialog (docs/06_USER_REPORTS.md R4–R6): sends a report of the current
@@ -51,9 +52,15 @@ export function reportDialog(config) {
                 return;
             }
             this.errors = [];
-            this.capturing = true;
             try {
-                const file = await captureScreen();
+                // Capture mode: the dialog hides and the page scrolls to the area of the problem.
+                const { pickAndCapture } = await import('../report-capture');
+                const file = await pickAndCapture({
+                    hide: () => { this.capturing = true; },
+                    show: () => { this.capturing = false; },
+                    labels: config.labels.captureBar,
+                });
+                if (!file) return;
                 this.discard();
                 this.capture = file;
                 this.captureUrl = URL.createObjectURL(file);

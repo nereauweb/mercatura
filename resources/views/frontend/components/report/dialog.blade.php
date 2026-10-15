@@ -1,4 +1,4 @@
-{{-- @mercatura-view frontend.components.report.dialog @version 3 --}}
+{{-- @mercatura-view frontend.components.report.dialog @version 4 --}}
 {{-- Report dialog (docs/06_USER_REPORTS.md R4/R5), mounted once by the layout: a report of the
      current page to the admin, or, for an admin, straight to the helpdesk (§2.9). Rendered only
      for who may report (ReportAccess::offers); opened by the `report-open` window event, see
@@ -24,7 +24,8 @@
         // Screen capture (§5): only where attachments are allowed; customers consent first, admins get a warning.
         'capture' => $canAttach,
         'consentRequired' => ! $direct,
-        'labels' => ['error' => __($r.'error'), 'tooManyFiles' => __($r.'too_many_files', ['max' => (int) config('mercatura.reports.max_files')]), 'captureFailed' => __($r.'capture.failed')],
+        'labels' => ['error' => __($r.'error'), 'tooManyFiles' => __($r.'too_many_files', ['max' => (int) config('mercatura.reports.max_files')]), 'captureFailed' => __($r.'capture.failed'),
+            'captureBar' => ['text' => __($r.'capture.bar'), 'capture' => __($r.'capture.bar_capture'), 'cancel' => __($r.'capture.bar_cancel')]],
     ];
     $kinds = collect(\App\Enums\ReportKind::cases())->mapWithKeys(fn ($k) => [$k->value => __($r.'kinds.'.$k->value)])->all();
 @endphp
