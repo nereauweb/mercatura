@@ -1,6 +1,6 @@
 # User reports — a user → admin channel, with an optional forward
 
-Status: **approved 2026-10-15; R1 done (core v2.14.0), R2 done (v2.15.0), R3 core done (v2.16.0).**
+Status: **approved 2026-10-15; R1 done (core v2.14.0), R2 done (v2.15.0), R3 done (v2.16.0 + installation package).**
 Decisions marked *(agreed)* were taken with the maintainer while studying
 the feature; *(proposed)* ones need approval before the phase that uses them.
 
@@ -239,6 +239,13 @@ migration as well, so existing installations get it on deploy). Selection:
 behaves as null (a missing package must not break the panel). The shared
 pieces of R1 moved to `ReportLimits`, `ReportAttachments`, `ReportContext`.
 The page URL leaves without its query string.
+
+Installation side done the same day: `nereauweb/mercatura-support` v0.1.0
+(private) binds `mercatura.message-forwarders.support` over support-client
+and appends the technical block to the description; its tests run inside
+the installation. On gesca84 staging (`MERCATURA_MESSAGE_FORWARDER=support`)
+an admin report reached the helpdesk end to end on 15/10 18:48
+(ticket `01m507ekagtxw3gjfptfnc98bf`).
 
 At this point testers on staging can report from the panel and the admin
 can forward: the first usable milestone.
