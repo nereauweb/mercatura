@@ -32,6 +32,8 @@ class Message extends Model implements HasMedia
         'kind',
         'page_url',
         'context',
+        'screenshot_consent_at',
+        'screenshot_consent_version',
         'email',
         'phone',
         'name',
@@ -50,7 +52,7 @@ class Message extends Model implements HasMedia
     ];
 
     protected $casts = [
-        'read_at' => 'datetime', 'forwarded_at' => 'datetime', 'consent_gdpr' => 'boolean', 'consent_terms' => 'boolean', 'subscribe_newsletter' => 'boolean',
+        'read_at' => 'datetime', 'forwarded_at' => 'datetime', 'screenshot_consent_at' => 'datetime', 'consent_gdpr' => 'boolean', 'consent_terms' => 'boolean', 'subscribe_newsletter' => 'boolean',
         'type' => MessageType::class, 'reporter_role' => ReporterRole::class, 'kind' => ReportKind::class, 'context' => 'array',
     ];
 

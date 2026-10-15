@@ -672,6 +672,16 @@ return [
         'close' => 'Chiudi',
         'sent_title' => 'Grazie per la segnalazione',
         'sent_text' => 'L\'abbiamo ricevuta: la trovi tra i tuoi messaggi nell\'area riservata.',
+        'capture' => [
+            'consent' => 'Allego una schermata di questa pagina. Autorizzo il trattamento dell\'immagine al solo scopo di identificare e risolvere il problema segnalato, con l\'eventuale inoltro allo staff tecnico che gestisce il sito.',
+            'take' => 'Cattura schermata',
+            'retake' => 'Rifai la schermata',
+            'discard' => 'Scarta',
+            'how' => 'Il browser ti chiederà quale scheda condividere: scegli questa. Vedrai l\'anteprima prima dell\'invio.',
+            'preview' => 'Anteprima della schermata',
+            'failed' => 'Non è stato possibile catturare la schermata: puoi allegarne una dal tuo dispositivo.',
+            'admin_hint' => 'Schermata della pagina: il browser ti chiederà quale scheda condividere. Può mostrare dati dei clienti, controlla l\'anteprima.',
+        ],
         'sent_text_guest' => 'L\'abbiamo ricevuta: se servono altre informazioni ti scriveremo all\'indirizzo che hai indicato.',
         'error' => 'Non è stato possibile inviare la segnalazione: riprova tra qualche minuto.',
         'types' => [

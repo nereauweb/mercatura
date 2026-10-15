@@ -65,6 +65,10 @@ final class AdminPanelProvider extends PanelProvider
             ->renderHook(PanelsRenderHook::USER_MENU_BEFORE, fn (): string => \App\Http\Livewire\Admin\ReportProblem::shown()
                 ? Blade::render('@livewire(\App\Http\Livewire\Admin\ReportProblem::class)')
                 : '')
+            // Its screen capture (§5): the shared module, and the modals hidden while the frame is taken.
+            ->renderHook(PanelsRenderHook::BODY_END, fn (): string => \App\Http\Livewire\Admin\ReportProblem::shown()
+                ? Blade::render("@vite('resources/js/report-capture.js')").'<style>.mercatura-capturing .fi-modal{visibility:hidden}</style>'
+                : '')
             ->navigationGroups([
                 NavigationGroup::make(fn (): string => __('admin.nav.sales')),
                 NavigationGroup::make(fn (): string => __('admin.nav.catalog')),

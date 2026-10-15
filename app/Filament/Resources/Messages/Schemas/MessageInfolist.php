@@ -73,6 +73,9 @@ final class MessageInfolist
                         TextEntry::make('context.route')->label(__('admin.message.route'))->placeholder('-'),
                         TextEntry::make('context.viewport')->label(__('admin.message.viewport'))->placeholder('-'),
                         TextEntry::make('context.user_agent')->label(__('admin.message.user_agent'))->placeholder('-')->columnSpanFull(),
+                        TextEntry::make('screenshot_consent_at')->label(__('admin.message.screenshot_consent'))->placeholder('-')
+                            ->formatStateUsing(fn (Message $record): string => $record->screenshot_consent_at === null ? '-'
+                                : $record->screenshot_consent_at->format('d/m/Y H:i').' · '.__('admin.message.screenshot_consent_version', ['version' => (string) $record->screenshot_consent_version])),
                         TextEntry::make('context.js_errors')->label(__('admin.message.js_errors'))->placeholder('-')
                             ->listWithLineBreaks()->columnSpanFull(),
                         TextEntry::make('attachments')->label(__('admin.message.attachments'))->placeholder('-')->columnSpanFull()

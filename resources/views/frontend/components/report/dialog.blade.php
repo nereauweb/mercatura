@@ -1,4 +1,4 @@
-{{-- @mercatura-view frontend.components.report.dialog @version 2 --}}
+{{-- @mercatura-view frontend.components.report.dialog @version 3 --}}
 {{-- Report dialog (docs/06_USER_REPORTS.md R4/R5), mounted once by the layout: a report of the
      current page to the admin, or, for an admin, straight to the helpdesk (§2.9). Rendered only
      for who may report (ReportAccess::offers); opened by the `report-open` window event, see
@@ -21,12 +21,15 @@
         'maxFiles' => (int) config('mercatura.reports.max_files'),
         'captchaField' => 'report_captcha',
         'captchaAction' => 'report',
-        'labels' => ['error' => __($r.'error'), 'tooManyFiles' => __($r.'too_many_files', ['max' => (int) config('mercatura.reports.max_files')])],
+        // Screen capture (§5): only where attachments are allowed; customers consent first, admins get a warning.
+        'capture' => $canAttach,
+        'consentRequired' => ! $direct,
+        'labels' => ['error' => __($r.'error'), 'tooManyFiles' => __($r.'too_many_files', ['max' => (int) config('mercatura.reports.max_files')]), 'captureFailed' => __($r.'capture.failed')],
     ];
     $kinds = collect(\App\Enums\ReportKind::cases())->mapWithKeys(fn ($k) => [$k->value => __($r.'kinds.'.$k->value)])->all();
 @endphp
 <div x-data="reportDialog(@js($config))" @report-open.window="show()" @keydown.escape.window="open && close()">
-    <div x-cloak x-show="open" x-transition.opacity class="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/60 p-4 md:p-8">
+    <div x-cloak x-show="open" x-transition.opacity :class="capturing && 'invisible'" class="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/60 p-4 md:p-8">
         <div role="dialog" aria-modal="true" aria-labelledby="report-dialog-title" @click.outside="close()" class="w-full max-w-xl rounded-card bg-surface shadow-xl">
             <header class="flex items-center justify-between border-b border-border px-4 py-3">
                 <h2 id="report-dialog-title" class="text-lg font-bold text-primary">{{ __($r.'title') }}</h2>
@@ -60,6 +63,25 @@
                     <ul x-cloak x-show="files.length" class="mt-1 text-xs text-text-muted">
                         <template x-for="file in files" :key="file.name"><li x-text="`${file.name} (${file.size} KB)`"></li></template>
                     </ul>
+                </div>
+                {{-- Screen capture (docs/06_USER_REPORTS.md §5): hidden where the browser has no Screen Capture API (mobile). --}}
+                <div x-cloak x-show="canCapture" class="rounded-card border border-border-muted p-3">
+                    @unless($direct)
+                    <label class="flex items-start gap-2 text-sm">
+                        <input type="checkbox" x-model="consent" class="mt-1">
+                        <span>{{ __($r.'capture.consent') }}</span>
+                    </label>
+                    @else
+                    <p class="text-xs text-text-muted">{{ __($r.'capture.admin_hint') }}</p>
+                    @endunless
+                    <div class="mt-2 flex flex-wrap items-center gap-2">
+                        <button type="button" @click="takeCapture()" :disabled="! consent || capturing" class="rounded-full border border-border px-4 py-1.5 text-sm font-semibold disabled:opacity-50">
+                            <span x-text="capture ? @js(__($r.'capture.retake')) : @js(__($r.'capture.take'))"></span>
+                        </button>
+                        <button type="button" x-show="capture" @click="discard()" class="text-sm text-danger hover:underline">{{ __($r.'capture.discard') }}</button>
+                    </div>
+                    <p class="mt-1 text-xs text-text-muted">{{ __($r.'capture.how') }}</p>
+                    <img x-show="captureUrl" :src="captureUrl" alt="{{ __($r.'capture.preview') }}" width="480" height="270" class="mt-2 h-auto max-h-48 w-full rounded border border-border object-contain">
                 </div>
                 @endif
                 @unless($direct)

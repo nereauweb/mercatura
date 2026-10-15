@@ -17,6 +17,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
+use Filament\Schemas\Components\View as SchemaView;
 use Filament\Schemas\Concerns\InteractsWithSchemas;
 use Filament\Schemas\Contracts\HasSchemas;
 use Filament\Support\Icons\Heroicon;
@@ -75,6 +76,7 @@ final class ReportProblem extends Component implements HasActions, HasSchemas
                     ->disk('local')->directory('tmp/report-files')->visibility('private')
                     ->storeFileNamesIn('attachment_names')
                     ->helperText(__('admin.message.report.attachments_hint')),
+                SchemaView::make('filament.reports.capture')->key('capture'),
             ])
             ->action(function (array $data) use ($target): void {
                 $admin = Auth::user();

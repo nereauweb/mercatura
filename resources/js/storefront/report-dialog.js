@@ -1,8 +1,12 @@
+import { captureScreen, captureSupported } from '../report-capture';
+
 /**
- * Report dialog (docs/06_USER_REPORTS.md R4): sends a report of the current
+ * Report dialog (docs/06_USER_REPORTS.md R4–R6): sends a report of the current
  * page to the admin through the JSON endpoint. The page URL, the viewport and
  * the last JavaScript errors of the page travel with it; the server decides
- * who the sender is. Opened by a `report-open` window event.
+ * who the sender is. Opened by a `report-open` window event. A screen capture
+ * needs the consent box first (§5), then the browser's own permission; the
+ * preview can be discarded or retaken, unticking the box discards it.
  */
 const MAX_ERRORS = 5;
 const recentErrors = [];
@@ -30,6 +34,41 @@ export function reportDialog(config) {
         fieldErrors: {},
         files: [],
         sentText: '',
+        canCapture: captureSupported() && config.capture,
+        consent: !config.consentRequired,
+        capturing: false,
+        capture: null,
+        captureUrl: '',
+
+        init() {
+            this.$watch('consent', (value) => { if (!value) this.discard(); });
+        },
+
+        async takeCapture() {
+            if (!this.consent || this.capturing) return;
+            if (this.files.length >= config.maxFiles) {
+                this.errors = [config.labels.tooManyFiles];
+                return;
+            }
+            this.errors = [];
+            this.capturing = true;
+            try {
+                const file = await captureScreen();
+                this.discard();
+                this.capture = file;
+                this.captureUrl = URL.createObjectURL(file);
+            } catch (e) {
+                if (!e || e.name !== 'NotAllowedError') this.errors = [config.labels.captureFailed];
+            } finally {
+                this.capturing = false;
+            }
+        },
+
+        discard() {
+            if (this.captureUrl) URL.revokeObjectURL(this.captureUrl);
+            this.capture = null;
+            this.captureUrl = '';
+        },
 
         show() {
             this.sent = false;
@@ -47,7 +86,7 @@ export function reportDialog(config) {
 
         pick(event) {
             const chosen = Array.from(event.target.files || []);
-            if (chosen.length > config.maxFiles) {
+            if (chosen.length + (this.capture ? 1 : 0) > config.maxFiles) {
                 this.errors = [config.labels.tooManyFiles];
                 event.target.value = '';
                 this.files = [];
@@ -69,6 +108,10 @@ export function reportDialog(config) {
             body.set('page_url', window.location.href);
             body.set('viewport', `${window.innerWidth}x${window.innerHeight}`);
             recentErrors.forEach((error) => body.append('js_errors[]', error));
+            if (this.capture) {
+                body.append('attachments[]', this.capture, this.capture.name);
+                if (config.consentRequired) body.set('screenshot_consent', '1');
+            }
 
             this.sending = true;
             try {
@@ -83,6 +126,8 @@ export function reportDialog(config) {
                     this.sent = true;
                     form.reset();
                     this.files = [];
+                    this.discard();
+                    this.consent = !config.consentRequired;
                     return;
                 }
                 if (response.status === 422 && data.errors) {

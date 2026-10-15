@@ -92,6 +92,10 @@ final class SubmitReport
             'message' => (string) $data['description'],
             'page_url' => $pageUrl,
             'context' => ReportContext::build($pageUrl, $request, $data),
+            // The capture consent (§5) is recorded only when something was attached under it.
+            ...($clean !== [] && filter_var($data['screenshot_consent'] ?? false, FILTER_VALIDATE_BOOLEAN)
+                ? ['screenshot_consent_at' => now(), 'screenshot_consent_version' => (string) config('mercatura.reports.screenshot_consent_version')]
+                : []),
         ]));
 
         foreach ($clean as [$path, $original]) {
@@ -120,6 +124,7 @@ final class SubmitReport
             'viewport' => ['nullable', 'string', 'regex:/^\d{2,5}x\d{2,5}$/'],
             'js_errors' => ['nullable', 'array', 'max:5'],
             'js_errors.*' => ['string', 'max:300'],
+            'screenshot_consent' => ['nullable', 'boolean'],
             'name' => [$guest ? 'required' : 'prohibited', 'string', 'max:64'],
             'email' => [$guest ? 'required' : 'prohibited', 'email', 'max:64'],
             'attachments' => ['array', 'max:'.(int) config('mercatura.reports.max_files')],

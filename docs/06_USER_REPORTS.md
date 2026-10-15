@@ -1,6 +1,6 @@
 # User reports — a user → admin channel, with an optional forward
 
-Status: **approved 2026-10-15; R1 done (core v2.14.0), R2 done (v2.15.0), R3 done (v2.16.0 + installation package), R4 done (v2.17.0), R5 done (v2.18.0).**
+Status: **approved 2026-10-15; R1 done (core v2.14.0), R2 done (v2.15.0), R3 done (v2.16.0 + installation package), R4 done (v2.17.0), R5 done (v2.18.0), R6 done (v2.19.0).**
 Decisions marked *(agreed)* were taken with the maintainer while studying
 the feature; *(proposed)* ones need approval before the phase that uses them.
 
@@ -293,6 +293,20 @@ everywhere, LCP within noise (±12 ms).
 §5 in both the storefront dialog and the panel action.
 *Stop:* tested on Chromium and Firefox desktop (manual, on staging); hidden
 where the API is missing; consent fields stored; capture re-encoded.
+
+*Done 2026-10-15 (v2.19.0).* Shared module `resources/js/report-capture.js`
+(`captureScreen`, `addToFilePond`): imported by the storefront dialog,
+loaded alone in the panel (Vite entry, `BODY_END` hook only when the admin's
+report is available). Storefront: consent box (text in
+`frontend.reports.capture.consent`, version in
+`mercatura.reports.screenshot_consent_version`, stored with the report only
+when a file comes with it), "Cattura schermata" enabled by the box, preview
+with retake/discard; admins on the storefront get a warning instead of the
+consent. Panel: a "Cattura schermata" button in the admin's report modal
+adds the frame to the FileUpload (FilePond), where the admin sees and can
+remove it; the Filament modals are hidden for the frame. Checked in Chrome
+(tab capture auto-accepted): button disabled until consent, preview shown,
+report stored with consent and a PNG of the page without the dialog.
 
 **R7 — Retention and documentation.**
 Scheduled pruning of attachments (§4), installation docs (settings, consent
