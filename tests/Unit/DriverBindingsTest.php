@@ -128,9 +128,15 @@ class DriverBindingsTest extends TestCase
         $connectors = $this->app->make(ImportConnectors::class);
 
         $this->assertSame($connectors, $this->app->make(ImportConnectors::class));
+        // The installation's .env may switch connectors on: the test sets the flags itself.
         foreach ($connectors->all() as $connector) {
+            config(['connector-'.$connector->key().'.enabled' => false]);
             $this->assertFalse($connector->enabled(), $connector->key().' must be off unless MERCATURA_CONNECTOR_* is set');
         }
         $this->assertSame([], $connectors->enabled());
+        foreach ($connectors->all() as $connector) {
+            config(['mercatura.features.connectors.'.$connector->key() => true]);
+            $this->assertTrue($connector->enabled(), 'the core override switches '.$connector->key().' on');
+        }
     }
 }

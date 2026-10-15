@@ -36,6 +36,10 @@ class ImportsPageTest extends TestCase
 
     public function test_without_connectors_the_page_shows_the_notice_and_no_dispatch(): void
     {
+        // The installation's .env may switch connectors on: off here, whatever is installed.
+        foreach (app(\App\Support\ImportConnectors::class)->all() as $connector) {
+            config(['mercatura.features.connectors.'.$connector->key() => false]);
+        }
         $page = Livewire::test(Imports::class);
         $page->assertOk();
         $page->assertSee(__('admin.imports.no_connector'))->assertActionHidden('dispatchProducts');
