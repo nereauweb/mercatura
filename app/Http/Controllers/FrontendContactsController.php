@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Contracts\NewsletterProvider;
 use App\Contracts\TransactionalMailer;
+use App\Enums\ReporterRole;
 use App\Models\Customer;
 use App\Models\Message;
 use App\Rules\Captcha;
@@ -92,7 +93,14 @@ class FrontendContactsController extends Controller
         $mailer->to(config('emails.merchant'));
         $mailer->send('contact_admin');
         // The message is kept for the admin "Messaggi" list (read/unread) and the customer's own list.
+        $sender = Auth::user();
         Message::create([
+            'user_id' => $sender?->id,
+            'reporter_role' => match (true) {
+                $sender === null => ReporterRole::Guest,
+                $sender->hasRole('admin') => null,
+                default => ReporterRole::Customer,
+            },
             'name' => $request->name,
             'surname' => $request->surname,
             'email' => $request->email,
@@ -136,8 +144,9 @@ class FrontendContactsController extends Controller
 
     public function show(Request $request, $id)
     {
-        // Only the user's own messages, matched by email as in the list: the id in the URL is not a proof of ownership.
-        $message = Message::query()->where('email', Auth::user()?->email)->findOrFail($id);
+        // Only the messages linked to the account: the id in the URL is not a proof of
+        // ownership, and the email is not either (registration does not verify it).
+        $message = Message::query()->ownedBy(Auth::user())->findOrFail($id);
 
         return view('frontend.customer.message', compact('message'));
     }

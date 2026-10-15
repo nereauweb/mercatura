@@ -13,7 +13,7 @@ final class FrontendContactsTable extends FrontendCustomerTable
 {
     protected function query(): Builder
     {
-        return Message::query()->where('email', Auth::user()?->email);
+        return Message::query()->ownedBy(Auth::user());
     }
 
     protected function columns(): array

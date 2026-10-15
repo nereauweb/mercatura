@@ -85,7 +85,7 @@ final class AccountPageTest extends TestCase
     {
         $owner = \App\Models\User::factory()->create();
         $other = \App\Models\User::factory()->create();
-        $message = \App\Models\Message::query()->create(['email' => $owner->email, 'name' => 'Anna', 'phone' => '0123456789', 'subject' => 'Info', 'message' => 'Un messaggio riservato.']);
+        $message = \App\Models\Message::query()->create(['user_id' => $owner->id, 'email' => $owner->email, 'name' => 'Anna', 'phone' => '0123456789', 'subject' => 'Info', 'message' => 'Un messaggio riservato.']);
         $this->actingAs($owner)->get('/messaggi/'.$message->id)->assertOk()->assertSee('Un messaggio riservato.');
         $this->actingAs($other)->get('/messaggi/'.$message->id)->assertNotFound();
         $this->actingAs($other)->get('/messaggi/999999')->assertNotFound();

@@ -37,6 +37,45 @@ final class ImageSanitizer
         return self::reencodeJpeg($path);
     }
 
+    /**
+     * Rewrites a user-uploaded image from its pixels only (JPEG, PNG, WebP):
+     * metadata (EXIF, GPS, text chunks) is dropped and anything appended to or
+     * hidden in the file does not survive. False when the file is not one of
+     * those images or GD cannot decode it: the caller must then reject it.
+     */
+    public static function reencode(string $path): bool
+    {
+        $info = @getimagesize($path);
+        if (! $info) {
+            return false;
+        }
+
+        return match ($info[2]) {
+            IMAGETYPE_JPEG => self::reencodeJpeg($path),
+            IMAGETYPE_PNG => self::reencodeWith($path, 'imagecreatefrompng', static fn (\GdImage $image): bool => imagepng($image, $path, 6)),
+            IMAGETYPE_WEBP => self::reencodeWith($path, 'imagecreatefromwebp', static fn (\GdImage $image): bool => imagewebp($image, $path, 90)),
+            default => false,
+        };
+    }
+
+    /** @param  callable(\GdImage): bool  $write */
+    private static function reencodeWith(string $path, string $decoder, callable $write): bool
+    {
+        if (! function_exists($decoder)) {
+            return false;
+        }
+        $image = @$decoder($path);
+        if (! $image instanceof \GdImage) {
+            return false;
+        }
+        imagealphablending($image, false);
+        imagesavealpha($image, true);
+        $ok = $write($image);
+        imagedestroy($image);
+
+        return $ok;
+    }
+
     /** JPEG re-encoded by GD without metadata, EXIF orientation applied; other types are left alone. */
     public static function reencodeJpeg(string $path, int $quality = 92): bool
     {

@@ -645,4 +645,14 @@ return [
         ],
     ],
 
+    'reports' => [
+        'errors' => [
+            'not_allowed' => 'Non è possibile inviare una segnalazione.',
+            'guest_attachments' => 'Per allegare file accedi al tuo account.',
+            'too_many' => 'Hai inviato troppe segnalazioni: riprova più tardi.',
+            'quota' => 'Hai raggiunto il limite giornaliero di file allegati: riprova domani.',
+            'invalid_image' => 'Il file non è un\'immagine valida.',
+        ],
+    ],
+
 ];

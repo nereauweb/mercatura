@@ -44,6 +44,15 @@ return [
             'throw' => false,
         ],
 
+        // User report attachments (docs/06_USER_REPORTS.md §4): never served by
+        // the web server, downloaded only through an authorised panel route.
+        'reports' => [
+            'driver' => 'local',
+            'root' => storage_path('app/reports'),
+            'visibility' => 'private',
+            'throw' => false,
+        ],
+
         's3' => [
             'driver' => 's3',
             'key' => env('AWS_ACCESS_KEY_ID'),

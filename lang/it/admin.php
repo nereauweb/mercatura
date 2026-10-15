@@ -187,6 +187,20 @@ return [
             'sender' => 'Mittente',
             'content' => 'Contenuto',
         ],
+        'types' => [
+            'contact' => 'Contatto',
+            'report' => 'Segnalazione',
+        ],
+        'kinds' => [
+            'bug' => 'Problema',
+            'request' => 'Richiesta',
+            'question' => 'Domanda',
+            'feedback' => 'Suggerimento',
+        ],
+        'roles' => [
+            'customer' => 'Cliente',
+            'guest' => 'Ospite',
+        ],
     ],
 
     'catalog' => [

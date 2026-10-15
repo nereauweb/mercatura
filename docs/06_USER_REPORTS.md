@@ -1,6 +1,6 @@
 # User reports — a user → admin channel, with an optional forward
 
-Status: **plan, awaiting approval** (2026-10-15). Nothing is implemented.
+Status: **approved 2026-10-15; R1 done (core v2.14.0).**
 Decisions marked *(agreed)* were taken with the maintainer while studying
 the feature; *(proposed)* ones need approval before the phase that uses them.
 
@@ -72,6 +72,11 @@ New migration on `messages` (the existing migration is not edited):
 | `forwarded_at` | timestamp, nullable | |
 | `forwarded_by` | nullable FK users | |
 | `forward_reference` | string(64), nullable | id returned by the forwarder |
+
+Each column arrives with the phase that reads it: R1 adds `type` to
+`context`, R3 the `forwarded_*` columns, R6 the `screenshot_consent_*` ones.
+`context.app_version` is left out: the core has no version source of its own,
+a forwarder adds the installation's.
 
 `email`, `name`, `surname` stay as they are (for a logged-in reporter they are
 copied from the account, not from the form). Report-only columns stay null
@@ -186,6 +191,15 @@ pages by `user_id` (§2.8), contact form sets `user_id`/`reporter_role`.
 guest attachment refusal, MIME spoofing (a PHP file renamed `.png`),
 re-encoding (EXIF gone), limits, and the account pages matching by `user_id`.
 
+*Done 2026-10-15 (v2.14.0).* `App\Actions\Messages\SubmitReport`,
+`App\Support\Reports\ReportAccess`, enums `MessageType`, `ReportKind`,
+`ReporterRole`, disk `reports` (`storage/app/reports`), `Message::ownedBy()`.
+Deviations: the captcha fallback asks the provider (`enabled()`), so
+reCAPTCHA without keys also counts as missing; limits are enforced inside the
+action (any entry point gets them), not by a route limiter; the retention
+setting arrives with R7; messages sent before R1 have no `user_id` and stay
+visible to the admin only (no backfill by email, which would reopen §2.8).
+
 **R2 — Admin panel.**
 `MessageResource`: type filter and badge, report fields, attachments with the
 protected download route, read state. Lang keys in `lang/it/admin.php`.
@@ -242,6 +256,11 @@ text to review, privacy notice), demo seeder rows for the panel.
   wider "registered with someone else's address" case beyond messages;
   changes the registration flow, so it is a decision of its own.
 - Admin replies from the panel (a thread on the message).
+- **Order files on the public disk.** `order_files` (customer artwork) use the
+  media library's default `public` disk: reachable without login by URL. The
+  stored names carry 8 random characters and directory listing is off, so the
+  URLs are not guessable, but a leaked link is enough. Move them to a private
+  disk behind an authorised route, like report attachments (found during R1).
 
 ## 9. Open questions
 

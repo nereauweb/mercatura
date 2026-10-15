@@ -197,6 +197,28 @@ return [
     | listed paths (payment webhooks, health check).
     */
     // Extra robots.txt lines of the installation (ARCHITECTURE §12: additions by configuration).
+    /*
+    | User reports (docs/06_USER_REPORTS.md): users report a problem to the
+    | admin as a `messages` row. access: off | auth (logged-in users only) |
+    | public (guests too; needs a real captcha provider, otherwise it behaves
+    | as auth). Guests never attach files. Admins report through the message
+    | forwarder, never here.
+    */
+    'reports' => [
+        'access' => env('MERCATURA_REPORTS_ACCESS', 'auth'),
+        'max_files' => 5,
+        'max_file_kb' => 10240,
+        'title_max' => 200,
+        'description_max' => 5000,
+        'limits' => [
+            'user_per_minute' => (int) env('MERCATURA_REPORTS_USER_PER_MINUTE', 5),
+            'user_per_day' => (int) env('MERCATURA_REPORTS_USER_PER_DAY', 20),
+            'user_mb_per_day' => (int) env('MERCATURA_REPORTS_USER_MB_PER_DAY', 50),
+            'guest_per_minute' => (int) env('MERCATURA_REPORTS_GUEST_PER_MINUTE', 3),
+            'guest_per_day' => (int) env('MERCATURA_REPORTS_GUEST_PER_DAY', 10),
+        ],
+    ],
+
     'robots_extra' => array_values(array_filter(array_map('trim', explode('|', (string) env('MERCATURA_ROBOTS_EXTRA', ''))))),
 
     'staging' => [
