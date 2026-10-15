@@ -228,8 +228,15 @@ text to review, privacy notice), demo seeder rows for the panel.
 
 ## 9. Open questions
 
-1. Helpdesk side: does it accept the forwarding admin as `reporter`, and does
-   it show `context` (the `messages#<id>` reference) in the ticket?
+1. *(answered 2026-10-15)* The helpdesk accepts any reporter the application
+   declares (`reporter.email` required; `name`, `user_ref`, `phone`
+   optional; other keys dropped) and matches it against the client's
+   contacts: the forwarding admins should be added as contacts there. An
+   `on_behalf_of` field was offered and **declined**: the forward is
+   pseudonymised on purpose (§2.5). Whether `context` is shown in the ticket
+   is not confirmed, so the installation driver also appends the reference
+   to the description ("Rif. piattaforma: segnalazione #<id> (cliente)");
+   `user_ref`, if sent, is the admin's id, never the user's.
 2. Consent text and privacy notice: the client reviews them (lang keys).
 3. Limits and retention defaults (§4): 5/min, 20/day, 50 MB/day, 90 days.
 4. Admins reporting from the panel: store the report and forward it in one
