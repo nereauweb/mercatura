@@ -37,7 +37,10 @@ final class AdminPanelProvider extends PanelProvider
     /** Sections placed side by side in a grid stretch to the height of the row. */
     private static function layoutStyles(): string
     {
-        return '<style>.fi-grid{align-items:stretch}.fi-grid>.fi-grid-col.fi-section,.fi-grid>.fi-grid-col>.fi-section{height:100%}.fi-grid>.fi-grid-col>.fi-section,.fi-grid>.fi-grid-col.fi-section{display:flex;flex-direction:column}.fi-section>.fi-section-content-ctn{flex:1}</style>';
+        // Filament 5 markup: .fi-grid-col > .fi-sc-component > .fi-sc-section (flex column) > section.fi-section.
+        // The grid column already stretches to the row; the wrappers and the section follow it, so the
+        // sections of a row (e.g. the order's Riepilogo and Totali) end at the same height.
+        return '<style>.fi-grid{align-items:stretch}.fi-grid>.fi-grid-col>.fi-sc-component,.fi-grid>.fi-grid-col>.fi-sc-component>.fi-sc-section{height:100%}.fi-sc-section>.fi-section{flex:1 1 auto;display:flex;flex-direction:column}.fi-section>.fi-section-content-ctn{flex:1 1 auto}</style>';
     }
 
     public function panel(Panel $panel): Panel
