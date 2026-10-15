@@ -61,6 +61,7 @@ class SalesActionsTest extends TestCase
     public function test_order_confirmation_can_be_resent_and_files_managed(): void
     {
         Storage::fake('public');
+        Storage::fake(\App\Models\Order::FILES_DISK);
         $transport = $this->app->make('mail.manager')->mailer('array')->getSymfonyTransport();
         $this->assertInstanceOf(ArrayTransport::class, $transport);
 
@@ -72,6 +73,8 @@ class SalesActionsTest extends TestCase
         $media = $this->order->refresh()->getMedia('order_files');
         $this->assertCount(1, $media);
         $this->assertSame('bozza.pdf', $media[0]->file_name);
+        $this->assertSame(\App\Models\Order::FILES_DISK, $media[0]->disk, 'order files are private');
+        Storage::disk('public')->assertDirectoryEmpty('/');
 
         Livewire::test(ViewOrder::class, ['record' => $this->order->id])
             ->callAction('deleteFile', ['media_id' => $media[0]->id])->assertHasNoActionErrors();

@@ -53,6 +53,16 @@ return [
             'throw' => false,
         ],
 
+        // Files customers and admins attach to an order (media collection order_files): private,
+        // downloaded only through the order file routes. The customizations' artwork files live on
+        // the `local` disk under orders/{id}/printings.
+        'order-files' => [
+            'driver' => 'local',
+            'root' => storage_path('app/order-files'),
+            'visibility' => 'private',
+            'throw' => false,
+        ],
+
         's3' => [
             'driver' => 's3',
             'key' => env('AWS_ACCESS_KEY_ID'),

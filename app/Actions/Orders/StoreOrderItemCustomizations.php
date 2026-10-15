@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Actions\Orders;
 
 use App\Models\OrderItem;
+use App\Models\OrderItemCustomization;
 use App\Models\OrderItemExtra;
 use App\Support\Customizations\PricedLine;
 
@@ -47,7 +48,7 @@ final class StoreOrderItemCustomizations
             ]);
             if (isset($artwork[$option->id]) && is_file($artwork[$option->id])) {
                 $target = 'orders/'.$orderItem->order_id.'/printings/printing_'.$row->id.'_'.basename($artwork[$option->id]);
-                \Illuminate\Support\Facades\Storage::disk('public')->put($target, (string) file_get_contents($artwork[$option->id]));
+                \Illuminate\Support\Facades\Storage::disk(OrderItemCustomization::FILE_DISK)->put($target, (string) file_get_contents($artwork[$option->id]));
                 @unlink($artwork[$option->id]);
                 $row->update(['file' => $target]);
             }

@@ -36,6 +36,9 @@ class OrderItemCustomization extends Model
 {
     protected $table = 'order_item_customizations';
 
+    /** Disk of the artwork file (`file`, a path like orders/{order}/printings/…): private, served by the order file routes. */
+    public const FILE_DISK = 'local';
+
     protected $fillable = ['item_id', 'option_id', 'family', 'technique_label', 'position_label', 'area_label', 'option_label', 'number_of_colors', 'quantity', 'price', 'packaging_price', 'label', 'file'];
 
     /** @return BelongsTo<OrderItem, $this> */

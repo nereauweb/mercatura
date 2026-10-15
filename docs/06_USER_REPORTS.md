@@ -353,11 +353,11 @@ message is closed" (§4): messages have no closed state.
   wider "registered with someone else's address" case beyond messages;
   changes the registration flow, so it is a decision of its own.
 - Admin replies from the panel (a thread on the message).
-- **Order files on the public disk.** `order_files` (customer artwork) use the
-  media library's default `public` disk: reachable without login by URL. The
-  stored names carry 8 random characters and directory listing is off, so the
-  URLs are not guessable, but a leaked link is enough. Move them to a private
-  disk behind an authorised route, like report attachments (found during R1).
+- ~~Order files on the public disk~~ — *done 2026-10-16 (v2.21.0)*: order
+  attachments on the private `order-files` disk, customization artwork on
+  `local`, served only by `OrderFileController` (customer: own orders; panel:
+  `OrderPolicy::view`), existing files moved by a migration
+  (`OrderFilesToPrivateDisk`).
 
 ## 9. Open questions
 

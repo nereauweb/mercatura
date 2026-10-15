@@ -154,7 +154,7 @@ class FrontendOrderController extends Controller
 
         $media = $order->addMedia($mediaFile)
             ->usingFileName($this->buildSafeFilename('order_'.$order->id, $upload))
-            ->toMediaCollection('order_files');
+            ->toMediaCollection(Order::FILES);
 
         FrontendDebugLog::carrelloPagamento('order_upload:file_added', [
             'order_id' => $order->id,
@@ -211,16 +211,16 @@ class FrontendOrderController extends Controller
                     'variant_image' => 'Il file SVG non è valido o contiene elementi non consentiti.',
                 ])->withInput();
             }
-            Storage::disk('public')->put($directory.'/'.$filename, $clean);
+            Storage::disk(OrderItemCustomization::FILE_DISK)->put($directory.'/'.$filename, $clean);
             $path = $directory.'/'.$filename;
         } else {
-            $path = $file->storeAs($directory, $filename, 'public');
+            $path = $file->storeAs($directory, $filename, OrderItemCustomization::FILE_DISK);
         }
 
         $previous = $printing->file;
         $printing->update(['file' => $path]);
         if ($previous && $previous !== $path) {
-            Storage::disk('public')->delete($previous);
+            Storage::disk(OrderItemCustomization::FILE_DISK)->delete($previous);
         }
 
         FrontendDebugLog::carrelloPagamento('printing_upload:file_saved', [

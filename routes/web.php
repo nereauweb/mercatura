@@ -133,6 +133,19 @@ Route::group(['middleware' => 'auth'], function () {
     Route::post('/ordine/{id}/upload-file', [FrontendOrderController::class, 'uploadOrderImage'])
         ->middleware('throttle:20,1')
         ->name('customer.order.upload-file');
+    // Order files are private: these routes are the only way out (OrderFileController).
+    Route::get('/ordine/{id}/file/{media}', [OrderFileController::class, 'customerAttachment'])
+        ->whereNumber(['id', 'media'])
+        ->name('customer.order.file');
+    Route::get('/ordine/personalizzazione/{printing}/file', [OrderFileController::class, 'customerArtwork'])
+        ->whereNumber('printing')
+        ->name('customer.order.printings.file');
+    Route::get('/admin/file-ordini/{media}', [OrderFileController::class, 'adminAttachment'])
+        ->whereNumber('media')
+        ->name('admin.orders.file');
+    Route::get('/admin/file-ordini/personalizzazione/{printing}', [OrderFileController::class, 'adminArtwork'])
+        ->whereNumber('printing')
+        ->name('admin.orders.artwork');
     Route::delete('/ordine/{id}/delete-file/{mediaId}', [FrontendOrderController::class, 'deleteOrderImage'])
         ->middleware('throttle:20,1')
         ->name('customer.order.delete-file');

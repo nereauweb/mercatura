@@ -78,7 +78,8 @@ final class SampleAndArtworkTest extends TestCase
         $this->post(action([FrontendCartController::class, 'store_order']), ['payment_method' => 'bank_transfer', 'consent_gdpr' => '1', 'consent_terms' => '1'])->assertOk();
         $row = OrderItemCustomization::query()->where('option_id', $this->f->screenOneColorA->id)->firstOrFail();
         $this->assertNotNull($row->file);
-        Storage::disk('public')->assertExists((string) $row->file);
+        Storage::disk(\App\Models\OrderItemCustomization::FILE_DISK)->assertExists((string) $row->file);
+        Storage::disk('public')->assertMissing((string) $row->file);
         Storage::disk('local')->assertMissing($sessionDir.'/'.$token);
     }
 

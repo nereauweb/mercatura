@@ -108,7 +108,9 @@ final class OrderInfolist
                                         TextEntry::make('family')->label(__('admin.catalog.family'))->badge()->placeholder('-'),
                                         TextEntry::make('packaging_price')->label(__('admin.order.packaging'))->money('EUR')->placeholder('-'),
                                         TextEntry::make('label')->label(__('admin.order.sold_as'))->columnSpan(3),
-                                        TextEntry::make('file')->label(__('admin.order.artwork'))->placeholder(__('admin.order.artwork_missing'))->formatStateUsing(fn (?string $state): string => $state ? basename($state) : ''),
+                                        TextEntry::make('file')->label(__('admin.order.artwork'))->placeholder(__('admin.order.artwork_missing'))->formatStateUsing(fn (?string $state): string => $state ? basename($state) : '')
+                                            ->url(fn ($record): ?string => $record->file ? route('admin.orders.artwork', $record->id) : null)
+                                            ->icon(fn ($record): ?Heroicon => $record->file ? Heroicon::OutlinedArrowDownTray : null),
                                     ]),
                                 RepeatableEntry::make('extras')
                                     ->label(__('admin.order.extras'))
@@ -131,7 +133,7 @@ final class OrderInfolist
                             ->placeholder(__('admin.order.no_files'))
                             ->components([
                                 TextEntry::make('file_name')->label(__('admin.order.actions.file'))
-                                    ->url(fn ($record): string => (string) $record->getUrl(), shouldOpenInNewTab: true)
+                                    ->url(fn ($record): string => route('admin.orders.file', $record->id))
                                     ->icon(Heroicon::OutlinedArrowDownTray),
                                 TextEntry::make('mime_type')->label('Tipo'),
                                 TextEntry::make('created_at')->label(__('admin.common.created_at'))->dateTime('d/m/Y H:i'),

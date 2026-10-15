@@ -13,7 +13,17 @@ class Order extends Model implements HasMedia
 {
     use InteractsWithMedia;
 
+    /** Files attached to the order by the customer or the admin, on the private `order-files` disk. */
+    public const FILES = 'order_files';
+
+    public const FILES_DISK = 'order-files';
+
     protected $casts = ['read_at' => 'datetime'];
+
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection(self::FILES)->useDisk(self::FILES_DISK);
+    }
 
     protected $table = 'orders';
 

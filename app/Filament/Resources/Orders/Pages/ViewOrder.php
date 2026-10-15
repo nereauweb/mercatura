@@ -107,7 +107,7 @@ final class ViewOrder extends ViewRecord
             ])
             ->action(function (array $data, Order $record): void {
                 $path = Storage::disk('local')->path((string) $data['file']);
-                $record->addMedia($path)->toMediaCollection('order_files');
+                $record->addMedia($path)->toMediaCollection(Order::FILES);
                 Notification::make()->title(__('admin.order.actions.upload_done'))->success()->send();
             });
     }
@@ -118,14 +118,14 @@ final class ViewOrder extends ViewRecord
             ->label(__('admin.order.actions.delete_file'))
             ->icon(Heroicon::OutlinedTrash)
             ->color('danger')
-            ->visible(fn (Order $record): bool => $this->canManage() && $record->getMedia('order_files')->isNotEmpty())
+            ->visible(fn (Order $record): bool => $this->canManage() && $record->getMedia(Order::FILES)->isNotEmpty())
             ->schema([
                 Select::make('media_id')->label(__('admin.order.actions.file'))->required()->native(false)
-                    ->options(fn (Order $record): array => $record->getMedia('order_files')->mapWithKeys(fn ($media) => [$media->id => $media->file_name])->all()),
+                    ->options(fn (Order $record): array => $record->getMedia(Order::FILES)->mapWithKeys(fn ($media) => [$media->id => $media->file_name])->all()),
             ])
             ->requiresConfirmation()
             ->action(function (array $data, Order $record): void {
-                $record->getMedia('order_files')->firstWhere('id', (int) $data['media_id'])?->delete();
+                $record->getMedia(Order::FILES)->firstWhere('id', (int) $data['media_id'])?->delete();
                 Notification::make()->title(__('admin.order.actions.delete_file_done'))->success()->send();
             });
     }

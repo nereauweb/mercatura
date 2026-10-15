@@ -1,4 +1,4 @@
-{{-- @mercatura-view frontend.customer.order @version 2 --}}
+{{-- @mercatura-view frontend.customer.order @version 3 --}}
 {{-- One order: items with printing file uploads, attachments, totals and status. --}}
 @extends('frontend.public.layout')
 @section('title', __('frontend.account.order_number', ['id' => $order->id]).' | '.config('brand.name'))
@@ -40,7 +40,7 @@
 									<form action="{{ route('customer.order.printings.upload-image', $printing->id) }}" method="POST" enctype="multipart/form-data" class="rounded border border-border-muted bg-surface p-3">
 										@method('PUT')@csrf
 										<p class="text-xs font-semibold">{{ $printing->label }}</p>
-										@if($printing->file)<p class="text-xs text-text-muted">{{ __('frontend.account.current_file') }}: <a href="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($printing->file) }}" target="_blank" rel="noopener" class="text-accent underline">{{ __('frontend.account.download') }}</a></p>@endif
+										@if($printing->file)<p class="text-xs text-text-muted">{{ __('frontend.account.current_file') }}: <a href="{{ route('customer.order.printings.file', $printing->id) }}" class="text-accent underline">{{ __('frontend.account.download') }}</a></p>@endif
 										<input type="file" name="variant_image" accept=".jpg,.jpeg,.png,.svg,.webp,.pdf,.ai,.eps,.tif,.tiff" class="mt-2 block w-full text-xs file:mr-2 file:rounded file:border-0 file:bg-surface-muted file:px-2 file:py-1" aria-label="{{ __('frontend.account.choose_file') }}">
 										@error('variant_image')<p class="mt-1 text-xs text-danger">{{ $message }}</p>@enderror
 										<button type="submit" class="mt-2 rounded bg-primary px-3 py-1 text-xs font-bold uppercase text-on-primary">{{ __('frontend.account.upload') }}</button>
@@ -73,7 +73,7 @@
 					<ul class="mt-3 space-y-2 text-sm">
 						@foreach($order->media as $media)
 						<li class="flex items-center justify-between gap-2 rounded bg-surface-muted px-3 py-2">
-							<a href="{{ $media->getUrl() }}" target="_blank" rel="noopener" class="truncate text-primary hover:underline">{{ $media->file_name }} <span class="text-xs text-text-muted">({{ strtoupper($media->mime_type) }}, {{ number_format($media->size / 1024, 2) }} KB)</span></a>
+							<a href="{{ route('customer.order.file', [$order->id, $media->id]) }}" class="truncate text-primary hover:underline">{{ $media->file_name }} <span class="text-xs text-text-muted">({{ strtoupper($media->mime_type) }}, {{ number_format($media->size / 1024, 2) }} KB)</span></a>
 							<form action="{{ route('customer.order.delete-file', [$order->id, $media->id]) }}" method="POST" onsubmit="return confirm(@js(__('frontend.account.delete_file_confirm')))">@csrf @method('DELETE')<button type="submit" class="rounded p-1 text-text-muted hover:text-danger" aria-label="{{ __('frontend.account.delete_file') }}"><x-frontend::icon name="close" class="h-4 w-4" /></button></form>
 						</li>
 						@endforeach
