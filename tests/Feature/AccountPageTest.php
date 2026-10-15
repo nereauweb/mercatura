@@ -81,6 +81,16 @@ final class AccountPageTest extends TestCase
         $this->actingAs($other)->get('/ordine/'.$order->id)->assertNotFound();
     }
 
+    public function test_a_user_cannot_open_another_users_contact_message(): void
+    {
+        $owner = \App\Models\User::factory()->create();
+        $other = \App\Models\User::factory()->create();
+        $message = \App\Models\Message::query()->create(['email' => $owner->email, 'name' => 'Anna', 'phone' => '0123456789', 'subject' => 'Info', 'message' => 'Un messaggio riservato.']);
+        $this->actingAs($owner)->get('/messaggi/'.$message->id)->assertOk()->assertSee('Un messaggio riservato.');
+        $this->actingAs($other)->get('/messaggi/'.$message->id)->assertNotFound();
+        $this->actingAs($other)->get('/messaggi/999999')->assertNotFound();
+    }
+
     public function test_the_contact_form_sends_the_admin_mail_and_keeps_the_message(): void
     {
         $before = \App\Models\Message::query()->count();

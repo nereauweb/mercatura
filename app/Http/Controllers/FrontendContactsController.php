@@ -10,6 +10,7 @@ use App\Rules\Captcha;
 use App\Support\CaughtExceptionLogger;
 use App\Support\FrontendDebugLog;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class FrontendContactsController extends Controller
 {
@@ -135,7 +136,8 @@ class FrontendContactsController extends Controller
 
     public function show(Request $request, $id)
     {
-        $message = Message::find($id);
+        // Only the user's own messages, matched by email as in the list: the id in the URL is not a proof of ownership.
+        $message = Message::query()->where('email', Auth::user()?->email)->findOrFail($id);
 
         return view('frontend.customer.message', compact('message'));
     }
