@@ -19,3 +19,6 @@ Schedule::command('app:import --process-customization-data=true')
 
 // Sitemap for search engines, nightly (docs/02_V2B_ADMIN.md §3.10); the admin page can regenerate it on demand.
 Schedule::command('app:GenerateSitemap')->dailyAt('03:30')->withoutOverlapping();
+
+// Report attachments past their retention period (docs/06_USER_REPORTS.md §4).
+Schedule::command('cleanup:report-attachments')->dailyAt('04:20')->withoutOverlapping();

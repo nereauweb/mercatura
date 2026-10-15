@@ -217,6 +217,9 @@ return [
         // Version of the screen-capture consent text (lang frontend.reports.capture.consent),
         // stored with each consent: change it whenever the text changes.
         'screenshot_consent_version' => '2026-10-15',
+        // Attachments and captures of reports older than this are deleted daily
+        // (cleanup:report-attachments); the report text stays. 0 keeps them.
+        'attachment_retention_days' => (int) env('MERCATURA_REPORTS_ATTACHMENT_RETENTION_DAYS', 90),
         'limits' => [
             'user_per_minute' => (int) env('MERCATURA_REPORTS_USER_PER_MINUTE', 5),
             'user_per_day' => (int) env('MERCATURA_REPORTS_USER_PER_DAY', 20),

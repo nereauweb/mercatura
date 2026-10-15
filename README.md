@@ -73,9 +73,28 @@ implemented by drivers under `app/Drivers` and selected in
 | `MERCATURA_VAT_RATE`, `MERCATURA_DELIVERY_COST`, `MERCATURA_FREE_DELIVERY_FROM`, `MERCATURA_UNDER_MINIMUM_SURCHARGE` | pricing constants (`config/mercatura.php` pricing) |
 | `MERCATURA_CUSTOMIZATIONS_CLEANUP_DAYS` | days without an import touch after which `cleanup:customizations` deletes a customization (default 90) |
 | `MERCATURA_CONNECTOR_<KEY>` | one switch per installed supplier connector package, off by default |
+| `MERCATURA_REPORTS_ACCESS` | user reports to the admin: `off`, `auth` (default, logged-in users), `public` (guests too, needs a working captcha) |
+| `MERCATURA_MESSAGE_FORWARDER` | `null` (default) or the name an installation package binds to forward reports to a helpdesk |
+| `MERCATURA_REPORTS_ATTACHMENT_RETENTION_DAYS` | days after which `cleanup:report-attachments` deletes report attachments and captures (default 90, `0` keeps them) |
 
 Switching a provider never needs a code change; adding one means a new
 driver class and a case in `App\Providers\DriverServiceProvider`.
+
+## User reports
+
+Users report a problem from the page where they see it (account area,
+"Segnala un problema" in the footer); the report reaches the admin in
+*Vendite → Messaggi* with the page, the area, the browser, recent JavaScript
+errors and up to five attachments, optionally a screen capture taken with
+the user's consent (desktop browsers). Attachments are re-encoded, kept on a
+private disk, downloaded only from the panel and deleted after the retention
+period. An installation may add a forwarder (`App\Contracts\MessageForwarder`)
+so that admins forward a report to their helpdesk, pseudonymised, and send
+their own reports there. Before going live, review the consent and notice
+texts in `lang/it/frontend.php` (`reports.privacy`, `reports.capture.consent`;
+bump `mercatura.reports.screenshot_consent_version` when the consent text
+changes) and mention reports in the privacy policy. Details:
+`docs/06_USER_REPORTS.md`.
 
 ## Supplier connectors
 

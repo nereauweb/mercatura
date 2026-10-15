@@ -5,8 +5,12 @@ declare(strict_types=1);
 namespace Database\Seeders\Demo;
 
 use App\Actions\Orders\StoreOrderItemCustomizations;
+use App\Enums\MessageType;
+use App\Enums\ReporterRole;
+use App\Enums\ReportKind;
 use App\Models\Customer;
 use App\Models\CustomerAddress;
+use App\Models\Message;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\OrderItemArticle;
@@ -54,6 +58,8 @@ class DemoCustomersSeeder extends Seeder
             ]);
         }
 
+        $this->seedMessages($customers);
+
         $products = Product::query()->where('sku', 'like', DemoCatalogSeeder::SKU_PREFIX.'%')->orderBy('id')->get()->values();
         if ($products->isEmpty()) {
             return;
@@ -84,6 +90,30 @@ class DemoCustomersSeeder extends Seeder
                     'image' => (string) $product->cover(true), 'color' => (string) $variant?->color?->label, 'size' => (string) $variant?->size?->shown_label(), 'notes' => 'Logo a un colore',
                 ]);
             }
+        }
+    }
+
+    /**
+     * A contact message and two user reports (docs/06_USER_REPORTS.md) for the panel's inbox.
+     *
+     * @param  list<Customer>  $customers
+     */
+    private function seedMessages(array $customers): void
+    {
+        $rows = [
+            [$customers[0], MessageType::Contact, null, 'Richiesta catalogo', 'Potete inviarmi il catalogo aggiornato delle borracce?', null, null, 9],
+            [$customers[1], MessageType::Report, ReportKind::Bug, 'Il totale del carrello non si aggiorna', 'Cambiando la quantità di un articolo il totale resta quello di prima finché non ricarico la pagina.', '/carrello/riepilogo', ['area' => 'storefront', 'viewport' => '390x844'], 2],
+            [$customers[2], MessageType::Report, ReportKind::Question, 'Dove trovo le fatture?', 'Nell\'area riservata non vedo le fatture degli ordini già pagati.', '/ordini', ['area' => 'account', 'route' => 'frontend.auth.order.list', 'viewport' => '1366x768'], 1],
+        ];
+        foreach ($rows as [$customer, $type, $kind, $subject, $text, $path, $context, $daysAgo]) {
+            $message = Message::query()->create([
+                'type' => $type, 'user_id' => $customer->user_id, 'reporter_role' => ReporterRole::Customer, 'kind' => $kind,
+                'email' => $customer->email, 'name' => $customer->name, 'surname' => $customer->surname, 'company' => $customer->company,
+                'subject' => $subject, 'message' => $text, 'page_url' => $path !== null ? url($path) : null, 'context' => $context,
+                'consent_gdpr' => $type === MessageType::Contact,
+            ]);
+            $message->created_at = now()->subDays($daysAgo);
+            $message->save();
         }
     }
 

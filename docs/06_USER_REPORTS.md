@@ -1,6 +1,7 @@
 # User reports — a user → admin channel, with an optional forward
 
-Status: **approved 2026-10-15; R1 done (core v2.14.0), R2 done (v2.15.0), R3 done (v2.16.0 + installation package), R4 done (v2.17.0), R5 done (v2.18.0), R6 done (v2.19.0).**
+Status: **complete (2026-10-15): R1–R7 done, core v2.14.0–v2.20.0** plus the
+installation package for the gesca84 forward. Open items in §8.
 Decisions marked *(agreed)* were taken with the maintainer while studying
 the feature; *(proposed)* ones need approval before the phase that uses them.
 
@@ -312,6 +313,16 @@ report stored with consent and a PNG of the page without the dialog.
 Scheduled pruning of attachments (§4), installation docs (settings, consent
 text to review, privacy notice), demo seeder rows for the panel.
 *Stop:* pruning tested with a frozen clock; docs reviewed.
+
+*Done 2026-10-15 (v2.20.0).* `cleanup:report-attachments` (`--days`,
+`--dry-run`; `mercatura.reports.attachment_retention_days`, default 90,
+`0` keeps everything) clears the `attachments` collection of reports sent
+before the cutoff, keeping the text; scheduled daily at 04:20. README:
+the three settings and a "User reports" section with the go-live duties
+(review the consent and notice texts, bump the consent version, mention
+reports in the privacy policy). DemoSeeder adds a contact message and two
+reports to the panel's inbox. Not done: deleting attachments "when the
+message is closed" (§4): messages have no closed state.
 
 ## 8. Future items (not planned)
 
