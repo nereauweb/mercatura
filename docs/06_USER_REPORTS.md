@@ -44,7 +44,14 @@ ticket states beyond read/forwarded, SLA, assignment.
    messages. From R1 the account pages list only rows linked to the user;
    contact messages sent while logged in get `user_id` too. Email
    verification stays a separate decision (§8).
-9. *(proposed)* Data shaped like the forward target, so a forward maps fields
+9. *(agreed)* **The reporter decides the channel.** Customers and guests
+   create `messages` rows (the inbox). **Admins never do**: an admin's report
+   (panel button, or the storefront dialog while logged in as admin) goes
+   straight to the forwarder; with no forwarder, or without
+   `messages.forward`, the admin entry points are hidden. Retries and
+   delivery state of those reports are the forwarder's business (the
+   helpdesk client keeps its own outbox); the core keeps no copy.
+10. *(proposed)* Data shaped like the forward target, so a forward maps fields
    one to one: `kind` uses the values `bug | request | question | feedback`,
    subject ≤ 200, message ≤ 5000, ≤ 5 attachments of ≤ 10 MB.
 
@@ -56,7 +63,7 @@ New migration on `messages` (the existing migration is not edited):
 |---|---|---|
 | `type` | string(16), default `contact`, indexed | `contact` \| `report` |
 | `user_id` | nullable FK users, null on delete | set whenever the sender is logged in |
-| `reporter_role` | string(16), nullable | `admin` \| `customer` \| `guest`, decided server side |
+| `reporter_role` | string(16), nullable | `customer` \| `guest`, decided server side (admins never write here, §2.9) |
 | `kind` | string(16), nullable | reports only |
 | `page_url` | string(2048), nullable | the page the report was sent from |
 | `context` | json, nullable | area, route name, app version, viewport, user agent, recent JS errors |
@@ -91,7 +98,7 @@ with `MERCATURA_CAPTCHA_PROVIDER=null` the effective access falls back to
 `auth` and the panel shows a notice. Guests also get the honeypot field.
 
 **Text**: stored as plain text, always escaped; the panel never renders
-user HTML. Lengths as in §2.9.
+user HTML. Lengths as in §2.10.
 
 **Attachments** (logged-in users only):
 1. allowed: PNG, JPEG, WebP, PDF; checked by content (`mimetypes`) and
@@ -181,17 +188,20 @@ re-encoding (EXIF gone), limits, and the account pages matching by `user_id`.
 
 **R2 — Admin panel.**
 `MessageResource`: type filter and badge, report fields, attachments with the
-protected download route, read state. Topbar action "Segnala un problema"
-(render hook) for admins: same action, role `admin`, area `admin`, page URL
-of the current panel page. Lang keys in `lang/it/admin.php`.
-*Stop:* an admin creates a report from any panel page and finds it in the
-list with its attachments; a customer cannot download an attachment (403).
+protected download route, read state. Lang keys in `lang/it/admin.php`.
+*Stop:* a report created through `SubmitReport` shows in the list with its
+attachments; a customer cannot download an attachment (403).
 
 **R3 — Forward contract and action.**
-§6 in the core with the null driver and a fake in tests.
-*Stop:* the action is hidden with the null driver and with no permission;
-with the fake, the payload carries no customer name/email/id/IP and only the
-checked attachments; a forwarded row cannot be forwarded twice.
+§6 in the core with the null driver and a fake in tests, plus the admin's
+own report (§2.9): topbar action "Segnala un problema" (render hook), same
+fields, page URL of the current panel page, text redaction as in §6, all
+attachments sent, a warning that panel captures may show customer data; it
+calls the forwarder directly and stores nothing.
+*Stop:* both actions are hidden with the null driver and with no permission;
+with the fake, a forwarded message carries no customer name/email/id/IP and
+only the checked attachments; a forwarded row cannot be forwarded twice; an
+admin report creates no `messages` row.
 Then, outside the core: the installation package and its activation on
 staging, verified end to end with the helpdesk.
 
@@ -248,6 +258,5 @@ text to review, privacy notice), demo seeder rows for the panel.
    the lang keys (R6, R7); the client reviews it.
 3. *(agreed)* Limits and retention defaults (§4): 5/min, 20/day, 50 MB/day,
    90 days.
-4. Admins reporting from the panel: store the report and forward it in one
-   step when a forwarder is available, or always store first and forward
-   from the list? (proposed: one optional "inoltra subito" checkbox.)
+4. *(answered)* Admins reporting: straight to the forwarder, never stored
+   as messages (§2.9).
