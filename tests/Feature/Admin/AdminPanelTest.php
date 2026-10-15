@@ -47,9 +47,11 @@ class AdminPanelTest extends TestCase
     {
         $this->get('/admin')->assertRedirect('/admin/login');
         // livewire.inject_assets is false for the storefront: the panel must inject the runtime itself.
-        $this->get('/admin/login')->assertOk()->assertSee(config('brand.name')); // Livewire 4 serves it under /livewire-{hash}/
-        // livewire.js, or livewire.min.js when APP_DEBUG is off (an installation's .env).
-        $this->assertMatchesRegularExpression('#/livewire(\.min)?\.js#', (string) $this->get('/admin/login')->getContent());
+        $login = $this->get('/admin/login');
+        $login->assertOk()->assertSee(config('brand.name'));
+        // Livewire 4 serves livewire.js under /livewire-{hash}/, livewire.min.js when APP_DEBUG is off
+        // (an installation's .env); it is injected once per application instance, so check this response.
+        $this->assertMatchesRegularExpression('#/livewire(\.min)?\.js#', (string) $login->getContent());
     }
 
     public function test_customers_cannot_enter_the_panel(): void
