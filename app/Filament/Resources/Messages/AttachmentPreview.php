@@ -19,7 +19,7 @@ final class AttachmentPreview
     {
         $meta = sprintf('<span class="text-gray-500">%s · %s</span>', e((string) $media->mime_type), e($media->human_readable_size));
         $link = $download
-            ? sprintf(' <a href="%s" class="text-primary-600 underline">%s</a>', e(route('admin.messages.attachment', $media->id)), e(__('admin.message.download')))
+            ? sprintf(' <a href="%s" style="text-decoration:underline;font-weight:600">%s</a>', e(route('admin.messages.attachment', $media->id)), e(__('admin.message.download')))
             : '';
         $name = sprintf('<span class="font-medium">%s</span>', e($media->name));
 
