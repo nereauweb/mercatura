@@ -319,6 +319,15 @@ prompt; then the dialog comes back with the preview and the lock is
 restored. Escape or "Annulla" return to the dialog unchanged. The storefront
 loads the capture module on first use (dynamic import), not with the bundle.
 
+*Fix 2026-10-16 (v2.20.2), after testing on staging:* the admin saw only file
+names, so a capture had to be downloaded to be looked at, also when choosing
+what to forward. `admin.messages.attachment.preview` shows an attachment
+inline when it is a re-encoded image (PNG, JPEG, WebP; PDFs 404), behind the
+same login and `MessagePolicy::view`, with `nosniff` and a sandbox CSP.
+`AttachmentPreview::html()` renders a thumbnail (opening the full image in a
+new tab) and the download link: in the report's details and as the labels of
+the forward's attachment checkboxes.
+
 **R7 — Retention and documentation.**
 Scheduled pruning of attachments (§4), installation docs (settings, consent
 text to review, privacy notice), demo seeder rows for the panel.

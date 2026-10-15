@@ -137,6 +137,14 @@ final class MessageForwardTest extends TestCase
 
         $page = Livewire::test(ViewMessage::class, ['record' => $message->id]);
         $page->assertActionVisible('forward');
+        $image = $message->getMedia(Message::ATTACHMENTS)->firstWhere('mime_type', 'image/png');
+        $this->assertNotNull($image);
+        $page->mountAction('forward');
+        $preview = route('admin.messages.attachment.preview', $image->id);
+        $page->assertSchemaComponentExists('attachments', checkComponentUsing: fn ($field): bool => $field instanceof \Filament\Forms\Components\CheckboxList
+            && $field->isHtmlAllowed()
+            && str_contains((string) ($field->getOptions()[$image->id] ?? ''), $preview));
+        $page->unmountAction();
         $page->callAction('forward', data: ['attachments' => [$pdf->id]]);
         $page->assertHasNoActionErrors();
 

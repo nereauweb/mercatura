@@ -81,7 +81,8 @@ final class MessageReportsPanelTest extends TestCase
             ->assertSee('frontend.auth.order.list')
             ->assertSee('ReferenceError: cart is not defined')
             ->assertSee('schermata carrello.png')
-            ->assertSee(route('admin.messages.attachment', $media->id), false);
+            ->assertSee(route('admin.messages.attachment', $media->id), false)
+            ->assertSee(route('admin.messages.attachment.preview', $media->id), false);
         $this->assertNotNull($message->fresh()?->read_at, 'opening marks it read');
     }
 
@@ -100,6 +101,29 @@ final class MessageReportsPanelTest extends TestCase
         $this->assertStringContainsString('schermata-carrello.png', (string) $response->headers->get('Content-Disposition'));
         $this->assertSame('nosniff', $response->headers->get('X-Content-Type-Options'));
         $this->assertStringContainsString('sandbox', (string) $response->headers->get('Content-Security-Policy'));
+    }
+
+    public function test_image_previews_are_shown_inline_to_the_admin_only_and_never_for_pdfs(): void
+    {
+        $message = $this->report();
+        $image = $message->getFirstMedia(Message::ATTACHMENTS);
+        $this->assertNotNull($image);
+        $preview = route('admin.messages.attachment.preview', $image->id);
+
+        $this->get($preview)->assertRedirect(route('frontend.auth.login'));
+        $this->actingAs($this->customer)->get($preview)->assertForbidden();
+        $response = $this->actingAs($this->admin)->get($preview);
+        $response->assertOk();
+        $this->assertSame('image/png', $response->headers->get('Content-Type'));
+        $this->assertStringStartsWith('inline', (string) $response->headers->get('Content-Disposition'));
+        $this->assertSame('nosniff', $response->headers->get('X-Content-Type-Options'));
+        $this->assertStringContainsString('sandbox', (string) $response->headers->get('Content-Security-Policy'));
+
+        $pdf = $message->addMediaFromString('%PDF-1.4
+%%EOF
+')->usingFileName('doc.pdf')->toMediaCollection(Message::ATTACHMENTS);
+        $this->actingAs($this->admin)->get(route('admin.messages.attachment.preview', $pdf->id))->assertNotFound();
+        $this->actingAs($this->admin)->get(route('admin.messages.attachment', $pdf->id))->assertOk();
     }
 
     public function test_media_outside_the_attachments_collection_is_not_served(): void

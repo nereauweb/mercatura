@@ -14,16 +14,18 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
  * Report attachments live on the private `reports` disk and leave it only
- * here (docs/06_USER_REPORTS.md §4): for whoever may view the message, always
- * as a download, never rendered by the browser inside the site.
+ * here (docs/06_USER_REPORTS.md §4), for whoever may view the message: as a
+ * download, or (preview) shown inline when it is an image. Images were
+ * re-encoded from their pixels on upload; PDFs are never shown inline.
  */
 final class MessageAttachmentController extends Controller
 {
+    /** MIME types the panel may show inline (re-encoded images only). */
+    public const PREVIEWABLE = ['image/png', 'image/jpeg', 'image/webp'];
+
     public function __invoke(Media $media): StreamedResponse
     {
-        $message = $media->model;
-        abort_unless($message instanceof Message && $media->collection_name === Message::ATTACHMENTS, 404);
-        Gate::authorize('view', $message);
+        $this->authorizeAttachment($media);
 
         $extension = strtolower(pathinfo($media->file_name, PATHINFO_EXTENSION));
         $name = Str::slug(pathinfo($media->name, PATHINFO_FILENAME)) ?: 'allegato';
@@ -34,5 +36,26 @@ final class MessageAttachmentController extends Controller
             'Content-Security-Policy' => "default-src 'none'; sandbox",
             'Cache-Control' => 'private, no-store',
         ]);
+    }
+
+    public function preview(Media $media): StreamedResponse
+    {
+        $this->authorizeAttachment($media);
+        abort_unless(in_array($media->mime_type, self::PREVIEWABLE, true), 404);
+
+        return Storage::disk($media->disk)->response($media->getPathRelativeToRoot(), null, [
+            'Content-Type' => (string) $media->mime_type,
+            'Content-Disposition' => 'inline',
+            'X-Content-Type-Options' => 'nosniff',
+            'Content-Security-Policy' => "default-src 'none'; sandbox",
+            'Cache-Control' => 'private, max-age=600',
+        ]);
+    }
+
+    private function authorizeAttachment(Media $media): void
+    {
+        $message = $media->model;
+        abort_unless($message instanceof Message && $media->collection_name === Message::ATTACHMENTS, 404);
+        Gate::authorize('view', $message);
     }
 }

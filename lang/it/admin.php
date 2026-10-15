@@ -199,6 +199,8 @@ return [
         'user_agent' => 'Browser',
         'js_errors' => 'Errori JavaScript',
         'attachments' => 'Allegati',
+        'download' => 'scarica',
+        'open_full' => 'Apri l\'immagine intera in una nuova scheda',
         'screenshot_consent' => 'Consenso alla schermata',
         'screenshot_consent_version' => 'testo del :version',
         'forwarded' => 'Inoltrato',

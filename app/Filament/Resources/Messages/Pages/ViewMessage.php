@@ -6,6 +6,7 @@ namespace App\Filament\Resources\Messages\Pages;
 
 use App\Actions\Messages\ForwardMessage;
 use App\Contracts\MessageForwarder;
+use App\Filament\Resources\Messages\AttachmentPreview;
 use App\Filament\Resources\Messages\MessageResource;
 use App\Models\Message;
 use App\Models\User;
@@ -66,7 +67,9 @@ final class ViewMessage extends ViewRecord
                 TextInput::make('title')->label(__('admin.message.subject'))->required()->maxLength((int) config('mercatura.reports.title_max')),
                 Textarea::make('description')->label(__('admin.message.message'))->required()->rows(8)->maxLength((int) config('mercatura.reports.description_max')),
                 CheckboxList::make('attachments')->label(__('admin.message.attachments'))
-                    ->options($record->getMedia(Message::ATTACHMENTS)->mapWithKeys(fn ($media): array => [$media->id => $media->name])->all())
+                    // Thumbnails, so the admin sees what each box authorises (labels escaped by AttachmentPreview).
+                    ->options($record->getMedia(Message::ATTACHMENTS)->mapWithKeys(fn ($media): array => [$media->id => AttachmentPreview::html($media, download: false)])->all())
+                    ->allowHtml()
                     ->helperText(__('admin.message.forward.attachments_hint'))
                     ->visible($record->getMedia(Message::ATTACHMENTS)->isNotEmpty()),
                 Text::make(__('admin.message.forward.reference_hint', ['id' => $record->id])),

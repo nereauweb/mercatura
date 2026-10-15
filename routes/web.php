@@ -144,6 +144,9 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('/admin/allegati-messaggi/{media}', Admin\MessageAttachmentController::class)
         ->whereNumber('media')
         ->name('admin.messages.attachment');
+    Route::get('/admin/allegati-messaggi/{media}/anteprima', [Admin\MessageAttachmentController::class, 'preview'])
+        ->whereNumber('media')
+        ->name('admin.messages.attachment.preview');
 
 });
 

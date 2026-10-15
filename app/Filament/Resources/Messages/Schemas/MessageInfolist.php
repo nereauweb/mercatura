@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Filament\Resources\Messages\Schemas;
 
 use App\Enums\MessageType;
+use App\Filament\Resources\Messages\AttachmentPreview;
 use App\Models\Message;
 use Filament\Infolists\Components\IconEntry;
 use Filament\Infolists\Components\TextEntry;
@@ -14,19 +15,13 @@ use Filament\Schemas\Schema;
 final class MessageInfolist
 {
     /**
-     * Download links to the attachments (names escaped here, the entry renders HTML).
+     * The attachments with a thumbnail for images and the download link (escaped by AttachmentPreview).
      *
      * @return list<string>
      */
     private static function attachmentLinks(Message $record): array
     {
-        return $record->getMedia(Message::ATTACHMENTS)->map(fn ($media): string => sprintf(
-            '<a href="%s" class="text-primary-600 underline">%s</a> <span class="text-gray-500">(%s, %s)</span>',
-            e(route('admin.messages.attachment', $media->id)),
-            e($media->name),
-            e((string) $media->mime_type),
-            e($media->human_readable_size),
-        ))->values()->all();
+        return $record->getMedia(Message::ATTACHMENTS)->map(fn ($media): string => AttachmentPreview::html($media))->values()->all();
     }
 
     public static function configure(Schema $schema): Schema
