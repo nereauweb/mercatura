@@ -1,4 +1,4 @@
-{{-- @mercatura-view frontend.customer.index @version 2 --}}
+{{-- @mercatura-view frontend.customer.index @version 3 --}}
 @extends('frontend.public.layout')
 @section('title', __('frontend.nav.reserved_area').' | '.config('brand.name'))
 @section('head_meta')<meta name="robots" content="noindex,nofollow">@endsection
@@ -11,7 +11,10 @@
 		<ul class="mt-8 grid gap-4 sm:grid-cols-2 md:grid-cols-4">
 			<li><a href="{{ route('frontend.auth.profile') }}" class="flex flex-col items-center gap-2 rounded-card border border-border-muted bg-surface p-6 text-center font-semibold text-primary shadow-sm hover:shadow-md"><x-frontend::icon name="user" class="h-8 w-8" />{{ __('frontend.account.profile') }}</a></li>
 			<li><a href="{{ route('frontend.auth.order.list') }}" class="flex flex-col items-center gap-2 rounded-card border border-border-muted bg-surface p-6 text-center font-semibold text-primary shadow-sm hover:shadow-md"><x-frontend::icon name="document" class="h-8 w-8" />{{ __('frontend.account.orders') }}</a></li>
+			<li><a href="{{ route('frontend.contacts.list') }}" class="flex flex-col items-center gap-2 rounded-card border border-border-muted bg-surface p-6 text-center font-semibold text-primary shadow-sm hover:shadow-md"><x-frontend::icon name="envelope" class="h-8 w-8" />{{ __('frontend.account.messages') }}</a></li>
+			<li><x-frontend::report.trigger class="flex w-full flex-col items-center gap-2 rounded-card border border-border-muted bg-surface p-6 text-center font-semibold text-primary shadow-sm hover:shadow-md"><x-frontend::icon name="alert" class="h-8 w-8" />{{ __('frontend.reports.open') }}</x-frontend::report.trigger></li>
 			@stack('account-links')
 		</ul>
 	</div>
+	<x-frontend::report.dialog />
 @endsection

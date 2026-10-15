@@ -1,6 +1,6 @@
 # User reports — a user → admin channel, with an optional forward
 
-Status: **approved 2026-10-15; R1 done (core v2.14.0), R2 done (v2.15.0), R3 done (v2.16.0 + installation package).**
+Status: **approved 2026-10-15; R1 done (core v2.14.0), R2 done (v2.15.0), R3 done (v2.16.0 + installation package), R4 done (v2.17.0).**
 Decisions marked *(agreed)* were taken with the maintainer while studying
 the feature; *(proposed)* ones need approval before the phase that uses them.
 
@@ -256,6 +256,20 @@ lazy chunk) and a "Segnala un problema" tile on `frontend.customer.index`;
 the user's reports appear in `/messaggi`. Copy in `lang/it/frontend.php`.
 *Stop:* a customer sends a report with attachments from the account area;
 storefront integrity tests pass; Lighthouse on the account page unchanged.
+
+*Done 2026-10-15 (v2.17.0).* `frontend.components.report.dialog` (Alpine
+`reportDialog`, overlay, JSON post to `frontend.reports.store` →
+`FrontendReportController`, which leaves every decision to SubmitReport:
+403 refused, 422 invalid, 429 limits) and `frontend.components.report.trigger`
+(renders nothing for who may not report); "Segnala un problema" and
+"Messaggi" tiles on `frontend.customer.index` (the account had no link to
+`/messaggi`), a type column in the account's message list, icon `alert`.
+Deviation: the dialog's script is in the main bundle (~0.4 KB gzip) instead
+of a lazy chunk: a chunk would delay Alpine's start on every page that shows
+the trigger, as the product-page chunk does. Checked in Chrome (puppeteer,
+390×844): CLS 0, dialog hidden until opened, no console errors, report with
+attachment stored with area `account`. Recent JS errors are collected from
+the moment the bundle runs.
 
 **R5 — Public storefront.**
 Entry point in the layout (a discreet link, via an existing `@stack` point,

@@ -7,6 +7,7 @@ import { slideshow } from './storefront/slideshow';
 import { customerForm } from './storefront/customer-form';
 import { quotationForm } from './storefront/quotation-form';
 import { quickQuote } from './storefront/quick-quote';
+import { reportDialog } from './storefront/report-dialog';
 import { initFormErrors } from './storefront/form-errors';
 import { initCaptchaRefresh } from './storefront/captcha-refresh';
 import { cookieConsent } from './storefront/cookie-consent';
@@ -19,6 +20,7 @@ Alpine.data('slideshow', slideshow);
 Alpine.data('customerForm', customerForm);
 Alpine.data('quotationForm', quotationForm);
 Alpine.data('quickQuote', quickQuote);
+Alpine.data('reportDialog', reportDialog);
 Alpine.data('cookieConsent', cookieConsent);
 
 document.addEventListener('DOMContentLoaded', () => {

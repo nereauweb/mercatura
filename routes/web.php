@@ -106,6 +106,9 @@ Route::get('/ordine/{id}/pagamento/stripe/cancellazione', [FrontendOrderControll
 Route::get('/ordine/{id}/pagamento/paypal/successo', [FrontendOrderController::class, 'paypal_payment_success'])->name('frontend.payment.paypal.success');
 Route::get('/ordine/{id}/pagamento/paypal/cancellazione', [FrontendOrderController::class, 'paypal_payment_cancel'])->name('frontend.payment.paypal.cancel');
 
+// Report dialog (docs/06_USER_REPORTS.md): SubmitReport applies the access mode, so the route has no auth middleware.
+Route::post('/segnalazioni', [FrontendReportController::class, 'store'])->name('frontend.reports.store');
+
 /* Logged routes */
 Route::group(['middleware' => 'auth'], function () {
 
