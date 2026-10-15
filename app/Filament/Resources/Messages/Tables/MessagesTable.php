@@ -30,6 +30,8 @@ final class MessagesTable
                 TextColumn::make('kind')->label(__('admin.message.kind'))->placeholder('-')->toggleable(),
                 TextColumn::make('media_count')->label(__('admin.message.attachments'))->counts('media')
                     ->formatStateUsing(fn (int $state): string => $state > 0 ? (string) $state : '')->toggleable(),
+                IconColumn::make('forwarded_at')->label(__('admin.message.forwarded'))->boolean()
+                    ->getStateUsing(fn ($record): bool => $record->forwarded_at !== null)->toggleable(),
                 TextColumn::make('full_name')->label(__('admin.customer.full_name'))
                     ->state(fn ($record): string => trim(($record->name ?? '').' '.($record->surname ?? '')))
                     ->searchable(['name', 'surname', 'email']),

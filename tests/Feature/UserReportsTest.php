@@ -20,6 +20,7 @@ use Illuminate\Http\Exceptions\ThrottleRequestsException;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
 
@@ -38,7 +39,7 @@ final class UserReportsTest extends TestCase
 
     private function customer(): User
     {
-        $user = User::factory()->create(['name' => 'account name']);
+        $user = User::factory()->create(['name' => 'account name', 'email' => 'report-'.Str::lower(Str::random(16)).'@example.test']);
         $user->assignRole('customer');
         Customer::query()->create(['user_id' => $user->id, 'email' => $user->email, 'name' => 'Anna', 'surname' => 'Rossi', 'customer_type' => 'Privato']);
 
@@ -150,7 +151,7 @@ final class UserReportsTest extends TestCase
     public function test_access_modes_and_the_captcha_fallback(): void
     {
         $access = app(ReportAccess::class);
-        $admin = User::factory()->create();
+        $admin = User::factory()->create(['email' => 'report-admin-'.Str::lower(Str::random(16)).'@example.test']);
         $admin->assignRole('admin');
 
         $this->assertFalse($access->allows(null), 'auth: guests refused');

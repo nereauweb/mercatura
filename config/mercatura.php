@@ -35,6 +35,9 @@ return [
     | - newsletter: brevo | mailchimp | null
     | - ai: null (anthropic reserved)
     | - personalization: null
+    | - message_forwarder: null, or the name an installation package binds as
+    |   `mercatura.message-forwarders.<name>` (docs/06_USER_REPORTS.md §6);
+    |   an unknown name behaves as null and is logged.
     */
     'providers' => [
         'search' => env('MERCATURA_SEARCH_PROVIDER', env('SCOUT_DRIVER', 'collection')),
@@ -43,6 +46,7 @@ return [
         'newsletter' => env('NEWSLETTER_PROVIDER', 'null'),
         'ai' => env('MERCATURA_AI_PROVIDER', 'null'),
         'personalization' => env('MERCATURA_PERSONALIZATION_PROVIDER', 'null'),
+        'message_forwarder' => env('MERCATURA_MESSAGE_FORWARDER', 'null'),
     ],
 
     /*

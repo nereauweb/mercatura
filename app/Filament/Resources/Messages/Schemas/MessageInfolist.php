@@ -64,7 +64,12 @@ final class MessageInfolist
                     ->components([
                         TextEntry::make('page_url')->label(__('admin.message.page_url'))->placeholder('-')
                             ->url(fn (Message $record): ?string => $record->page_url, shouldOpenInNewTab: true)->columnSpanFull(),
-                        TextEntry::make('context.area')->label(__('admin.message.area'))->placeholder('-'),
+                        TextEntry::make('forwarded_at')->label(__('admin.message.forwarded'))->dateTime('d/m/Y H:i')->placeholder('-'),
+                        TextEntry::make('forwarded_by')->label(__('admin.message.forwarded_by'))->placeholder('-')
+                            ->formatStateUsing(fn (Message $record): string => (string) ($record->forwarder->name ?? '-')),
+                        TextEntry::make('forward_reference')->label(__('admin.message.forward_reference'))->placeholder('-')->copyable(),
+                        TextEntry::make('context.area')->label(__('admin.message.area'))->placeholder('-')
+                            ->formatStateUsing(fn (string $state): string => __('admin.message.areas.'.$state)),
                         TextEntry::make('context.route')->label(__('admin.message.route'))->placeholder('-'),
                         TextEntry::make('context.viewport')->label(__('admin.message.viewport'))->placeholder('-'),
                         TextEntry::make('context.user_agent')->label(__('admin.message.user_agent'))->placeholder('-')->columnSpanFull(),

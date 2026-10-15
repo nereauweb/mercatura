@@ -10,14 +10,15 @@ use App\Enums\ReportKind;
 use App\Models\Message;
 use App\Models\User;
 use App\Rules\Captcha;
-use App\Support\ImageSanitizer;
 use App\Support\Reports\ReportAccess;
+use App\Support\Reports\ReportAttachments;
+use App\Support\Reports\ReportContext;
+use App\Support\Reports\ReportLimits;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\Exceptions\ThrottleRequestsException;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -33,11 +34,11 @@ final class SubmitReport
 {
     public const HONEYPOT = 'website';
 
-    private const MIMETYPES = ['image/png', 'image/jpeg', 'image/webp', 'application/pdf'];
-
-    private const EXTENSIONS = ['png', 'jpg', 'jpeg', 'webp', 'pdf'];
-
-    public function __construct(private readonly ReportAccess $access) {}
+    public function __construct(
+        private readonly ReportAccess $access,
+        private readonly ReportLimits $limits,
+        private readonly ReportAttachments $attachments,
+    ) {}
 
     /**
      * @param  array<string, mixed>  $input  kind, title, description, page_url, name/email (guests), viewport, js_errors, captcha token
@@ -55,44 +56,43 @@ final class SubmitReport
         if ($user === null && filled($input[self::HONEYPOT] ?? null)) {
             return null;
         }
-        $this->throttle($user, (string) $request->ip());
+        $this->limits->hit($user, (string) $request->ip());
 
         $files = array_values(array_filter($files, static fn (mixed $file): bool => $file instanceof UploadedFile));
         if ($files !== [] && ! $this->access->canAttach($user)) {
             throw ValidationException::withMessages(['attachments' => __('frontend.reports.errors.guest_attachments')]);
         }
         $data = $this->validate($input, $files, $user);
-        $this->checkUploadQuota($user, $files);
-        $clean = $this->sanitize($files);
+        if ($user !== null) {
+            $this->limits->upload($user, (int) array_sum(array_map(static fn (UploadedFile $f): int => (int) $f->getSize(), $files)));
+        }
+        $clean = $this->attachments->prepare(array_map(static fn (UploadedFile $f): array => [(string) $f->getRealPath(), (string) $f->getClientOriginalName()], $files));
 
         try {
             return $this->store($data, $clean, $user, $request);
         } finally {
-            foreach ($clean as [$path]) {
-                @unlink($path);
-            }
+            $this->attachments->cleanup($clean);
         }
     }
 
     /**
      * @param  array<string, mixed>  $data
-     * @param  list<array{0: string, 1: string}>  $clean
+     * @param  list<array{0: string, 1: string, 2: string}>  $clean
      */
     private function store(array $data, array $clean, ?User $user, Request $request): Message
     {
-        $message = DB::transaction(function () use ($data, $user, $request): Message {
-            return Message::create([
-                'type' => MessageType::Report,
-                'user_id' => $user?->id,
-                'reporter_role' => $user !== null ? ReporterRole::Customer : ReporterRole::Guest,
-                'kind' => ReportKind::from((string) $data['kind']),
-                ...$this->identity($user, $data),
-                'subject' => (string) $data['title'],
-                'message' => (string) $data['description'],
-                'page_url' => $this->sameSiteUrl($data['page_url'] ?? null, $request),
-                'context' => $this->context($data, $request),
-            ]);
-        });
+        $pageUrl = ReportContext::sameSiteUrl($data['page_url'] ?? null, $request);
+        $message = DB::transaction(fn (): Message => Message::create([
+            'type' => MessageType::Report,
+            'user_id' => $user?->id,
+            'reporter_role' => $user !== null ? ReporterRole::Customer : ReporterRole::Guest,
+            'kind' => ReportKind::from((string) $data['kind']),
+            ...$this->identity($user, $data),
+            'subject' => (string) $data['title'],
+            'message' => (string) $data['description'],
+            'page_url' => $pageUrl,
+            'context' => ReportContext::build($pageUrl, $request, $data),
+        ]));
 
         foreach ($clean as [$path, $original]) {
             $message->addMedia($path)
@@ -102,23 +102,6 @@ final class SubmitReport
         }
 
         return $message;
-    }
-
-    private function throttle(?User $user, string $ip): void
-    {
-        $limits = (array) config('mercatura.reports.limits');
-        $windows = $user !== null
-            ? ['reports:user-minute:'.$user->id => [(int) $limits['user_per_minute'], 60], 'reports:user-day:'.$user->id => [(int) $limits['user_per_day'], 86400]]
-            : ['reports:ip-minute:'.$ip => [(int) $limits['guest_per_minute'], 60], 'reports:ip-day:'.$ip => [(int) $limits['guest_per_day'], 86400]];
-
-        foreach ($windows as $key => [$max, $decay]) {
-            if (RateLimiter::tooManyAttempts($key, $max)) {
-                throw new ThrottleRequestsException(__('frontend.reports.errors.too_many'));
-            }
-        }
-        foreach ($windows as $key => [$max, $decay]) {
-            RateLimiter::hit($key, $decay);
-        }
     }
 
     /**
@@ -140,60 +123,11 @@ final class SubmitReport
             'name' => [$guest ? 'required' : 'prohibited', 'string', 'max:64'],
             'email' => [$guest ? 'required' : 'prohibited', 'email', 'max:64'],
             'attachments' => ['array', 'max:'.(int) config('mercatura.reports.max_files')],
-            'attachments.*' => ['file', 'max:'.(int) config('mercatura.reports.max_file_kb'), 'mimetypes:'.implode(',', self::MIMETYPES), 'mimes:'.implode(',', self::EXTENSIONS)],
+            'attachments.*' => ReportAttachments::fileRules(),
             ...Captcha::rules('report'),
         ];
 
         return Validator::make([...$input, 'attachments' => $files], $rules)->validate();
-    }
-
-    /** @param  list<UploadedFile>  $files */
-    private function checkUploadQuota(?User $user, array $files): void
-    {
-        if ($user === null || $files === []) {
-            return;
-        }
-        $kb = (int) ceil(array_sum(array_map(static fn (UploadedFile $f): int => (int) $f->getSize(), $files)) / 1024);
-        $key = 'reports:user-kb:'.$user->id;
-        if (RateLimiter::attempts($key) + $kb > (int) config('mercatura.reports.limits.user_mb_per_day') * 1024) {
-            throw new ThrottleRequestsException(__('frontend.reports.errors.quota'));
-        }
-        RateLimiter::increment($key, 86400, $kb);
-    }
-
-    /**
-     * Copies each upload to a temporary file; images are re-encoded from their
-     * pixels, PDFs kept as received. A file that claims to be an image but does
-     * not decode is refused.
-     *
-     * @param  list<UploadedFile>  $files
-     * @return list<array{0: string, 1: string}> path, original name
-     */
-    private function sanitize(array $files): array
-    {
-        $clean = [];
-        foreach ($files as $i => $file) {
-            $mime = (string) $file->getMimeType();
-            $extension = $mime === 'application/pdf' ? 'pdf' : match ($mime) {
-                'image/png' => 'png',
-                'image/webp' => 'webp',
-                default => 'jpg',
-            };
-            $base = (string) tempnam(sys_get_temp_dir(), 'report');
-            $path = $base.'.'.$extension;
-            @unlink($base);
-            copy((string) $file->getRealPath(), $path);
-            if ($extension !== 'pdf' && ! ImageSanitizer::reencode($path)) {
-                @unlink($path);
-                foreach ($clean as [$done]) {
-                    @unlink($done);
-                }
-                throw ValidationException::withMessages(['attachments.'.$i => __('frontend.reports.errors.invalid_image')]);
-            }
-            $clean[] = [$path, (string) $file->getClientOriginalName()];
-        }
-
-        return $clean;
     }
 
     /**
@@ -216,55 +150,5 @@ final class SubmitReport
             'name' => Str::limit((string) ($customer->name ?? $user->name), 64, ''),
             'surname' => $customer?->surname !== null ? Str::limit((string) $customer->surname, 64, '') : null,
         ];
-    }
-
-    /** The page URL only when it belongs to this site; anything else is dropped. */
-    private function sameSiteUrl(mixed $url, Request $request): ?string
-    {
-        if (! is_string($url) || $url === '') {
-            return null;
-        }
-
-        return parse_url($url, PHP_URL_HOST) === $request->getHost() ? $url : null;
-    }
-
-    /**
-     * Technical context: the route and area of the reported page (resolved
-     * here, not trusted from the client), viewport, user agent, recent JS errors.
-     *
-     * @param  array<string, mixed>  $data
-     * @return array<string, mixed>
-     */
-    private function context(array $data, Request $request): array
-    {
-        $url = $this->sameSiteUrl($data['page_url'] ?? null, $request);
-        $route = null;
-        if ($url !== null) {
-            try {
-                $route = app('router')->getRoutes()->match(Request::create($url))->getName();
-            } catch (\Throwable) {
-                $route = null;
-            }
-        }
-
-        return array_filter([
-            'area' => self::area($route),
-            'route' => $route,
-            'viewport' => $data['viewport'] ?? null,
-            'user_agent' => Str::limit((string) $request->userAgent(), 512, ''),
-            'js_errors' => array_values((array) ($data['js_errors'] ?? [])) ?: null,
-        ], static fn (mixed $value): bool => $value !== null && $value !== '');
-    }
-
-    /** admin | account | storefront, from the route name of the reported page. */
-    public static function area(?string $route): string
-    {
-        return match (true) {
-            $route === null => 'storefront',
-            str_starts_with($route, 'filament.') => 'admin',
-            str_starts_with($route, 'frontend.auth.'), str_starts_with($route, 'frontend.contacts.list'), str_starts_with($route, 'frontend.contacts.show'),
-            str_starts_with($route, 'frontend.quotation.index'), str_starts_with($route, 'customer.') => 'account',
-            default => 'storefront',
-        };
     }
 }

@@ -1,6 +1,6 @@
 # User reports — a user → admin channel, with an optional forward
 
-Status: **approved 2026-10-15; R1 done (core v2.14.0), R2 done (v2.15.0).**
+Status: **approved 2026-10-15; R1 done (core v2.14.0), R2 done (v2.15.0), R3 core done (v2.16.0).**
 Decisions marked *(agreed)* were taken with the maintainer while studying
 the feature; *(proposed)* ones need approval before the phase that uses them.
 
@@ -227,6 +227,18 @@ only the checked attachments; a forwarded row cannot be forwarded twice; an
 admin report creates no `messages` row.
 Then, outside the core: the installation package and its activation on
 staging, verified end to end with the helpdesk.
+
+*Core done 2026-10-15 (v2.16.0).* `App\Contracts\MessageForwarder`,
+`App\Drivers\Messages\NullMessageForwarder`, `ForwardedReport` (DTO),
+`TechnicalBlock`, `Redactor`, actions `ForwardMessage` and `SendAdminReport`,
+"Inoltra" on `ViewMessage`, `App\Http\Livewire\Admin\ReportProblem` in the
+top bar (`USER_MENU_BEFORE`), permission `messages.forward` (created by the
+migration as well, so existing installations get it on deploy). Selection:
+`MERCATURA_MESSAGE_FORWARDER=<name>` resolves the container binding
+`mercatura.message-forwarders.<name>`; an unknown name logs a warning and
+behaves as null (a missing package must not break the panel). The shared
+pieces of R1 moved to `ReportLimits`, `ReportAttachments`, `ReportContext`.
+The page URL leaves without its query string.
 
 At this point testers on staging can report from the panel and the admin
 can forward: the first usable milestone.

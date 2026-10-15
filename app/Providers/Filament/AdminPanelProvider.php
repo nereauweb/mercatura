@@ -61,6 +61,10 @@ final class AdminPanelProvider extends PanelProvider
             // injection would have put it.
             ->renderHook(PanelsRenderHook::HEAD_END, fn (): string => Blade::render('@livewireStyles').self::layoutStyles())
             ->renderHook(PanelsRenderHook::BODY_END, fn (): string => Blade::render('@livewireScripts'))
+            // The admin's own report to the helpdesk (docs/06_USER_REPORTS.md §2.9), only with a forwarder.
+            ->renderHook(PanelsRenderHook::USER_MENU_BEFORE, fn (): string => \App\Http\Livewire\Admin\ReportProblem::shown()
+                ? Blade::render('@livewire(\App\Http\Livewire\Admin\ReportProblem::class)')
+                : '')
             ->navigationGroups([
                 NavigationGroup::make(fn (): string => __('admin.nav.sales')),
                 NavigationGroup::make(fn (): string => __('admin.nav.catalog')),

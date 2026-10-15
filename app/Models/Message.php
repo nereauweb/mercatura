@@ -44,10 +44,13 @@ class Message extends Model implements HasMedia
         'subscribe_newsletter',
         'consent_terms',
         'read_at',
+        'forwarded_at',
+        'forwarded_by',
+        'forward_reference',
     ];
 
     protected $casts = [
-        'read_at' => 'datetime', 'consent_gdpr' => 'boolean', 'consent_terms' => 'boolean', 'subscribe_newsletter' => 'boolean',
+        'read_at' => 'datetime', 'forwarded_at' => 'datetime', 'consent_gdpr' => 'boolean', 'consent_terms' => 'boolean', 'subscribe_newsletter' => 'boolean',
         'type' => MessageType::class, 'reporter_role' => ReporterRole::class, 'kind' => ReportKind::class, 'context' => 'array',
     ];
 
@@ -55,6 +58,12 @@ class Message extends Model implements HasMedia
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    /** @return BelongsTo<User, $this> */
+    public function forwarder(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'forwarded_by');
     }
 
     /**

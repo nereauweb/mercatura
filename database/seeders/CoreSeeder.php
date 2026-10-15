@@ -68,7 +68,7 @@ class CoreSeeder extends Seeder
     public const SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
 
     /** Admin panel permissions (docs/02_V2B_ADMIN.md §3.3); the admin role holds all of them. */
-    public const PERMISSIONS = ['catalog.manage', 'orders.manage', 'content.manage', 'imports.run', 'settings.manage'];
+    public const PERMISSIONS = ['catalog.manage', 'orders.manage', 'content.manage', 'imports.run', 'settings.manage', 'messages.forward'];
 
     public function run(): void
     {

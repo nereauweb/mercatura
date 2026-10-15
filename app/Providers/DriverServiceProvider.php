@@ -6,6 +6,7 @@ namespace App\Providers;
 
 use App\Contracts\AIEnrichmentProvider;
 use App\Contracts\CaptchaProvider;
+use App\Contracts\MessageForwarder;
 use App\Contracts\NewsletterProvider;
 use App\Contracts\PersonalizationProvider;
 use App\Contracts\SearchEngine;
@@ -16,6 +17,7 @@ use App\Drivers\Captcha\RecaptchaV3CaptchaProvider;
 use App\Drivers\Mail\BladeTransactionalMailer;
 use App\Drivers\Mail\BrevoTransactionalMailer;
 use App\Drivers\Mail\MandrillTransactionalMailer;
+use App\Drivers\Messages\NullMessageForwarder;
 use App\Drivers\Newsletter\BrevoNewsletterProvider;
 use App\Drivers\Newsletter\MailchimpNewsletterProvider;
 use App\Drivers\Newsletter\NullNewsletterProvider;
@@ -25,6 +27,7 @@ use App\Support\ImportConnectors;
 use App\Support\MailTemplateCatalog;
 use App\Support\PaymentGateways;
 use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\ServiceProvider;
 use InvalidArgumentException;
 use RuntimeException;
@@ -91,6 +94,21 @@ final class DriverServiceProvider extends ServiceProvider
                 'null' => new NullPersonalizationProvider,
                 default => throw new InvalidArgumentException("Unknown personalization provider [{$provider}]."),
             };
+        });
+
+        // Installation packages bind their forwarder as mercatura.message-forwarders.<name>;
+        // the core binds only the contract and picks the name from the config.
+        $this->app->bind(MessageForwarder::class, function (Application $app) {
+            $name = $this->provider('message_forwarder');
+            if ($name === 'null') {
+                return new NullMessageForwarder;
+            }
+            if ($app->bound('mercatura.message-forwarders.'.$name)) {
+                return $app->make('mercatura.message-forwarders.'.$name);
+            }
+            Log::warning("Unknown message forwarder [{$name}]: no installed package binds it; forwarding stays off.");
+
+            return new NullMessageForwarder;
         });
 
         $this->app->singleton(PaymentGateways::class, fn (Application $app) => new PaymentGateways($app));
