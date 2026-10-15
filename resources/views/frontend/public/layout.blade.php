@@ -1,4 +1,4 @@
-{{-- @mercatura-view frontend.public.layout @version 2 --}}
+{{-- @mercatura-view frontend.public.layout @version 3 --}}
 {{-- The storefront page frame. Pages fill: title, head_meta, head_css, head_js, content, endpage_js.
      Injection points (docs/ARCHITECTURE.md §4): stacks head, scripts, header-before, header-after,
      footer-before, footer-after. --}}
@@ -46,6 +46,10 @@
 
 	@if(config('mercatura.storefront.quick_quote') === 'modal' && request()->hasSession())
 	<x-frontend::quick-quote />
+	@endif
+
+	@if(request()->hasSession())
+	<x-frontend::report.dialog />
 	@endif
 
 	{{-- Cookie consent banner (area 4h) --}}

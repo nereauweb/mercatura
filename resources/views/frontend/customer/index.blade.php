@@ -1,4 +1,4 @@
-{{-- @mercatura-view frontend.customer.index @version 3 --}}
+{{-- @mercatura-view frontend.customer.index @version 4 --}}
 @extends('frontend.public.layout')
 @section('title', __('frontend.nav.reserved_area').' | '.config('brand.name'))
 @section('head_meta')<meta name="robots" content="noindex,nofollow">@endsection
@@ -16,5 +16,4 @@
 			@stack('account-links')
 		</ul>
 	</div>
-	<x-frontend::report.dialog />
 @endsection

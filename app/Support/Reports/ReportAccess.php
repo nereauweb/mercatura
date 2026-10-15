@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Support\Reports;
 
 use App\Contracts\CaptchaProvider;
+use App\Contracts\MessageForwarder;
 use App\Models\User;
 
 /**
@@ -44,6 +45,22 @@ final class ReportAccess
             $user === null => $this->effective() === self::PUBLIC,
             default => ! $user->hasRole('admin'),
         };
+    }
+
+    /**
+     * An admin's report goes straight to the message forwarder (docs/06_USER_REPORTS.md §2.9):
+     * only with a forwarder available and the "messages.forward" permission.
+     */
+    public function forwardsDirectly(?User $user): bool
+    {
+        return $user !== null && $user->hasRole('admin') && $user->can('messages.forward')
+            && app(MessageForwarder::class)->isAvailable();
+    }
+
+    /** Whether the storefront offers the report dialog to this visitor, whichever way it goes. */
+    public function offers(?User $user): bool
+    {
+        return $this->allows($user) || $this->forwardsDirectly($user);
     }
 
     /** Guests never attach files, whatever the mode. */

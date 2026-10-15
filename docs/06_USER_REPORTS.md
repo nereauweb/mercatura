@@ -1,6 +1,6 @@
 # User reports — a user → admin channel, with an optional forward
 
-Status: **approved 2026-10-15; R1 done (core v2.14.0), R2 done (v2.15.0), R3 done (v2.16.0 + installation package), R4 done (v2.17.0).**
+Status: **approved 2026-10-15; R1 done (core v2.14.0), R2 done (v2.15.0), R3 done (v2.16.0 + installation package), R4 done (v2.17.0), R5 done (v2.18.0).**
 Decisions marked *(agreed)* were taken with the maintainer while studying
 the feature; *(proposed)* ones need approval before the phase that uses them.
 
@@ -277,6 +277,17 @@ no layout shift), shown according to the effective access mode; guests get
 the form without attachments, with captcha and honeypot.
 *Stop:* `auth` shows it only when logged in; `public` with null captcha
 behaves as `auth`; CLS 0 and LCP unchanged on home, listing and product.
+
+*Done 2026-10-15 (v2.18.0).* The layout mounts the dialog once (when the
+request has a session); the entry point is a "Segnala un problema" link in
+the footer's legal bar, below the fold. `ReportAccess::offers()` decides who
+sees it: whoever `allows()` (customers, guests in `public` mode) plus admins
+for whom `forwardsDirectly()` holds (forwarder available and
+`messages.forward`); an admin's storefront report goes to `SendAdminReport`
+(intro and hint for admins, attachments allowed, no captcha). Guests get a
+confirmation that does not point to an account. Measured in Chrome (390×844,
+CPU ×4) on home, listing and product, guest vs logged-in customer: CLS 0
+everywhere, LCP within noise (±12 ms).
 
 **R6 — Screen capture.**
 §5 in both the storefront dialog and the panel action.

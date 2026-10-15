@@ -649,6 +649,9 @@ return [
         'open' => 'Segnala un problema',
         'title' => 'Segnala un problema',
         'intro' => 'Descrivi cosa non funziona in questa pagina: la segnalazione arriva al nostro staff, che la prenderà in carico.',
+        'intro_admin' => 'Sei un amministratore: la segnalazione va direttamente a :target, con te come segnalante e questa pagina. Email, telefoni, IBAN e numeri di carta nel testo vengono oscurati.',
+        'admin_hint' => 'Le schermate possono mostrare dati dei clienti: controlla gli allegati prima di inviare.',
+        'forwarded_text' => 'Segnalazione inviata a :target (riferimento :reference).',
         'kind' => 'Tipo di segnalazione',
         'kinds' => [
             'bug' => 'Qualcosa non funziona',
@@ -669,6 +672,7 @@ return [
         'close' => 'Chiudi',
         'sent_title' => 'Grazie per la segnalazione',
         'sent_text' => 'L\'abbiamo ricevuta: la trovi tra i tuoi messaggi nell\'area riservata.',
+        'sent_text_guest' => 'L\'abbiamo ricevuta: se servono altre informazioni ti scriveremo all\'indirizzo che hai indicato.',
         'error' => 'Non è stato possibile inviare la segnalazione: riprova tra qualche minuto.',
         'types' => [
             'contact' => 'Messaggio',

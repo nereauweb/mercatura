@@ -29,6 +29,7 @@ export function reportDialog(config) {
         errors: [],
         fieldErrors: {},
         files: [],
+        sentText: '',
 
         show() {
             this.sent = false;
@@ -78,6 +79,7 @@ export function reportDialog(config) {
                 });
                 const data = await response.json().catch(() => ({}));
                 if (response.ok) {
+                    this.sentText = data.message || '';
                     this.sent = true;
                     form.reset();
                     this.files = [];

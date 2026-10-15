@@ -1,4 +1,4 @@
-{{-- @mercatura-view frontend.public.footer @version 2 --}}
+{{-- @mercatura-view frontend.public.footer @version 3 --}}
 {{-- Site footer: brand contacts, payments, social links, top categories, CMS pages, brands, legal line. --}}
 @php
     $brand = config('brand');
@@ -85,9 +85,13 @@
 		@endif
 	</div>
 	<div class="bg-primary text-on-dark">
-		<div class="mx-auto max-w-7xl px-4 py-4 text-sm">
+		<div class="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-2 px-4 py-4 text-sm">
+			<p>
 			© {{ date('Y') }} {{ $brand['legal_name'] }}. {{ __('frontend.footer.rights') }}
 			@if($brand['legal']['vat']) {{ __('frontend.footer.vat', ['vat' => $brand['legal']['vat']]) }} @endif
+			</p>
+			{{-- Report dialog entry point (docs/06_USER_REPORTS.md R5): only for who may report. --}}
+			<x-frontend::report.trigger class="underline hover:text-accent" />
 		</div>
 	</div>
 </footer>

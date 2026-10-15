@@ -1,17 +1,20 @@
-{{-- @mercatura-view frontend.components.report.dialog @version 1 --}}
-{{-- Report dialog (docs/06_USER_REPORTS.md R4): a report of the current page to the admin.
-     Rendered only for who may report (ReportAccess); opened by the `report-open` window event,
-     see frontend.components.report.trigger. Overlays the page: nothing moves when it opens. --}}
+{{-- @mercatura-view frontend.components.report.dialog @version 2 --}}
+{{-- Report dialog (docs/06_USER_REPORTS.md R4/R5), mounted once by the layout: a report of the
+     current page to the admin, or, for an admin, straight to the helpdesk (§2.9). Rendered only
+     for who may report (ReportAccess::offers); opened by the `report-open` window event, see
+     frontend.components.report.trigger. Overlays the page: nothing moves when it opens. --}}
 @php
     $access = app(\App\Support\Reports\ReportAccess::class);
     $user = auth()->user();
     $user = $user instanceof \App\Models\User ? $user : null;
     $r = 'frontend.reports.';
 @endphp
-@if($access->allows($user))
+@if($access->offers($user))
 @php
     if (! isset($errors)) { view()->share('errors', new \Illuminate\Support\ViewErrorBag); $errors = view()->shared('errors'); }
-    $canAttach = $access->canAttach($user);
+    $direct = $access->forwardsDirectly($user);
+    $target = $direct ? app(\App\Contracts\MessageForwarder::class)->label() : '';
+    $canAttach = $direct || $access->canAttach($user);
     $config = [
         'csrf' => csrf_token(),
         'endpoint' => route('frontend.reports.store'),
@@ -32,12 +35,12 @@
 
             <div x-cloak x-show="sent" class="p-6 text-center">
                 <p class="text-xl font-bold text-primary">{{ __($r.'sent_title') }}</p>
-                <p class="mt-2">{{ __($r.'sent_text') }}</p>
+                <p class="mt-2" x-text="sentText">{{ __($r.'sent_text') }}</p>
                 <button type="button" @click="close()" class="mt-6 rounded-full bg-accent px-6 py-2 text-sm font-bold uppercase text-on-accent hover:bg-accent-strong">{{ __($r.'close') }}</button>
             </div>
 
             <form x-show="! sent" x-ref="form" @submit.prevent="send()" class="grid gap-3 p-4 md:p-6" enctype="multipart/form-data" novalidate>
-                <p class="text-sm text-text-muted">{{ __($r.'intro') }}</p>
+                <p class="text-sm text-text-muted">{{ $direct ? __($r.'intro_admin', ['target' => $target]) : __($r.'intro') }}</p>
                 @if($user === null)
                 <div class="hidden" aria-hidden="true"><label for="report-website">Website</label><input type="text" name="website" id="report-website" tabindex="-1" autocomplete="off" value=""></div>
                 <x-frontend::forms.input name="name" id="report-name" :label="__('frontend.forms.name')" required autocomplete="name" />
@@ -59,8 +62,12 @@
                     </ul>
                 </div>
                 @endif
+                @unless($direct)
                 <x-frontend::captcha field="report_captcha" action="report" />
                 <p class="text-xs text-text-muted">{{ __($r.'privacy') }}</p>
+                @else
+                <p class="text-xs text-text-muted">{{ __($r.'admin_hint') }}</p>
+                @endunless
                 <ul x-cloak x-show="errors.length" class="rounded-card bg-danger/10 p-3 text-sm text-danger" role="alert">
                     <template x-for="error in errors"><li x-text="error"></li></template>
                 </ul>
