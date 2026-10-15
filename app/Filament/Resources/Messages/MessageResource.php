@@ -15,7 +15,7 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 
-/** Contact form messages, read-only; opening one marks it read. */
+/** Contact messages and user reports (docs/06_USER_REPORTS.md), read-only; opening one marks it read. */
 final class MessageResource extends Resource
 {
     protected static ?string $model = Message::class;

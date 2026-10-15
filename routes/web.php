@@ -137,6 +137,11 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('/messaggi', [FrontendContactsController::class, 'list'])->name('frontend.contacts.list');
     Route::get('/messaggi/{id}', [FrontendContactsController::class, 'show'])->name('frontend.contacts.show');
 
+    // Report attachments for the panel (docs/06_USER_REPORTS.md §4): MessagePolicy decides, always a download.
+    Route::get('/admin/allegati-messaggi/{media}', Admin\MessageAttachmentController::class)
+        ->whereNumber('media')
+        ->name('admin.messages.attachment');
+
 });
 
 // The admin panel is Filament (app/Providers/Filament/AdminPanelProvider.php); its routes are registered by the panel.

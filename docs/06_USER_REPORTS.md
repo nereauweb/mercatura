@@ -1,6 +1,6 @@
 # User reports — a user → admin channel, with an optional forward
 
-Status: **approved 2026-10-15; R1 done (core v2.14.0).**
+Status: **approved 2026-10-15; R1 done (core v2.14.0), R2 done (v2.15.0).**
 Decisions marked *(agreed)* were taken with the maintainer while studying
 the feature; *(proposed)* ones need approval before the phase that uses them.
 
@@ -205,6 +205,15 @@ visible to the admin only (no backfill by email, which would reopen §2.8).
 protected download route, read state. Lang keys in `lang/it/admin.php`.
 *Stop:* a report created through `SubmitReport` shows in the list with its
 attachments; a customer cannot download an attachment (403).
+
+*Done 2026-10-15 (v2.15.0).* Type/kind columns and filters, attachment
+count, "Dettagli tecnici" section (page, area, route, viewport, browser, JS
+errors, download links), `Admin\MessageAttachmentController` at
+`admin.messages.attachment` (login, `MessagePolicy::view`, attachment
+disposition, `nosniff`, CSP `sandbox`, `no-store`), list subheading when
+`public` runs as `auth`. Found on the way: the `User::customer` accessor
+creates an empty customer row when none exists; `SubmitReport` reads the
+relation instead.
 
 **R3 — Forward contract and action.**
 §6 in the core with the null driver and a fake in tests, plus the admin's

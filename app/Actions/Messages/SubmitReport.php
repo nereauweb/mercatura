@@ -208,7 +208,8 @@ final class SubmitReport
         if ($user === null) {
             return ['email' => (string) $data['email'], 'name' => (string) $data['name'], 'surname' => null];
         }
-        $customer = $user->customer;
+        // The relation, not the `customer` accessor: that one creates an empty customer row when missing.
+        $customer = $user->customer()->first();
 
         return [
             'email' => (string) $user->email,
