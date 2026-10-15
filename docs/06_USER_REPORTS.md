@@ -1,0 +1,237 @@
+# User reports — a user → admin channel, with an optional forward
+
+Status: **plan, awaiting approval** (2026-10-15). Nothing is implemented.
+Decisions marked *(agreed)* were taken with the maintainer while studying
+the feature; *(proposed)* ones need approval before the phase that uses them.
+
+## 1. Purpose and scope
+
+Logged-in users (and, by setting, guests) report a problem from the page
+where they see it; the report reaches the **admin** of the installation in
+the panel. An installation may add a **forwarder** that lets an admin send a
+report on to an external helpdesk, under the admin's responsibility.
+
+The first consumer is staging: testers (the maintainer and the client's
+staff) report what they find while they test, from the panel and from the
+storefront, and the admin forwards the technical ones to the helpdesk the
+installation uses. The feature is generic: an installation with no
+forwarder still gets a useful inbox.
+
+Out of scope: a conversation thread (admin replies go by email as today),
+ticket states beyond read/forwarded, SLA, assignment.
+
+## 2. Decisions
+
+1. *(agreed)* **Customers never reach an external helpdesk directly.** The
+   core channel is user → admin; only an admin forwards.
+2. *(agreed)* **Reports are `messages` rows.** The contact form is already a
+   user → admin channel with an admin list (`MessageResource`) and an
+   account page (`/messaggi`); one inbox, one history for the user.
+3. *(agreed)* **Access setting** `mercatura.reports.access`:
+   `off` | `auth` (default) | `public`.
+4. *(agreed)* **Guests never attach files**, whatever the setting.
+5. *(agreed)* **The forward is pseudonymised.** The external ticket carries
+   the forwarding admin as reporter and a reference to the message
+   (`messages#123`), never the user's name, email, user id or IP. The admin
+   reviews the outgoing text and attachments before sending.
+6. *(agreed)* **Screen capture with double consent**: an explicit checkbox
+   (default off, purpose stated) enables the capture button; the browser asks
+   its own permission on click; the user sees a preview before sending.
+7. *(agreed)* **Antivirus scanning is a future item** (§8), behind a contract.
+8. *(agreed)* **Account messages are matched by `user_id`.** Today `/messaggi`
+   matches by email and registration does not verify email, so an account
+   created with somebody else's address sees that person's contact-form
+   messages. From R1 the account pages list only rows linked to the user;
+   contact messages sent while logged in get `user_id` too. Email
+   verification stays a separate decision (§8).
+9. *(proposed)* Data shaped like the forward target, so a forward maps fields
+   one to one: `kind` uses the values `bug | request | question | feedback`,
+   subject ≤ 200, message ≤ 5000, ≤ 5 attachments of ≤ 10 MB.
+
+## 3. Data model (R1)
+
+New migration on `messages` (the existing migration is not edited):
+
+| column | type | notes |
+|---|---|---|
+| `type` | string(16), default `contact`, indexed | `contact` \| `report` |
+| `user_id` | nullable FK users, null on delete | set whenever the sender is logged in |
+| `reporter_role` | string(16), nullable | `admin` \| `customer` \| `guest`, decided server side |
+| `kind` | string(16), nullable | reports only |
+| `page_url` | string(2048), nullable | the page the report was sent from |
+| `context` | json, nullable | area, route name, app version, viewport, user agent, recent JS errors |
+| `screenshot_consent_at` | timestamp, nullable | proof of consent for a capture |
+| `screenshot_consent_version` | string(16), nullable | version of the consent text shown |
+| `forwarded_at` | timestamp, nullable | |
+| `forwarded_by` | nullable FK users | |
+| `forward_reference` | string(64), nullable | id returned by the forwarder |
+
+`email`, `name`, `surname` stay as they are (for a logged-in reporter they are
+copied from the account, not from the form). Report-only columns stay null
+on contact rows; every column is read by the panel or the forward (no dead
+columns). Enums: `App\Enums\MessageType`, `App\Enums\ReportKind`,
+`App\Enums\ReporterRole`.
+
+Attachments: media collection `attachments` on `Message`, on the **`local`
+disk** (`storage/app`, never served by the web server). Original file names
+are kept as media `name` only; stored names are generated.
+
+## 4. Security
+
+**Identity is server side.** Role, area, user and IP come from the session
+and the request, never from form fields. Nobody can post as an admin.
+
+**Rate limits** (named limiter `reports`, config values):
+logged in 5/min and 20/day per user plus 50 MB/day uploaded; guests 3/min
+and 10/day per IP. The admin panel form uses the per-user limits too.
+
+**Captcha**: the existing `Captcha::rules('report')` on the storefront form
+(reCAPTCHA v3 is invisible). `public` requires a real captcha provider:
+with `MERCATURA_CAPTCHA_PROVIDER=null` the effective access falls back to
+`auth` and the panel shows a notice. Guests also get the honeypot field.
+
+**Text**: stored as plain text, always escaped; the panel never renders
+user HTML. Lengths as in §2.9.
+
+**Attachments** (logged-in users only):
+1. allowed: PNG, JPEG, WebP, PDF; checked by content (`mimetypes`) and
+   extension; no SVG;
+2. images are **re-encoded** before storage (drops EXIF/GPS, defeats
+   polyglot files): `ImageSanitizer` gains PNG and WebP next to JPEG;
+3. PDFs are stored as received and are never displayed inline;
+4. download only through a panel route gated by `MessagePolicy::view`, with
+   `Content-Disposition: attachment` and `X-Content-Type-Options: nosniff`;
+5. the scan hook of §8 plugs in between validation and storage.
+
+**Retention** (R7): attachments and captures are deleted after
+`mercatura.reports.attachment_retention_days` (default 90) by a scheduled
+command; the text stays.
+
+## 5. Screen capture (R6)
+
+Screen Capture API (`navigator.mediaDevices.getDisplayMedia`): one frame is
+drawn to a canvas and turned into a PNG, then every track is stopped. No new
+dependency. Requested with `preferCurrentTab: true` and
+`displaySurface: 'browser'` (honoured by Chromium, ignored elsewhere). The
+report dialog is hidden for the frame and shown again.
+
+Flow: checkbox (off) with the purpose text → enables "Cattura schermata" →
+browser permission → preview with "Scarta" / "Rifai" → the capture is one of
+the ≤ 5 attachments and goes through the same pipeline. Unchecking the box
+discards it. The consent time and text version are stored (§3).
+
+Limits, stated in the UI where relevant:
+- **not available on mobile browsers** (iOS Safari, Android Chrome): the
+  option is not shown; users attach the phone's own screenshot;
+- the browser picker can still offer the whole screen: the preview is the
+  safeguard;
+- needs a secure context (HTTPS, or `localhost`).
+
+The capture code is a separate Vite chunk loaded when the dialog opens: no
+weight on first paint, no CLS (the dialog overlays).
+
+## 6. Forwarding (R3)
+
+Core: contract `App\Contracts\MessageForwarder`
+(`isAvailable(): bool`, `label(): string`,
+`forward(ForwardedReport $report): ForwardResult`), default
+`NullMessageForwarder` (unavailable), selected by
+`mercatura.providers.message_forwarder`. Installation packages may bind
+their own implementation. New permission `messages.forward`.
+
+Panel action "Inoltra", visible when the forwarder is available, the user
+has the permission and the row is a report not yet forwarded. The modal
+shows what will leave:
+- title and description **prefilled with automatic redaction** (emails,
+  phone numbers, IBAN, card-like numbers) and editable;
+- attachments listed **unchecked**, with a warning that captures of account
+  pages usually show personal data;
+- the pseudonymous reference and technical context, read-only.
+
+`ForwardedReport` (DTO): kind, title, description, page_url (query secrets
+stripped), context (`reporter_role`, area, route, app version, viewport,
+user agent, JS errors, `reference` = `messages#<id>`), the forwarding
+admin's name and email as reporter, chosen attachment paths. The message
+itself is never changed; `forwarded_at/by/reference` record the forward.
+
+Installation side (not in this repository): a private package
+(e.g. `nereauweb/mercatura-support`) implementing `MessageForwarder` on top of
+the installation's helpdesk client, required by the installation only.
+
+## 7. Phases
+
+Each phase ends with pint, larastan and the full suite green, a tag, and the
+stop criterion met.
+
+**R1 — Data and submission (core, no UI).**
+Migration, enums, model casts and media collection, `ImageSanitizer` for
+PNG/WebP, action `App\Actions\Messages\SubmitReport` (validation, identity,
+context, attachments, limits), config `mercatura.reports`, limiter, account
+pages by `user_id` (§2.8), contact form sets `user_id`/`reporter_role`.
+*Stop:* feature tests cover roles, access modes and the captcha fallback,
+guest attachment refusal, MIME spoofing (a PHP file renamed `.png`),
+re-encoding (EXIF gone), limits, and the account pages matching by `user_id`.
+
+**R2 — Admin panel.**
+`MessageResource`: type filter and badge, report fields, attachments with the
+protected download route, read state. Topbar action "Segnala un problema"
+(render hook) for admins: same action, role `admin`, area `admin`, page URL
+of the current panel page. Lang keys in `lang/it/admin.php`.
+*Stop:* an admin creates a report from any panel page and finds it in the
+list with its attachments; a customer cannot download an attachment (403).
+
+**R3 — Forward contract and action.**
+§6 in the core with the null driver and a fake in tests.
+*Stop:* the action is hidden with the null driver and with no permission;
+with the fake, the payload carries no customer name/email/id/IP and only the
+checked attachments; a forwarded row cannot be forwarded twice.
+Then, outside the core: the installation package and its activation on
+staging, verified end to end with the helpdesk.
+
+At this point testers on staging can report from the panel and the admin
+can forward: the first usable milestone.
+
+**R4 — Account area.**
+Storefront component `frontend.components.report.dialog` (Alpine dialog,
+lazy chunk) and a "Segnala un problema" tile on `frontend.customer.index`;
+the user's reports appear in `/messaggi`. Copy in `lang/it/frontend.php`.
+*Stop:* a customer sends a report with attachments from the account area;
+storefront integrity tests pass; Lighthouse on the account page unchanged.
+
+**R5 — Public storefront.**
+Entry point in the layout (a discreet link, via an existing `@stack` point,
+no layout shift), shown according to the effective access mode; guests get
+the form without attachments, with captcha and honeypot.
+*Stop:* `auth` shows it only when logged in; `public` with null captcha
+behaves as `auth`; CLS 0 and LCP unchanged on home, listing and product.
+
+**R6 — Screen capture.**
+§5 in both the storefront dialog and the panel action.
+*Stop:* tested on Chromium and Firefox desktop (manual, on staging); hidden
+where the API is missing; consent fields stored; capture re-encoded.
+
+**R7 — Retention and documentation.**
+Scheduled pruning of attachments (§4), installation docs (settings, consent
+text to review, privacy notice), demo seeder rows for the panel.
+*Stop:* pruning tested with a frozen clock; docs reviewed.
+
+## 8. Future items (not planned)
+
+- **Antivirus scan** of uploads behind a contract (`AttachmentScanner`, null
+  default, ClamAV driver), run before storage; needs a daemon on the host.
+- **Redaction in the capture preview** (black boxes drawn by the user before
+  sending).
+- **Email verification** for new accounts (`MustVerifyEmail`): closes the
+  wider "registered with someone else's address" case beyond messages;
+  changes the registration flow, so it is a decision of its own.
+- Admin replies from the panel (a thread on the message).
+
+## 9. Open questions
+
+1. Helpdesk side: does it accept the forwarding admin as `reporter`, and does
+   it show `context` (the `messages#<id>` reference) in the ticket?
+2. Consent text and privacy notice: the client reviews them (lang keys).
+3. Limits and retention defaults (§4): 5/min, 20/day, 50 MB/day, 90 days.
+4. Admins reporting from the panel: store the report and forward it in one
+   step when a forwarder is available, or always store first and forward
+   from the list? (proposed: one optional "inoltra subito" checkbox.)

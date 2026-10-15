@@ -186,4 +186,5 @@ app/Support/Connectors/    the connector framework (ARCHITECTURE §13); connecto
 connectors/                git-ignored checkout of private connector packages (development, or deploy by directory)
 docs/02_V2B_ADMIN.md        v2b (Filament admin) analysis, plan and deviations
 docs/03_CUSTOMIZATIONS.md   v2c (printing → customizations) analysis and plan, awaiting approval
+docs/06_USER_REPORTS.md    user → admin report channel, optional forward, screen capture: plan, awaiting approval
 ```
