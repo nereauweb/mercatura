@@ -154,6 +154,13 @@ user agent, JS errors, `reference` = `messages#<id>`), the forwarding
 admin's name and email as reporter, chosen attachment paths. The message
 itself is never changed; `forwarded_at/by/reference` record the forward.
 
+The helpdesk ticket shows only the description, the page URL, the reporter's
+phone and the user agent (`context.browser.user_agent`); nothing else of
+`context`. The core therefore also gives the DTO a plain-text **technical
+block** (reference, reporter role, area, route, viewport, app version, recent
+JS errors), which a forwarder whose target ignores structured context appends
+to the description.
+
 Installation side (not in this repository): a private package
 (e.g. `nereauweb/mercatura-support`) implementing `MessageForwarder` on top of
 the installation's helpdesk client, required by the installation only.
@@ -233,12 +240,14 @@ text to review, privacy notice), demo seeder rows for the panel.
    optional; other keys dropped) and matches it against the client's
    contacts: the forwarding admins should be added as contacts there. An
    `on_behalf_of` field was offered and **declined**: the forward is
-   pseudonymised on purpose (§2.5). Whether `context` is shown in the ticket
-   is not confirmed, so the installation driver also appends the reference
-   to the description ("Rif. piattaforma: segnalazione #<id> (cliente)");
-   `user_ref`, if sent, is the admin's id, never the user's.
-2. Consent text and privacy notice: the client reviews them (lang keys).
-3. Limits and retention defaults (§4): 5/min, 20/day, 50 MB/day, 90 days.
+   pseudonymised on purpose (§2.5). `context` is **not** shown in a human
+   ticket (only description, page URL, phone, user agent), so the reference
+   and the technical data travel in the description (§6); `user_ref`, if
+   sent, is the admin's id, never the user's.
+2. *(agreed)* Consent text and privacy notice: a starting text is written in
+   the lang keys (R6, R7); the client reviews it.
+3. *(agreed)* Limits and retention defaults (§4): 5/min, 20/day, 50 MB/day,
+   90 days.
 4. Admins reporting from the panel: store the report and forward it in one
    step when a forwarder is available, or always store first and forward
    from the list? (proposed: one optional "inoltra subito" checkbox.)
