@@ -16,7 +16,8 @@ use Illuminate\Support\Facades\Hash;
 
 /**
  * Registration during checkout: user with the customer role, billing and
- * shipping addresses, customer profile, login, welcome mail, optional
+ * shipping addresses, customer profile, login, welcome mail, admin notice
+ * (register_admin, as /registrati), optional
  * newsletter subscription. Input is the validated data of
  * CustomerFormRules::registerAuthRules.
  */
@@ -78,6 +79,17 @@ final class RegisterCustomer
         $this->mailer->attribute('name', $user->name);
         $this->mailer->to($user->email);
         $this->mailer->send('welcome');
+        $this->mailer->reset();
+
+        // Same admin notice as /registrati (FrontendLoginController::register).
+        foreach (['name', 'surname', 'company', 'email', 'phone', 'activity', 'customer_type'] as $field) {
+            $this->mailer->attribute($field, $get($field));
+        }
+        $this->mailer->attribute('gdpr', filter_var($get('consent_gdpr'), FILTER_VALIDATE_BOOLEAN) ? 'Sì' : 'No');
+        $this->mailer->attribute('terms', filter_var($get('consent_terms'), FILTER_VALIDATE_BOOLEAN) ? 'Sì' : 'No');
+        $this->mailer->attribute('newsletter', filter_var($get('subscribe_newsletter'), FILTER_VALIDATE_BOOLEAN) ? 'Sì' : 'No');
+        $this->mailer->to(config('emails.merchant'));
+        $this->mailer->send('register_admin');
         $this->mailer->reset();
 
         $optIn = filter_var($get('subscribe_newsletter'), FILTER_VALIDATE_BOOLEAN);
