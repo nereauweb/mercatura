@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Products\Tables;
 
+use App\Actions\Catalog\SetBestseller;
 use App\Actions\Catalog\SyncProductCategories;
 use App\Exports\AdminProductsExport;
 use App\Filament\Resources\Products\Schemas\ProductForm;
@@ -46,6 +47,7 @@ final class ProductsTable
             ])
             ->filters([
                 TernaryFilter::make('active')->label(__('admin.catalog.active')),
+                TernaryFilter::make('isBestseller')->label(__('admin.catalog.is_bestseller')),
                 SelectFilter::make('categories')->label(__('admin.catalog.category'))->relationship('categories', 'name')->searchable()->preload()->multiple(),
                 SelectFilter::make('brand_id')->label(__('admin.catalog.brand'))->options(fn (): array => Brand::query()->orderBy('name')->pluck('name', 'id')->all())->searchable(),
                 SelectFilter::make('source')->label(__('admin.catalog.source'))->options(fn (): array => Product::query()->select('source')->distinct()->orderBy('source')->pluck('source', 'source')->all()),
@@ -72,10 +74,21 @@ final class ProductsTable
                             }
                             Notification::make()->title(__('admin.catalog.bulk.done', ['count' => $records->count()]))->success()->send();
                         })->deselectRecordsAfterCompletion(),
+                    BulkAction::make('markBestseller')->label(__('admin.catalog.bulk.mark_bestseller'))->icon('heroicon-o-star')
+                        ->action(fn (Collection $records) => self::setBestseller($records, true))->deselectRecordsAfterCompletion(),
+                    BulkAction::make('unmarkBestseller')->label(__('admin.catalog.bulk.unmark_bestseller'))->icon('heroicon-o-minus-circle')->color('gray')
+                        ->action(fn (Collection $records) => self::setBestseller($records, false))->deselectRecordsAfterCompletion(),
                     BulkAction::make('export')->label(__('admin.catalog.bulk.export'))->icon('heroicon-o-arrow-down-tray')->color('gray')
                         ->action(fn (Collection $records) => Excel::download(new AdminProductsExport($records->modelKeys()), 'products.xlsx')),
                 ]),
             ]);
+    }
+
+    /** @param  Collection<int, \Illuminate\Database\Eloquent\Model>  $records */
+    private static function setBestseller(Collection $records, bool $bestseller): void
+    {
+        $count = app(SetBestseller::class)->handle($records->modelKeys(), $bestseller);
+        Notification::make()->title(__('admin.catalog.bulk.done', ['count' => $count]))->success()->send();
     }
 
     /**

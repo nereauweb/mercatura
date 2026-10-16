@@ -52,11 +52,11 @@ class CatalogResourcesTest extends TestCase
         $this->color = ProductColor::query()->create(['label' => 'Blu test', 'code' => '1E3A8A']);
     }
 
-    private function createProduct(): Product
+    private function createProduct(string $sku = 'TEST-001', string $name = 'Maglietta test'): Product
     {
         Livewire::test(CreateProduct::class)
             ->fillForm([
-                'sku' => 'TEST-001', 'name' => 'Maglietta test', 'active' => true, 'description' => '<p>Descrizione</p>',
+                'sku' => $sku, 'name' => $name, 'active' => true, 'description' => '<p>Descrizione</p>',
                 'forced_status' => 'none', 'isBestseller' => '0', 'isGreen' => '0', 'isPromo' => '0',
                 'category_ids' => [$this->child->id],
                 'variant.color_id' => $this->color->id, 'variant.size_id' => (int) config('mercatura.catalog.one_size_id'), 'variant.stock' => 10, 'variant.price' => 4.5,
@@ -64,7 +64,7 @@ class CatalogResourcesTest extends TestCase
             ->call('create')
             ->assertHasNoFormErrors();
 
-        return Product::query()->where('sku', 'TEST-001')->firstOrFail();
+        return Product::query()->where('sku', $sku)->firstOrFail();
     }
 
     public function test_lists_render(): void
@@ -134,6 +134,21 @@ class CatalogResourcesTest extends TestCase
         $product->refresh();
         $this->assertFalse((bool) $product->active);
         $this->assertTrue($product->categories()->whereKey($other->id)->exists());
+    }
+
+    public function test_bestsellers_are_marked_in_bulk(): void
+    {
+        $star = $this->createProduct('TEST-BS1', 'Borraccia stella');
+        $plain = $this->createProduct('TEST-BS2', 'Borraccia semplice');
+        $viewed = $this->createProduct('TEST-BS3', 'Borraccia vista');
+
+        Livewire::test(ListProducts::class)
+            ->callTableBulkAction('markBestseller', [$star->id, $plain->id])
+            ->callTableBulkAction('unmarkBestseller', [$plain->id]);
+        $this->assertTrue($star->refresh()->isBestseller());
+        $this->assertFalse($plain->refresh()->isBestseller());
+        Livewire::test(ListProducts::class)->filterTable('isBestseller', true)->assertCanSeeTableRecords([$star])->assertCanNotSeeTableRecords([$plain, $viewed]);
+
     }
 
     public function test_category_delete_cascades_like_the_legacy_admin(): void

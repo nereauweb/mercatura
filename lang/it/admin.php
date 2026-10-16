@@ -386,6 +386,8 @@ return [
             'activate' => 'Attiva',
             'deactivate' => 'Disattiva',
             'assign_category' => 'Assegna categoria',
+            'mark_bestseller' => 'Segna come bestseller',
+            'unmark_bestseller' => 'Togli dai bestseller',
             'export' => 'Esporta XLSX',
             'done' => ':count prodotti aggiornati',
         ],
