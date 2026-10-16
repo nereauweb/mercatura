@@ -134,6 +134,11 @@ class ContentResourcesTest extends TestCase
 
         config(['mercatura.catalog.new_days' => 60]);
         $this->assertContains($old->id, $page->fresh()->products_ids()->all(), 'the window follows the config');
+
+        config(['mercatura.catalog.new_days' => 7]);
+        $variant = (new \App\Models\ProductVariant)->forceFill(['created_at' => now()->subDays(10)]);
+        $this->assertFalse($variant->isNew(), 'variants follow the same window as products');
+        $this->assertTrue($variant->forceFill(['created_at' => now()->subDays(3)])->isNew());
     }
 
     public function test_home_tiles_are_managed_in_the_admin_and_replace_the_category_cards(): void

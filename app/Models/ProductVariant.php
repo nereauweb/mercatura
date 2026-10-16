@@ -404,9 +404,10 @@ class ProductVariant extends Model implements HasMedia
 
     /* LABEL ATTRIBUTES */
 
+    /** Same window as the product (config mercatura.catalog.new_days). */
     public function isNew()
     {
-        return strtotime($this->created_at) > strtotime('-1 month');
+        return strtotime($this->created_at) > Product::newSince()->getTimestamp();
     }
 
     public function isSale()
