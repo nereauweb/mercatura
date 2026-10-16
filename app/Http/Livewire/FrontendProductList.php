@@ -367,7 +367,7 @@ final class FrontendProductList extends Component
             })
             ->when($this->urlPurchase !== '', fn ($q) => $q->whereIn('source', app(\App\Support\ImportConnectors::class)->find($this->urlPurchase)?->sourceValues() ?? [$this->urlPurchase]))
             ->when($this->is_new, fn ($q) => $q->where('products.created_at', '>', Product::newSince()))
-            ->when($this->is_sale, fn ($q) => $q->onSale())
+            ->when($this->is_sale, fn ($q) => $q->scopes(['onSale']))
             ->when($this->is_green, fn ($q) => $q->where('isGreen', true))
             ->when($this->is_promo, fn ($q) => $q->where('isPromo', true))
             // The "a partire da" price of the card, bounds included.
