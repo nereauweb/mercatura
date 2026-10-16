@@ -343,7 +343,7 @@ final class FrontendProductList extends Component
 
         return Product::where('active', 1)
             ->when($this->products_ids !== [], fn ($q) => $q->whereIn('id', $this->products_ids))
-            ->when($this->brand !== false && $this->brand !== '', fn ($q) => $q->where('brand', 'LIKE', '%'.$this->brand.'%'));
+            ->when($this->brand !== false && $this->brand !== '', fn ($q) => $q->where('brand', $this->brand));
     }
 
     /** @return \Illuminate\Contracts\Pagination\LengthAwarePaginator */
@@ -354,7 +354,7 @@ final class FrontendProductList extends Component
         return $query
             ->with(['color_variants.color', 'main_variant_relationship'])
             ->when($this->brands !== [], fn ($q) => $q->whereIn('brand', $this->brands))
-            ->when($this->colors !== [], fn ($q) => $q->whereHas('variants', fn ($sq) => $sq->whereIn('color_id', $this->colors)))
+            ->when($this->colors !== [], fn ($q) => $q->whereHas('variants', fn ($sq) => $sq->where('active', 1)->whereIn('color_id', $this->colors)))
             ->when($this->print_techniques !== [], function ($q) {
                 return $q->whereHas('customizations', function ($sq) {
                     $sq->where(function ($inner) {
@@ -367,7 +367,7 @@ final class FrontendProductList extends Component
             })
             ->when($this->urlPurchase !== '', fn ($q) => $q->whereIn('source', app(\App\Support\ImportConnectors::class)->find($this->urlPurchase)?->sourceValues() ?? [$this->urlPurchase]))
             ->when($this->is_new, fn ($q) => $q->where('products.created_at', '>', Product::newSince()))
-            ->when($this->is_sale, fn ($q) => $q->whereHas('variants', fn ($sq) => $sq->whereIn('isSale', [1, 2])))
+            ->when($this->is_sale, fn ($q) => $q->onSale())
             ->when($this->is_green, fn ($q) => $q->where('isGreen', true))
             ->when($this->is_promo, fn ($q) => $q->where('isPromo', true))
             ->when($this->hasPriceFilter(), fn ($q) => $q->where('variants_min_price', '>', (float) $this->min_price)->where('variants_max_price', '<', (float) $this->max_price))

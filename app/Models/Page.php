@@ -79,11 +79,7 @@ class Page extends Model
 
                 return $q;
             })
-            ->when($this->is_sale_filter_value() > 0, function ($q) {
-                return $q->whereHas('main_variant_relationship', function ($sq) {
-                    $sq->where('isSale', 1);
-                });
-            })
+            ->when($this->is_sale_filter_value() > 0, fn ($q) => $q->onSale())
             ->when($this->is_bestseller_filter_value() == 1, function ($q) {
                 return $q->where('isBestseller', 1);
             })

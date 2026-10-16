@@ -416,8 +416,19 @@ class Product extends Model
     public function isSale()
     {
         return Cache::remember('product_'.$this->id.'_is_sale', now()->addDays(1), function () {
-            return $this->variants()->where('isSale', true)->exists();
+            return self::query()->whereKey($this->id)->onSale()->exists();
         });
+    }
+
+    /**
+     * "In offerta": an active variant flagged on sale, by the import (1) or
+     * forced in the panel (2). Badge, listing filter and CMS page filter.
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder<self>  $query
+     */
+    public function scopeOnSale(\Illuminate\Database\Eloquent\Builder $query): void
+    {
+        $query->whereHas('variants', fn ($q) => $q->where('active', 1)->whereIn('isSale', [1, 2]));
     }
 
     public function isBestseller(): bool

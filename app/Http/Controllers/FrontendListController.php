@@ -51,7 +51,7 @@ class FrontendListController extends Controller
                         ->where('value', $selected_brand);
                 })
             */
-            $product_ids = Product::where('active', 1)->where('brand', 'LIKE', '%'.$selected_brand.'%')
+            $product_ids = Product::where('active', 1)->where('brand', $selected_brand)
                 ->pluck('products.id')->toArray();
         } else {
             $product_ids = Product::where('active', 1)->inRandomOrder()->pluck('products.id')->toArray();

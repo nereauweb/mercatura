@@ -39,7 +39,7 @@ final class CatalogFilterOptions
                 ->filter(fn ($row) => $row->brand && $row->brand !== 'Unbranded')
                 ->map(fn ($row) => ['name' => (string) $row->brand, 'count' => (int) $row->count])->values()->all();
 
-            $colors = ProductColor::whereHas('variants', fn ($q) => $q->whereIn('products_variants.product_id', $productIds))->get()
+            $colors = ProductColor::whereHas('variants', fn ($q) => $q->where('products_variants.active', 1)->whereIn('products_variants.product_id', $productIds))->get()
                 ->map(fn (ProductColor $color) => ['id' => (int) $color->id, 'label' => (string) $color->label, 'code' => (string) $color->render_code()])->values()->all();
 
             $prints = Customization::whereIn('product_id', $productIds)
@@ -96,7 +96,7 @@ final class CatalogFilterOptions
             return Product::where('active', 1)->whereHas('categories', fn ($q) => $q->where('categories.id', $categoryId))->pluck('products.id')->all();
         }
         if ($brand) {
-            return Product::where('active', 1)->where('brand', 'LIKE', '%'.$brand.'%')->pluck('products.id')->all();
+            return Product::where('active', 1)->where('brand', $brand)->pluck('products.id')->all();
         }
 
         return Product::where('active', 1)->pluck('products.id')->all();
