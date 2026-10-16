@@ -18,10 +18,10 @@ final class Pricing
         return round($amount * self::vatRate(), 2);
     }
 
-    /** Delivery cost for an order of goods worth `itemsPrice` (excl. VAT). */
+    /** Delivery cost for an order of goods worth `itemsPrice` (excl. VAT): free from `free_delivery_from` included. */
     public static function deliveryCost(float $itemsPrice): float
     {
-        return $itemsPrice > (float) config('mercatura.pricing.free_delivery_from', 500) ? 0.0 : (float) config('mercatura.pricing.delivery_cost', 16);
+        return $itemsPrice >= (float) config('mercatura.pricing.free_delivery_from', 500) ? 0.0 : (float) config('mercatura.pricing.delivery_cost', 16);
     }
 
     public static function underMinimumSurcharge(): float
