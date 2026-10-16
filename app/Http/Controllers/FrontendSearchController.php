@@ -11,7 +11,7 @@ class FrontendSearchController extends Controller
     public function get_products(Request $request)
     {
         $products = [];
-        $products_data = Product::limit(10)->where('name', 'LIKE', '%'.$request->terms.'%')->orWhere('sku', 'LIKE', '%'.$request->terms.'%')->get();
+        $products_data = Product::limit(10)->where('active', 1)->where(fn ($q) => $q->where('name', 'LIKE', '%'.$request->terms.'%')->orWhere('sku', 'LIKE', '%'.$request->terms.'%'))->get();
         foreach ($products_data as $product) {
             $products[] = [
                 'id' => $product->id,

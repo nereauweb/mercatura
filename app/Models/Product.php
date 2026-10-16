@@ -96,6 +96,16 @@ class Product extends Model
         return $this->active ? true : false;
     }
 
+    /**
+     * Drop switched-off products from the search index. scout:import only
+     * adds the active ones and query updates (import, bulk actions) skip the
+     * model events that would remove them.
+     */
+    public static function removeInactiveFromSearch(): void
+    {
+        self::query()->where('active', 0)->unsearchable();
+    }
+
     #[SearchUsingPrefix(['sku'])]
     #[SearchUsingFullText(['name', 'description'])]
     public function toSearchableArray(): array

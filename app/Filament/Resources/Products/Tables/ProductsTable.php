@@ -101,7 +101,8 @@ final class ProductsTable
     {
         $ids = $records->modelKeys();
         Product::query()->whereIn('id', $ids)->update(['active' => $active ? 1 : 0]);
-        Product::query()->whereIn('id', $ids)->get()->each(fn (Product $product) => $product->searchable());
+        $products = Product::query()->whereIn('id', $ids)->get();
+        $active ? $products->searchable() : $products->unsearchable();
         CatalogCache::flush();
         Notification::make()->title(__('admin.catalog.bulk.done', ['count' => count($ids)]))->success()->send();
     }

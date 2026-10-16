@@ -23,8 +23,9 @@ final class ScoutSearchEngine implements SearchEngine
 
     public function suggestProducts(string $terms, int $limit = 10): Collection
     {
+        // The index may still hold a product switched off since its last sync: never suggest it.
         /** @var Collection<int, Product> $products */
-        $products = Product::search($terms)->take($limit)->get();
+        $products = Product::search($terms)->take($limit * 2)->get()->filter(fn (Product $product) => $product->active)->take($limit);
 
         return $products->values();
     }
@@ -33,6 +34,7 @@ final class ScoutSearchEngine implements SearchEngine
     {
         /** @var list<int> $ids */
         $ids = Product::search($terms)->take($limit)->keys()->map(fn ($id) => (int) $id)->values()->all();
+        $ids = Product::query()->whereIn('id', $ids)->where('active', 1)->pluck('id')->map(fn ($id) => (int) $id)->all();
 
         return $ids;
     }
