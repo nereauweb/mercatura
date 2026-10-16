@@ -256,7 +256,11 @@ Bestsellers are editorial: `isBestseller` is set in the panel (product form
 or the bulk actions of the products list), never by an import. They lead
 the listing slider and "Ti potrebbero interessare anche" on the product
 page; the latter is filled up with other products of the subcategory, so
-it shows even when nothing is flagged.
+it shows even when nothing is flagged. That row is below the fold and is
+not in the first response: `frontend.components.product.related` reserves
+its height and fetches the cards (sheet tab `correlati`) in the browser's
+idle time after load; the products stay crawlable through the listings
+and the sitemap.
 
 ## 8. Repository workflow
 

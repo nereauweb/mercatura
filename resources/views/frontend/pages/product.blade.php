@@ -1,4 +1,4 @@
-{{-- @mercatura-view frontend.pages.product @version 4 --}}
+{{-- @mercatura-view frontend.pages.product @version 5 --}}
 {{-- Product page for one variant: gallery, identity, colours, description, CTAs, print info, price tables,
      details, configurator, related products, selling points. Data: $product, $article, $page (ProductPageData).
      Stacks: product-before, product-after-price, product-after-description, product-after-tables, product-after. --}}
@@ -173,10 +173,7 @@
 		@endif
 
 		@if(count($page['related']))
-		<section class="mt-10">
-			<h2 class="mb-3 text-center text-xl font-bold uppercase text-primary">{{ __('frontend.product.related') }}</h2>
-			<x-frontend::product.slider :products="$page['related']" />
-		</section>
+			<x-frontend::product.related :endpoint="route('frontend.product.sheet', ['slug' => $product->slug, 'sku' => $article->sku, 'tab' => 'correlati'])" />
 		@endif
 
 		<x-frontend::usp class="my-10 border-t border-positive pt-8" />

@@ -431,7 +431,7 @@ final class ProductPageData
      *
      * @return Collection<int, Product>
      */
-    private static function related(Product $product): Collection
+    public static function related(Product $product): Collection
     {
         /** @var Category|null $category */
         $category = $product->categories()->whereNotNull('parent_id')->first();

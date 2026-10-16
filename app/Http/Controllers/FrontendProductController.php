@@ -210,18 +210,25 @@ class FrontendProductController extends Controller
     }
 
     /**
-     * A product sheet tab as an HTML fragment, fetched on first open (docs/04 §4.3): dettagli, disponibilita, listino.
-     * Cached per variant and tab with the product page cache.
+     * A product sheet tab as an HTML fragment, fetched on first open (docs/04 §4.3): dettagli, disponibilita, listino;
+     * cached per variant and tab with the product page cache. "correlati" is the related products row, fetched after
+     * the page has loaded (frontend.components.product.related), cached per subcategory by ProductPageData::related().
      */
     public function sheet(Request $request, string $slug, string $sku, string $tab)
     {
-        if (! in_array($tab, ['dettagli', 'disponibilita', 'listino', 'personalizzazioni'], true)) {
+        if (! in_array($tab, ['dettagli', 'disponibilita', 'listino', 'personalizzazioni', 'correlati'], true)) {
             abort(404);
         }
         $article = ProductVariant::query()->where('sku', $sku)->where('active', 1)->first();
         $product = $article?->product;
         if (! $article || ! $product || $product->slug !== $slug || ! $product->active) {
             abort(404);
+        }
+        if ($tab === 'correlati') {
+            $related = ProductPageData::related($product);
+            $html = $related->isEmpty() ? '' : \Illuminate\Support\Facades\Blade::render('<x-frontend::product.slider :products="$products" />', ['products' => $related]);
+
+            return response($html)->header('Content-Type', 'text/html; charset=UTF-8')->header('Cache-Control', 'private, max-age=300');
         }
         $html = \Illuminate\Support\Facades\Cache::remember('product_sheet_'.$article->id.'_'.$tab.'_'.app()->getLocale(), now()->addDay(), function () use ($product, $article, $tab): string {
             $hasPrinting = $article->customizations()->exists();

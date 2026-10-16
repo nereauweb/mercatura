@@ -150,8 +150,13 @@ class CatalogResourcesTest extends TestCase
         Livewire::test(ListProducts::class)->filterTable('isBestseller', true)->assertCanSeeTableRecords([$star])->assertCanNotSeeTableRecords([$plain, $viewed]);
 
         $html = $this->get('/prodotti/'.$viewed->slug)->assertOk()->getContent();
-        $related = substr($html, (int) strpos($html, __('frontend.product.related')));
-        $related = substr($related, 0, (int) strpos($related, '</section>'));
+        $sku = (string) \App\Models\ProductVariant::query()->whereKey($viewed->main_variant_id)->value('sku');
+        $endpoint = route('frontend.product.sheet', ['slug' => $viewed->slug, 'sku' => $sku, 'tab' => 'correlati']);
+        $this->assertStringContainsString(__('frontend.product.related'), $html);
+        $this->assertStringContainsString(str_replace('/', '\\/', $endpoint), $html, 'the row is fetched after the page');
+        $this->assertStringNotContainsString('Borraccia stella', $html, 'no related card in the first response');
+
+        $related = $this->get($endpoint)->assertOk()->getContent();
         $this->assertStringContainsString('Borraccia stella', $related, 'the bestseller of the subcategory');
         $this->assertStringContainsString('Borraccia semplice', $related, 'filled up with the other products of the subcategory');
         $this->assertLessThan(strpos($related, 'Borraccia semplice'), strpos($related, 'Borraccia stella'), 'bestsellers first');
