@@ -19,32 +19,9 @@ final class SearchIndexTest extends TestCase
 {
     use DatabaseTransactions;
 
-    /** Engine that answers every search with $hits and records deletions. */
-    private function spyEngine(): NullEngine
+    private function spyEngine(): SpySearchEngine
     {
-        $engine = new class extends NullEngine
-        {
-            /** @var list<int> */
-            public array $hits = [];
-
-            /** @var list<int> */
-            public array $deleted = [];
-
-            public function delete($models)
-            {
-                $this->deleted = [...$this->deleted, ...array_map('intval', $models->modelKeys())];
-            }
-
-            public function map(Builder $builder, $results, $model)
-            {
-                return $model->newQuery()->whereIn('id', $this->hits)->get();
-            }
-
-            public function keys(Builder $builder)
-            {
-                return new Collection($this->hits);
-            }
-        };
+        $engine = new SpySearchEngine;
         app(EngineManager::class)->extend('spy', fn () => $engine);
         config(['scout.driver' => 'spy']);
 
@@ -89,5 +66,30 @@ final class SearchIndexTest extends TestCase
 
         $this->assertContains('SRC-ON3', $skus);
         $this->assertNotContains('SRC-OFF3', $skus);
+    }
+}
+
+/** Answers every search with $hits and records deletions. */
+final class SpySearchEngine extends NullEngine
+{
+    /** @var list<int> */
+    public array $hits = [];
+
+    /** @var list<int> */
+    public array $deleted = [];
+
+    public function delete($models)
+    {
+        $this->deleted = [...$this->deleted, ...array_map('intval', $models->modelKeys())];
+    }
+
+    public function map(Builder $builder, $results, $model)
+    {
+        return $model->newQuery()->whereIn('id', $this->hits)->get();
+    }
+
+    public function keys(Builder $builder)
+    {
+        return new Collection($this->hits);
     }
 }

@@ -103,7 +103,12 @@ class Product extends Model
      */
     public static function removeInactiveFromSearch(): void
     {
-        self::query()->where('active', 0)->unsearchable();
+        self::query()->where('active', 0)->chunkById(500, function ($products): void {
+            $first = $products->first();
+            if ($first instanceof self) {
+                $first->searchableUsing()->delete($products);
+            }
+        });
     }
 
     #[SearchUsingPrefix(['sku'])]
