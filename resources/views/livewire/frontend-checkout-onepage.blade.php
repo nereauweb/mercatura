@@ -1,4 +1,4 @@
-{{-- @mercatura-view livewire.frontend-checkout-onepage @version 1 --}}
+{{-- @mercatura-view livewire.frontend-checkout-onepage @version 2 --}}
 {{-- Onepage checkout body: six accordion steps on the left, progress and totals on the right.
      Forms send their fields as one array to the component (FormData), after a captcha refresh where a field exists. --}}
 @php
@@ -47,7 +47,7 @@
                     @error('auth')<p class="text-xs text-danger" data-field-error="auth">{{ $message }}</p>@enderror
                     <x-frontend::captcha field="onepage_login_captcha" action="login" />
                     <button type="submit" wire:loading.attr="disabled" class="w-full rounded-card bg-primary px-4 py-2 font-bold uppercase text-on-primary hover:bg-primary-strong disabled:opacity-50">{{ __('frontend.checkout.login') }}</button>
-                    <p class="text-xs"><a href="{{ route('frontend.password_reset.request') }}" class="text-accent underline">{{ __('frontend.checkout.forgot_password') }}</a></p>
+                    <p class="text-xs"><a href="{{ route('frontend.auth.login', ['recupera' => 1]) }}" class="text-accent underline">{{ __('frontend.checkout.forgot_password') }}</a></p>
                 </form>
                 <form x-data="customerForm(@js($formConfig))" @submit.prevent="beforeSubmit($event); if (passwordsMatch() && $el.checkValidity()) submitWith($el, 'register', 'onepage_register_captcha', 'register')" class="space-y-3 rounded-card bg-surface-muted p-4">
                     <h3 class="font-bold text-primary">{{ __($o.'register_title') }}</h3>

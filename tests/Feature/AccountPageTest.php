@@ -111,4 +111,14 @@ final class AccountPageTest extends TestCase
         $this->assertStringContainsString('name="website"', $html);
         $this->assertStringContainsString('customerForm(', $html);
     }
+
+    public function test_the_checkout_password_recovery_link_opens_the_recovery_form(): void
+    {
+        $onepage = (string) file_get_contents(resource_path('views/livewire/frontend-checkout-onepage.blade.php'));
+        $this->assertStringNotContainsString("route('frontend.password_reset.request')", $onepage, 'a link cannot reach a POST-only route');
+        $this->assertStringContainsString("route('frontend.auth.login', ['recupera' => 1])", $onepage);
+
+        $this->get(route('frontend.auth.login', ['recupera' => 1]))->assertOk()->assertSee('x-data="{ recover: true }"', false);
+        $this->get(route('frontend.auth.login'))->assertOk()->assertSee('x-data="{ recover: false }"', false);
+    }
 }

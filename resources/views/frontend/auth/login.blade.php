@@ -1,10 +1,10 @@
-{{-- @mercatura-view frontend.auth.login @version 2 --}}
-{{-- Login with a password-recovery toggle (Alpine, no server round-trip). --}}
+{{-- @mercatura-view frontend.auth.login @version 3 --}}
+{{-- Login with a password-recovery toggle (Alpine, no server round-trip); ?recupera=1 opens the recovery form. --}}
 @extends('frontend.public.layout')
 @section('title', __('frontend.auth.login').' | '.config('brand.name'))
 @section('head_meta')<meta name="robots" content="noindex,follow">@endsection
 @section('content')
-	<x-frontend::auth.card :title="__('frontend.auth.login_title')" x-data="{ recover: false }">
+	<x-frontend::auth.card :title="__('frontend.auth.login_title')" x-data="{ recover: {{ request()->boolean('recupera') ? 'true' : 'false' }} }">
 		<form x-show="!recover" action="{{ route('frontend.login.attempt') }}" method="POST" class="space-y-3 rounded-card border border-border-muted bg-surface p-4" data-captcha-field="login_id" data-captcha-action="login">
 			@csrf
 			<x-frontend::forms.input name="email" type="email" :label="__('frontend.forms.email')" required autocomplete="email" />

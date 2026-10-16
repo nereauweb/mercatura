@@ -1,4 +1,4 @@
-{{-- @mercatura-view frontend.customer.order @version 3 --}}
+{{-- @mercatura-view frontend.customer.order @version 4 --}}
 {{-- One order: items with printing file uploads, attachments, totals and status. --}}
 @extends('frontend.public.layout')
 @section('title', __('frontend.account.order_number', ['id' => $order->id]).' | '.config('brand.name'))
@@ -95,7 +95,7 @@
 						<tr class="border-t border-border bg-primary-soft"><th scope="row" class="px-3 py-2 text-left font-bold text-primary">{{ __('frontend.cart.cart_total') }}</th><td class="px-3 py-2 text-right text-lg font-bold text-primary">{{ $money($order->total_taxed_price) }}&nbsp;€</td></tr>
 						<tr class="border-t border-border-muted"><th scope="row" class="px-3 py-1 text-left font-medium text-primary">{{ __('frontend.account.order_status') }}</th><td class="px-3 py-1 text-right font-bold">{{ \App\Models\Order::$status_names[$order->status] ?? $order->status }}</td></tr>
 						<tr class="border-t border-border-muted"><th scope="row" class="px-3 py-1 text-left font-medium text-primary">{{ __('frontend.account.payment_status') }}</th><td class="px-3 py-1 text-right font-bold">{{ \App\Models\Order::$payment_status_names[$order->payment_status] ?? $order->payment_status }}</td></tr>
-						<tr class="border-t border-border-muted"><th scope="row" class="px-3 py-1 text-left font-medium text-primary">{{ __('frontend.account.payment_method') }}</th><td class="px-3 py-1 text-right font-bold">{{ $order->payment_method }}</td></tr>
+						<tr class="border-t border-border-muted"><th scope="row" class="px-3 py-1 text-left font-medium text-primary">{{ __('frontend.account.payment_method') }}</th><td class="px-3 py-1 text-right font-bold">{{ \Illuminate\Support\Facades\Lang::has('frontend.checkout.payment_'.$order->payment_method) ? __('frontend.checkout.payment_'.$order->payment_method) : $order->payment_method }}</td></tr>
 						@if($order->tracking_code)<tr class="border-t border-border-muted"><th scope="row" class="px-3 py-1 text-left font-medium text-primary">{{ __('frontend.account.tracking_code') }}</th><td class="px-3 py-1 text-right font-bold">{{ $order->tracking_code }}</td></tr>@endif
 					</tbody></table>
 				</div>
