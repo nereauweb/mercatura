@@ -46,6 +46,12 @@ class DisableWrongProducts extends Command
         $total_products_count = $products->count();
         $processed_products_count = 0;
         foreach ($products as $product) {
+            // "Stato forzato: Attivo" is the admin's decision: the import never switches the product off, feed or not.
+            if ($product->forced_status === 'active') {
+                $this->line('Prodotto con stato forzato attivo, ignorato: '.$product->sku.' | '.$product->source_sku);
+
+                continue;
+            }
             if ($product->active == 1) {
                 $processed_products_count++;
                 $this->line('Analisi prodotto '.$processed_products_count.'/'.$total_products_count.' '.$product->sku.' | '.$product->source_sku);
