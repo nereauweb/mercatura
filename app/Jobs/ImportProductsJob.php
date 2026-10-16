@@ -66,10 +66,14 @@ class ImportProductsJob extends ImportJob
             // Process product data if enabled
             if ($this->process_product_data) {
                 $this->runConnectorStage(ImportConnector::STAGE_PRODUCTS);
+                // Same sequence as app:import (Import command); Scout's own console commands are not
+                // registered inside a queued job, app:RegenerateSearchIndex does the same work.
                 $this->callCommand('app:ProcessNormalizedProductData', ['import_id' => $this->import_id]);
+                $this->callCommand('catalog:color-codes');
                 $this->callCommand('app:DisableWrongProducts');
-                $this->callCommand('scout:import', ['model' => 'App\Models\Product']);
+                $this->callCommand('app:RegenerateSearchIndex');
                 ImportStageCompleted::dispatch((int) $this->import_id, ImportConnector::STAGE_PRODUCTS, (string) $this->process_source);
+                $this->callCommand('app:GenerateSitemap');
             }
 
             $time_elapsed_secs = microtime(true) - $start;
