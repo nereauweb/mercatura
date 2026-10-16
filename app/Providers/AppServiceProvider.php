@@ -30,6 +30,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // An import stage changes prices, stock, flags and customizations behind every storefront cache.
+        \Illuminate\Support\Facades\Event::listen(\App\Events\ImportStageCompleted::class, fn () => \App\Support\CatalogCache::flush());
+
         foreach ([
             \App\Models\Product::class, \App\Models\ProductVariant::class, \App\Models\Category::class, \App\Models\Brand::class,
             \App\Models\ProductColor::class, \App\Models\ProductColorFamily::class, \App\Models\ProductSize::class,

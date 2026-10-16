@@ -262,6 +262,14 @@ its height and fetches the cards (sheet tab `correlati`) in the browser's
 idle time after load; the products stay crawlable through the listings
 and the sitemap.
 
+Storefront caches are flushed as a whole (`CatalogCache::flush()`) after a
+catalogue write in the panel and after every import stage
+(`ImportStageCompleted`); the flush queues `WarmCatalogCache` a minute
+later (only the latest flush of a burst runs), which rebuilds filter
+options and navigation of the catalogue and of every active category, the
+part of a listing that is slow when cold. `deploy/deploy.sh` runs the same
+rebuild (`catalog:warm-cache`) after clearing the caches.
+
 ## 8. Repository workflow
 
 - `main` is always deployable to the demo instance. Feature branches, PRs,

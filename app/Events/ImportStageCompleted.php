@@ -12,7 +12,8 @@ use Illuminate\Foundation\Events\Dispatchable;
  * (ImportConnector::STAGE_PRODUCTS after the normalized data is processed,
  * STAGE_CUSTOMIZATIONS after the customizations are cleaned up). Installation
  * packages listen to it for their own post-import work (feeds, exports);
- * the core runs nothing after an import.
+ * the core flushes the storefront caches (CatalogCache::flush, which
+ * queues their rebuild).
  */
 final class ImportStageCompleted
 {

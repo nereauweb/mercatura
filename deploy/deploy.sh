@@ -20,5 +20,6 @@ $PHP artisan view:cache
 $PHP artisan event:cache
 $PHP artisan queue:restart
 $PHP artisan up
+$PHP artisan catalog:warm-cache
 
 echo "Deployed. Remember scout:import if the search index is new."
