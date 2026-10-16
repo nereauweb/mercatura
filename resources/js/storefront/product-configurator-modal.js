@@ -139,9 +139,11 @@ export function productConfiguratorModal(config) {
             this.done[2] = true;
             if (choice === 'quote') {
                 if (config.quickQuoteModal) {
-                    // Hand the current article and the total quantity to the quick-quote modal (§4.4).
+                    // Hand the chosen colour (its first selected article, as the product page's quote button hands
+                    // the article on screen) and the total quantity to the quick-quote modal (§4.4).
+                    const [first] = this.articles();
                     this.close();
-                    window.dispatchEvent(new CustomEvent('quick-quote-open', { detail: { articleId: config.articleId, quantity: this.totalQuantity() } }));
+                    window.dispatchEvent(new CustomEvent('quick-quote-open', { detail: { articleId: first ? first[0] : config.articleId, quantity: this.totalQuantity() } }));
                     return;
                 }
                 window.location.href = this.endpoints.quote + '#quantities=' + encodeURIComponent(JSON.stringify(this.articles()));
