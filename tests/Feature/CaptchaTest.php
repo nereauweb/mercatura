@@ -37,6 +37,26 @@ class CaptchaTest extends TestCase
         $this->assertSame('g-recaptcha-response', Captcha::field());
     }
 
+    public function test_recaptcha_loads_on_demand_hides_the_badge_and_shows_googles_notice(): void
+    {
+        config(['mercatura.providers.captcha' => 'recaptcha', 'googlerecaptchav3.site_key' => 'site-key']);
+
+        $field = Blade::render('<x-frontend::captcha field="contact_id" action="contact" />');
+        $this->assertStringContainsString('data-captcha', $field, 'marks the form for the on-demand loader');
+        $this->assertStringContainsString('policies.google.com/privacy', $field);
+
+        $script = Blade::render('<x-frontend::captcha-init />');
+        $this->assertStringNotContainsString("<script id='gReCaptchaScript'", $script, 'Google is not loaded with the page');
+        $this->assertStringContainsString('https://www.google.com/recaptcha/api.js?render=site-key&hl=it&onload=mercaturaCaptchaOnload', $script);
+        $this->assertStringContainsString('.grecaptcha-badge{visibility:hidden}', $script);
+        $this->assertStringContainsString('function onloadCallback', $script, 'the package still renders the widgets once loaded');
+    }
+
+    public function test_reports_have_a_score_threshold(): void
+    {
+        $this->assertContains('report', array_column((array) config('googlerecaptchav3.setting'), 'action'));
+    }
+
     public function test_storefront_forms_use_the_provider_neutral_data_attributes(): void
     {
         $this->get(route('frontend.auth.login'))

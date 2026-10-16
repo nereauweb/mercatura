@@ -134,6 +134,11 @@ return [
         'breadcrumb' => 'Percorso',
     ],
 
+    'captcha' => [
+        // Shown under each captcha field when the provider hides its own badge (reCAPTCHA terms). HTML, not escaped.
+        'recaptcha_notice' => 'Questo sito è protetto da reCAPTCHA: si applicano le <a href="https://policies.google.com/privacy" target="_blank" rel="noopener" class="underline">Norme sulla privacy</a> e i <a href="https://policies.google.com/terms" target="_blank" rel="noopener" class="underline">Termini di servizio</a> di Google.',
+    ],
+
     'forms' => [
         'required_hint' => '* campi obbligatori',
         'select' => 'Seleziona',
