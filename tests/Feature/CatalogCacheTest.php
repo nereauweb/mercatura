@@ -21,13 +21,13 @@ final class CatalogCacheTest extends TestCase
     public function test_a_burst_of_flushes_warms_once_with_the_latest_generation(): void
     {
         config(['queue.default' => 'database']);
-        Queue::fake();
+        $queue = Queue::fake();
         $category = Category::query()->create(['name' => 'Cache test', 'slug' => 'cache-test', 'active' => 1]);
 
         CatalogCache::flush();
         CatalogCache::flush();
 
-        $jobs = Queue::pushed(WarmCatalogCache::class)->values();
+        $jobs = $queue->pushed(WarmCatalogCache::class)->values();
         $this->assertCount(2, $jobs);
         $this->assertNotNull($jobs[0]->delay, 'the rebuild waits for the burst to end');
 
