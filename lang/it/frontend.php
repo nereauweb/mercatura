@@ -113,7 +113,7 @@ return [
         'sort_name' => 'Nome',
         'sort_position' => 'Posizione',
         'show' => 'Mostra',
-        'price' => 'Prezzo',
+        'price' => 'Prezzo a partire da',
         'price_min' => 'Minimo',
         'price_max' => 'Massimo',
         'purchase_type' => 'Modalità di acquisto',

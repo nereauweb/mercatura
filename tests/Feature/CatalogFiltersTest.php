@@ -103,6 +103,21 @@ final class CatalogFiltersTest extends TestCase
         $this->assertNotContains($disabled->id, $ids);
     }
 
+    public function test_the_price_filter_reads_the_starting_price_of_the_card_bounds_included(): void
+    {
+        $color = ProductColor::query()->create(['label' => 'Verde filtri', 'code' => '#00ff00']);
+        foreach (['FLT-P1' => [1.50, 2.40], 'FLT-P4' => [4.00, 7.00], 'FLT-P5' => [5.00, 5.80], 'FLT-P9' => [9.00, 12.00]] as $sku => [$from, $upTo]) {
+            $product = $this->product($sku);
+            $this->variant($product, $sku.'-A', $color->id);
+            $product->forceFill(['variants_min_price' => $from, 'variants_max_price' => $upTo])->save();
+        }
+
+        $this->assertSame(['FLT-P1', 'FLT-P4', 'FLT-P5'], $this->listed(['priceMaxInput' => '5']), '"da € 4,00" is under 5 even if one piece costs 7');
+        $this->assertSame(['FLT-P4', 'FLT-P5'], $this->listed(['priceMinInput' => '4', 'priceMaxInput' => '5']), 'bounds included');
+        $this->assertSame(['FLT-P9'], $this->listed(['priceMinInput' => '6']));
+        $this->assertSame([1.5, 9.0], CatalogFilterOptions::forContext($this->category->id, null)['price'], 'the range offered is the range of starting prices');
+    }
+
     public function test_a_brand_page_lists_that_brand_only(): void
     {
         $color = ProductColor::query()->create(['label' => 'Bianco filtri', 'code' => '#ffffff']);

@@ -235,6 +235,23 @@ the layout emits `@livewireScriptConfig`). Semantic colour tokens are
 JavaScript from CDNs: everything is in the bundle, and third-party tags
 (GTM, chat widget, captcha) are deferred and consent-gated.
 
+Catalogue listing filters (`FrontendProductList`, options from
+`CatalogFilterOptions`) agree with what the product card shows
+(`tests/Feature/CatalogFiltersTest.php`):
+
+- a category lists its own products; a product of a child category is
+  always attached to the parent too (import and panel), so parents need no
+  descendant query;
+- colours, facet and filter, come from active variants only;
+- "In offerta" is `Product::scopeOnSale()`: an active variant with `isSale`
+  1 (import) or 2 (forced in the panel); badge, listing filter and CMS page
+  filter use it;
+- "Novità" is `Product::newSince()` (`MERCATURA_CATALOG_NEW_DAYS`);
+- price is the card's "a partire da" price (`variants_min_price`, the
+  lowest tier of the main variant), bounds included; the range offered is
+  the range of those prices in the context;
+- a brand page (`/prodotti/marchi/{brand}`) matches the brand exactly.
+
 ## 8. Repository workflow
 
 - `main` is always deployable to the demo instance. Feature branches, PRs,

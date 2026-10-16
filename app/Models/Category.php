@@ -125,8 +125,8 @@ class Category extends Model
                 $categories_ids = array_merge($categories_ids, $this->children()->pluck('id')->toArray());
             }
 
-            // Single query to get min and max prices using joins
-            $price_range = Product::selectRaw('MIN(products.variants_min_price) as min_price, MAX(products.variants_max_price) as max_price')
+            // Lowest and highest "a partire da" price of the category (the price filter reads that column)
+            $price_range = Product::selectRaw('MIN(products.variants_min_price) as min_price, MAX(products.variants_min_price) as max_price')
                 ->join('category_product', 'products.id', '=', 'category_product.product_id')
                 ->whereIn('category_product.category_id', $categories_ids)
                 ->where('products.active', 1)

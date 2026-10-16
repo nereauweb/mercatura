@@ -370,7 +370,8 @@ final class FrontendProductList extends Component
             ->when($this->is_sale, fn ($q) => $q->onSale())
             ->when($this->is_green, fn ($q) => $q->where('isGreen', true))
             ->when($this->is_promo, fn ($q) => $q->where('isPromo', true))
-            ->when($this->hasPriceFilter(), fn ($q) => $q->where('variants_min_price', '>', (float) $this->min_price)->where('variants_max_price', '<', (float) $this->max_price))
+            // The "a partire da" price of the card, bounds included.
+            ->when($this->hasPriceFilter(), fn ($q) => $q->whereBetween('variants_min_price', [(float) $this->min_price, (float) $this->max_price]))
             ->orderBy($this->orderByColumn())
             ->paginate($this->limit ?: self::DEFAULT_LIMIT);
     }

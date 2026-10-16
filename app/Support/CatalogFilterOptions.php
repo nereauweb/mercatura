@@ -8,7 +8,6 @@ use App\Models\Category;
 use App\Models\Customizations\Customization;
 use App\Models\Product;
 use App\Models\ProductColor;
-use App\Models\ProductVariantPrice;
 use App\Support\Connectors\CustomizationPipeline;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -56,8 +55,8 @@ final class CatalogFilterOptions
                 $range = $category->get_products_min_max_prices();
                 $price = [(float) $range[0], (float) $range[1]];
             } else {
-                $min = ProductVariantPrice::query()->min('price');
-                $max = ProductVariantPrice::query()->max('price');
+                $min = Product::query()->where('active', 1)->where('variants_min_price', '>', 0)->min('variants_min_price');
+                $max = Product::query()->where('active', 1)->max('variants_min_price');
                 if ($min !== null && $max !== null) {
                     $price = [(float) $min, (float) $max];
                 }
