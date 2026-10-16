@@ -430,6 +430,8 @@ return [
         'title' => 'Iscriviti alla newsletter',
         'success_title' => 'Grazie, richiesta ricevuta!',
         'success_text' => 'La tua iscrizione è stata registrata.',
+        'already_subscribed' => 'Utente già iscritto alla newsletter',
+        'subscribe_failed' => 'Non è stato possibile completare l\'iscrizione in questo momento. Riprova più tardi.',
     ],
 
     'blog' => [

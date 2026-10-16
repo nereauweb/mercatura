@@ -198,6 +198,8 @@ class FrontendContactsController extends Controller
             FrontendDebugLog::newsletter('newsletter_subscribe:brevo_ok', [
                 'provider' => config('mercatura.providers.newsletter'),
             ]);
+        } catch (\App\Exceptions\AlreadySubscribedException) {
+            return back()->withErrors(['Brevo' => __('frontend.newsletter.already_subscribed')])->withInput();
         } catch (\Exception $e) {
             CaughtExceptionLogger::error('FrontendContactsController::newsletter_subscribe newsletter subscribe failed', $e, [
                 'email' => $request->email,
@@ -208,9 +210,7 @@ class FrontendContactsController extends Controller
                 'provider' => config('mercatura.providers.newsletter'),
             ]);
 
-            return back()->withErrors([
-                'Brevo' => 'Utente già iscritto alla newsletter',
-            ])->withInput();
+            return back()->withErrors(['Brevo' => __('frontend.newsletter.subscribe_failed')])->withInput();
         }
 
         return view('frontend.pages.newsletter_success');
