@@ -46,14 +46,19 @@ final class ShippingDateTest extends TestCase
         config(['mercatura.delivery.holidays' => [], 'mercatura.delivery.cutoff_hour' => 23]);
         Carbon::setTestNow('2026-09-14 09:00'); // a Monday
 
-        // product 7 (no connector) + default print 5, plus the chosen print's 5 = 17 working days → 7 October.
+        // product 7 (no connector) + the chosen print's 5 = 12 working days → 30 September; the default print
+        // (also 5 days) is not added on top of the chosen one.
         $line = app(LinePricer::class)->price([[$f->a->id, 100]], [$f->screenOneColorA->id], false);
-        $this->assertSame('2026-10-07', ShippingDate::for($line)->toDateString());
+        $this->assertSame('2026-09-30', ShippingDate::for($line)->toDateString());
+
+        // A plain line (or a sample): the product's 7 days only → 23 September.
+        $plain = app(LinePricer::class)->price([[$f->a->id, 100]], [], false);
+        $this->assertSame('2026-09-23', ShippingDate::for($plain)->toDateString());
 
         // Beyond the stock with a restock date: counted from the restock.
         $f->a->update(['stock' => 10, 'next_stock_date' => '2026-10-01', 'next_stock_quantity' => 500]);
         $line = app(LinePricer::class)->price([[$f->a->id, 100]], [$f->screenOneColorA->id], false);
-        $this->assertSame('2026-10-26', ShippingDate::for($line)->toDateString(), '1 October + 17 working days');
+        $this->assertSame('2026-10-19', ShippingDate::for($line)->toDateString(), '1 October + 12 working days');
 
         // A connector may answer for its products.
         $this->app->make(ImportConnectors::class)->register(new class extends BaseConnector

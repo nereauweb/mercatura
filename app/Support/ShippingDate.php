@@ -10,8 +10,9 @@ use Carbon\CarbonInterface;
 
 /**
  * The date a configured line ships (docs/04_STOREFRONT_FLOWS.md §4.5):
- * working days from the order day (the next one after the cutoff hour),
- * skipping weekends and the configured holidays; an article ordered
+ * working days from the order day (the next one after the cutoff hour):
+ * the supplier's fixed days plus the chosen customizations' days (none for
+ * a plain line or a sample), skipping weekends and the configured holidays; an article ordered
  * beyond its stock counts from its restock date; a connector may answer
  * from the supplier instead (ImportConnector::shippingDate).
  */
@@ -20,7 +21,9 @@ final class ShippingDate
     public static function for(PricedLine $line, ?CarbonInterface $from = null): CarbonInterface
     {
         $product = $line->product;
-        $days = (int) $product->processing_days() + $line->processingDays;
+        // The supplier's fixed days (connector) plus the chosen customizations' days; the product's default
+        // customization is only the product-page estimate before configuring, never added to a configured line.
+        $days = (int) $product->processing_days('none') + $line->processingDays;
         $start = self::start($from);
         foreach ($line->articles as $article) {
             $variant = $article->variant;

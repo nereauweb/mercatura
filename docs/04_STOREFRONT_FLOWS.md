@@ -180,13 +180,18 @@ no-JS fallback (`/preventivo`).
 
 `App\Support\ShippingDate::for(PricedLine $line, ?Carbon $from = null): Carbon`:
 working days from `from` (today, or tomorrow after `delivery.cutoff_hour`)
-+ `product->processing_days()` (connector days + default customization
-days) + the line's customization days, skipping Saturdays, Sundays and
++ the connector's fixed days (`product->processing_days('none')`) + the
+line's customization days (the longest chosen; none for a plain line or a
+sample), skipping Saturdays, Sundays and
 `delivery.holidays`; when an article's quantity exceeds the stock and a
 restock date exists, the count starts from the restock date (the message
 of step 2). `ImportConnector::shippingDate(Product, int $workingDays): ?Carbon`
 lets a connector answer from the supplier's API later (null = core
 rule). Shown in the modal summary, the cart line and the order mail.
+Before 16/10/2026 the product's default customization days were added on
+top of the chosen ones (and to plain lines); they remain only in the
+product-page estimate (`processing_days()`, default customization
+included), shown before anything is configured.
 
 ### 4.6 Sample request (`storefront.samples`)
 
