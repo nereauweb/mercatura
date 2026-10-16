@@ -136,7 +136,7 @@ class CatalogResourcesTest extends TestCase
         $this->assertTrue($product->categories()->whereKey($other->id)->exists());
     }
 
-    public function test_bestsellers_are_marked_in_bulk(): void
+    public function test_bestsellers_are_marked_in_bulk_and_lead_the_related_products(): void
     {
         $star = $this->createProduct('TEST-BS1', 'Borraccia stella');
         $plain = $this->createProduct('TEST-BS2', 'Borraccia semplice');
@@ -149,6 +149,13 @@ class CatalogResourcesTest extends TestCase
         $this->assertFalse($plain->refresh()->isBestseller());
         Livewire::test(ListProducts::class)->filterTable('isBestseller', true)->assertCanSeeTableRecords([$star])->assertCanNotSeeTableRecords([$plain, $viewed]);
 
+        $html = $this->get('/prodotti/'.$viewed->slug)->assertOk()->getContent();
+        $related = substr($html, (int) strpos($html, __('frontend.product.related')));
+        $related = substr($related, 0, (int) strpos($related, '</section>'));
+        $this->assertStringContainsString('Borraccia stella', $related, 'the bestseller of the subcategory');
+        $this->assertStringContainsString('Borraccia semplice', $related, 'filled up with the other products of the subcategory');
+        $this->assertLessThan(strpos($related, 'Borraccia semplice'), strpos($related, 'Borraccia stella'), 'bestsellers first');
+        $this->assertStringNotContainsString('Borraccia vista', $related, 'never the product itself');
     }
 
     public function test_category_delete_cascades_like_the_legacy_admin(): void

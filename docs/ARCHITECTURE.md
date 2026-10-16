@@ -252,6 +252,12 @@ Catalogue listing filters (`FrontendProductList`, options from
   the range of those prices in the context;
 - a brand page (`/prodotti/marchi/{brand}`) matches the brand exactly.
 
+Bestsellers are editorial: `isBestseller` is set in the panel (product form
+or the bulk actions of the products list), never by an import. They lead
+the listing slider and "Ti potrebbero interessare anche" on the product
+page; the latter is filled up with other products of the subcategory, so
+it shows even when nothing is flagged.
+
 ## 8. Repository workflow
 
 - `main` is always deployable to the demo instance. Feature branches, PRs,

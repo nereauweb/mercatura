@@ -16,6 +16,9 @@ use Illuminate\Support\Facades\Cache;
  */
 final class ProductPageData
 {
+    /** Cards in "Ti potrebbero interessare anche". */
+    private const RELATED = 16;
+
     /**
      * @return array{
      *   breadcrumbs: list<array{name: string, url: string}>,
@@ -421,18 +424,26 @@ final class ProductPageData
         return $rows;
     }
 
-    /** @return Collection<int, Product> */
+    /**
+     * "Ti potrebbero interessare anche": the bestsellers of the product's
+     * subcategory first, filled up with other products of it, never the
+     * product itself.
+     *
+     * @return Collection<int, Product>
+     */
     private static function related(Product $product): Collection
     {
         /** @var Category|null $category */
         $category = $product->categories()->whereNotNull('parent_id')->first();
         $key = 'product_related_'.($category ? 'cat_'.$category->id : 'all');
 
-        return Cache::remember($key, now()->addDay(), function () use ($category) {
-            return Product::where('active', 1)->where('isBestseller', 1)
+        $related = Cache::remember($key, now()->addDay(), function () use ($category) {
+            return Product::where('active', 1)
                 ->when($category, fn ($q) => $q->whereHas('categories', fn ($sq) => $sq->where('categories.id', $category->id)))
                 ->with(['color_variants.color', 'main_variant_relationship'])
-                ->inRandomOrder()->limit(16)->get();
+                ->orderByDesc('isBestseller')->inRandomOrder()->limit(self::RELATED + 1)->get();
         });
+
+        return $related->reject(fn (Product $item) => $item->id === $product->id)->take(self::RELATED)->values();
     }
 }
