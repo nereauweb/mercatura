@@ -102,4 +102,13 @@ class AdminPanelTest extends TestCase
         $this->actingAs($limited)->get('/admin')->assertOk();
         $this->actingAs($limited)->get('/admin/orders')->assertForbidden();
     }
+
+    public function test_the_panel_uses_the_light_background_logo_when_the_brand_has_one(): void
+    {
+        config(['brand.logo' => '/img/logo-white.png', 'brand.logo_panel' => '/img/logo-dark.png']);
+        $this->get('/admin/login')->assertOk()->assertSee('/img/logo-dark.png', false)->assertDontSee('/img/logo-white.png', false);
+
+        config(['brand.logo_panel' => null]);
+        $this->get('/admin/login')->assertOk()->assertSee('/img/logo-white.png', false);
+    }
 }

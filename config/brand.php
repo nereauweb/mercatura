@@ -23,6 +23,10 @@ return [
 
     'logo' => '/img/logo.png',
 
+    // The logo on a light background, for the admin panel (null = same as logo): a skin whose storefront logo is
+    // white for a dark header sets a dark version here.
+    'logo_panel' => null,
+
     // Mail clients do not all render WebP/SVG: a raster copy for the mail layout (null = same as logo).
 
     'logo_mail' => env('BRAND_LOGO_MAIL'),

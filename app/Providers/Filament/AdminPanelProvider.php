@@ -52,7 +52,7 @@ final class AdminPanelProvider extends PanelProvider
             ->authGuard('web')
             ->login()
             ->brandName(fn (): string => (string) config('brand.name'))
-            ->brandLogo(fn (): string => asset((string) config('brand.logo')))
+            ->brandLogo(fn (): string => asset((string) (config('brand.logo_panel') ?: config('brand.logo'))))
             ->brandLogoHeight('2rem')
             ->favicon(fn (): string => asset(rtrim((string) config('brand.favicon_path'), '/').'/favicon.ico'))
             ->colors([
