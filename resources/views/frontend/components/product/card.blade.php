@@ -1,4 +1,4 @@
-{{-- @mercatura-view frontend.components.product.card @version 2 --}}
+{{-- @mercatura-view frontend.components.product.card @version 3 --}}
 {{-- Product card: thumbnail, badges, name, sku, colour dots that swap the thumbnail, starting price, quote CTA.
      Slots: after-price. eager/priority: first-row LCP candidates (listing, slider). --}}
 @props(['product', 'eager' => false, 'priority' => false])
@@ -51,7 +51,11 @@
                 @endforeach
             </ul>
         @endif
-        <p class="mt-auto pt-2 text-sm"><small class="text-text-muted">{{ __('frontend.product.card.from_price') }}</small> <strong class="text-primary">€&nbsp;{{ $product->formatted_min_price() }}</strong></p>
+        @if($product->quote_only)
+            <p class="mt-auto pt-2 text-sm font-bold text-primary">{{ __('frontend.product.card.quote_only') }}</p>
+        @else
+            <p class="mt-auto pt-2 text-sm"><small class="text-text-muted">{{ __('frontend.product.card.from_price') }}</small> <strong class="text-primary">€&nbsp;{{ $product->formatted_min_price() }}</strong></p>
+        @endif
         {{ $afterPrice ?? '' }}
     </div>
     <a href="{{ route('frontend.quotation.configure', ['id' => $mainVariant]) }}" @if(config('mercatura.storefront.quick_quote') === 'modal') @click.prevent="$dispatch('quick-quote-open', {articleId: {{ (int) ($mainVariant->id ?? $mainVariant) }}})" @endif class="block bg-accent py-2 text-xs font-bold uppercase text-on-accent hover:bg-accent-strong md:invisible md:group-hover:visible">{{ __('frontend.product.card.request_quote') }}</a>

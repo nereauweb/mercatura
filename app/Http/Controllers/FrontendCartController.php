@@ -45,6 +45,11 @@ class FrontendCartController extends Controller
         if (empty($normalizedArticles)) {
             return back()->with('error', 'Impossibile aggiungere il prodotto al carrello. Verifica le quantità selezionate.');
         }
+        // "Solo su preventivo" products are never sold directly, whatever the page offered (docs/04 §4.3).
+        $variantIds = array_column($normalizedArticles, 0);
+        if (\App\Models\ProductVariant::query()->whereIn('id', $variantIds)->whereHas('product', fn ($q) => $q->where('quote_only', true))->exists()) {
+            return back()->with('error', __('frontend.cart.quote_only'));
+        }
         $decodedCartItem['articles'] = $normalizedArticles;
         // The configurator posts `printings`; the session keeps `customizations` (docs/03 decision 7).
         $decodedCartItem['customizations'] = $this->normalizeIntegerList($decodedCartItem['customizations'] ?? $decodedCartItem['printings'] ?? []);

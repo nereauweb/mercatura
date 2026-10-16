@@ -202,6 +202,7 @@ return [
     ],
 
     'cart' => [
+        'quote_only' => 'Questo prodotto è disponibile solo su preventivo: richiedi un preventivo rapido, ti risponderemo entro 24 ore.',
         'artwork_invalid' => 'Il file non è valido o non è tra i formati accettati.',
         'sample' => 'Campione',
         'shipping_date' => 'Data di spedizione',
@@ -640,6 +641,7 @@ return [
         ],
         'card' => [
             'from_price' => 'A partire da',
+            'quote_only' => 'Solo su preventivo',
             'request_quote' => 'Richiedi preventivo',
             'badge_bestseller' => 'Bestseller',
             'badge_promo' => 'Promo',
