@@ -11,6 +11,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+/**
+ * Two levels: roots and their children. A product in a child category is
+ * always attached to the parent too (import: ProcessNormalizedProductData,
+ * panel: SyncProductCategories), so a category's own pivot rows already
+ * cover its subcategories.
+ */
 class Category extends Model
 {
     use HasSeoFields;
@@ -144,25 +150,6 @@ class Category extends Model
         }
 
         return [$min_price, $max_price];
-    }
-
-    public function get_products_colors()
-    {
-        $categories_ids[] = $this->id;
-        // TODO!!!! problema categorie figlie si / no
-        if ($this->children) {
-            $categories_ids = array_merge($categories_ids, $this->children()->pluck('id')->toArray());
-        }
-        $products_ids = ProductCategory::whereIn('category_id', $categories_ids)->pluck('product_id')->toArray();
-        // $variants_ids = ProductVariant::whereIn('product_id',$products_ids)->pluck('id')->toArray();
-        $variants = ProductVariant::whereIn('product_id', $products_ids);
-        $color_ids = [];
-        foreach ($variants as $variant) {
-            if (! in_array($variant->color_id, $color_ids)) {
-                array_push($color_ids, $variant->color_id);
-            }
-        }
-        $colors = ProductColor::whereIn('id', $color_ids);
     }
 
     public function get_seo_title()

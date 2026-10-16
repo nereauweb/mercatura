@@ -39,12 +39,8 @@ class FrontendListController extends Controller
     {
 
         if ($category) {
+            // Own pivot rows only: products of a child category are attached to the parent too (Category).
             $categories_ids_filter[] = $category->id;
-            /*
-            if ($category->children){
-                $categories_ids_filter = array_merge($categories_ids_filter,$category->children()->pluck('id')->toArray());
-            }
-            */
             $product_ids = Product::select('id')->where('active', 1)->whereHas('categories', function ($q) use ($categories_ids_filter) {
                 $q->whereIn('categories.id', $categories_ids_filter);
             })->pluck('products.id')->toArray();
