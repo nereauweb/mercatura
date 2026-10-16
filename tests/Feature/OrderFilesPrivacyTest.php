@@ -85,6 +85,8 @@ final class OrderFilesPrivacyTest extends TestCase
 
     public function test_customization_artwork_is_private_and_reaches_only_its_customer_and_the_admin(): void
     {
+        $orderPage = route('frontend.auth.order.show', $this->order->id);
+        $this->actingAs($this->owner)->get($orderPage)->assertOk()->assertSee(__('frontend.account.print_file_missing'))->assertDontSee(__('frontend.account.print_file_ready'));
         $this->actingAs($this->owner)->put(route('customer.order.printings.upload-image', $this->printing->id), [
             'variant_image' => UploadedFile::fake()->createWithContent('marchio.pdf', "%PDF-1.4\n".str_repeat('%', 2048)."\n%%EOF\n"),
         ])->assertRedirect();
@@ -95,6 +97,7 @@ final class OrderFilesPrivacyTest extends TestCase
 
         $customerUrl = route('customer.order.printings.file', $this->printing->id);
         $this->actingAs($this->owner)->get($customerUrl)->assertOk();
+        $this->actingAs($this->owner)->get($orderPage)->assertOk()->assertSee(__('frontend.account.print_file_ready'))->assertDontSee(__('frontend.account.print_file_missing'));
         $this->actingAs($this->other)->get($customerUrl)->assertNotFound();
         $this->actingAs($this->admin)->get(route('admin.orders.artwork', $this->printing->id))->assertOk();
         $this->actingAs($this->owner)->get(route('admin.orders.artwork', $this->printing->id))->assertForbidden();

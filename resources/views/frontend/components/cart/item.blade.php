@@ -1,4 +1,4 @@
-{{-- @mercatura-view frontend.components.cart.item @version 1 --}}
+{{-- @mercatura-view frontend.components.cart.item @version 2 --}}
 {{-- One cart line: product, articles table, printings, prices, remove form. --}}
 @props(['item'])
 @php $product = $item['product']; $money = fn ($v) => number_format((float) $v, 2, ',', '.'); @endphp
@@ -34,7 +34,11 @@
             @if(!empty($item['sample']))<p class="mt-2 text-xs font-semibold uppercase text-primary">{{ __('frontend.cart.sample') }}</p>@endif
             @if(!empty($item['shipping_date']))<p class="mt-2 text-xs"><strong>{{ __('frontend.cart.shipping_date') }}:</strong> {{ $item['shipping_date']->format('d/m/Y') }}</p>@endif
             @if(!empty($item['printings']))
-            <p class="mt-2 rounded bg-danger-soft px-3 py-2 text-xs text-accent-strong"><strong>{{ __('frontend.cart.print_files_missing') }}</strong><br>{{ __('frontend.cart.print_files_hint') }}</p>
+                @if(collect($item['printings'])->every(fn ($option) => ! empty($item['artwork'][$option->id] ?? null)))
+                <p class="mt-2 rounded bg-surface-muted px-3 py-2 text-xs text-positive"><strong>{{ __('frontend.cart.print_files_ready') }}</strong></p>
+                @else
+                <p class="mt-2 rounded bg-danger-soft px-3 py-2 text-xs text-accent-strong"><strong>{{ __('frontend.cart.print_files_missing') }}</strong><br>{{ __('frontend.cart.print_files_hint') }}</p>
+                @endif
             @endif
             <table class="mt-3 w-full text-sm">
                 <thead><tr class="text-left text-text-muted"><th class="px-2 py-1 font-medium">{{ __('frontend.cart.quantity') }}</th><th class="px-2 py-1 font-medium">{{ __('frontend.cart.unit_price') }}</th><th class="px-2 py-1 font-medium">{{ __('frontend.cart.total_price') }}</th>@if($item['additional_costs'] > 0)<th class="px-2 py-1 font-medium">{{ __('frontend.cart.additional_costs') }}</th>@endif</tr></thead>

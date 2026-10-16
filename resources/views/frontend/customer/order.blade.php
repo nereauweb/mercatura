@@ -1,4 +1,4 @@
-{{-- @mercatura-view frontend.customer.order @version 4 --}}
+{{-- @mercatura-view frontend.customer.order @version 5 --}}
 {{-- One order: items with printing file uploads, attachments, totals and status. --}}
 @extends('frontend.public.layout')
 @section('title', __('frontend.account.order_number', ['id' => $order->id]).' | '.config('brand.name'))
@@ -33,8 +33,9 @@
 								</table>
 							</div>
 							@if($item->customizations->count())
-							<div class="mt-3 rounded bg-danger-soft p-3 text-sm">
-								<p class="font-semibold text-accent-strong">{{ __('frontend.account.print_file_missing') }}</p>
+							@php $printFilesReady = $item->customizations->every(fn ($printing) => filled($printing->file)); @endphp
+							<div class="mt-3 rounded p-3 text-sm {{ $printFilesReady ? 'bg-surface-muted' : 'bg-danger-soft' }}">
+								<p class="font-semibold {{ $printFilesReady ? 'text-positive' : 'text-accent-strong' }}">{{ __($printFilesReady ? 'frontend.account.print_file_ready' : 'frontend.account.print_file_missing') }}</p>
 								<div class="mt-2 grid gap-3 sm:grid-cols-2">
 									@foreach($item->customizations as $printing)
 									<form action="{{ route('customer.order.printings.upload-image', $printing->id) }}" method="POST" enctype="multipart/form-data" class="rounded border border-border-muted bg-surface p-3">
