@@ -9,16 +9,16 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 Schedule::command('app:import')
-    ->dailyAt('05:00')
+    ->dailyAt('03:00')
     ->days([1, 2, 3, 4, 5, 6])
     ->withoutOverlapping();
 
 Schedule::command('app:import --process-customization-data=true')
-    ->weeklyOn(6, '21:00')
+    ->weeklyOn(6, '23:00')
     ->withoutOverlapping();
 
-// Sitemap for search engines, nightly (docs/02_V2B_ADMIN.md §3.10); the admin page can regenerate it on demand.
-Schedule::command('app:GenerateSitemap')->dailyAt('03:30')->withoutOverlapping();
+// Sitemap runs at the end of app:import (Import command), not on its own clock.
+// The admin page can still regenerate it on demand.
 
 // Report attachments past their retention period (docs/06_USER_REPORTS.md §4).
 Schedule::command('cleanup:report-attachments')->dailyAt('04:20')->withoutOverlapping();

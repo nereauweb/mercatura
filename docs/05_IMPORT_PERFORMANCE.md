@@ -13,8 +13,8 @@ optimisation must keep the logic and the resulting data identical.
 
 | Run | Stages | Duration |
 |---|---|---|
-| Nightly `app:import` (Mon-Sat 05:00) | download PF + Sipec, normalise, publish, sitemap | **32 min** (PF raw 14, Sipec raw 6, normalise PF 7, Sipec 1.5, publish 4) |
-| Weekly `app:import --process-customization-data=true` (Sat 21:00) | the same, plus PF print feeds stored, PF printing normalised, Sipec printing downloaded and normalised, cleanup | **6.3 h** on the first complete run (26/09) |
+| Nightly `app:import` (Mon-Sat 03:00) | download PF + Sipec, normalise, publish, sitemap | **32 min** (PF raw 14, Sipec raw 6, normalise PF 7, Sipec 1.5, publish 4) |
+| Weekly `app:import --process-customization-data=true` (Sat 23:00) | the same, plus PF print feeds stored, PF printing normalised, Sipec printing downloaded and normalised, cleanup | **6.3 h** on the first complete run (26/09) |
 
 Breakdown of the first complete weekly run (19:18 → 01:35):
 
@@ -115,10 +115,12 @@ Together B1-B5 bring the first complete run from 5.5 h to an estimated
 
 ## 4. Scheduling with the current code
 
-The weekly run started Saturday 21:00 ends around 03:20 on Sunday. It does not
-overlap with the nightly import (Mon-Sat only); the 03:30 sitemap job may run
-while the import is still finishing, which is harmless (both write the same
-file, last one wins). Nothing to change until A/B are applied.
+The weekly run starts Saturday 23:00 (moved from 21:00, with the nightly run
+from 05:00 to 03:00, on 31/10/2026). It does not overlap with the nightly
+import (Mon-Sat only). The standalone 03:30 sitemap job is gone: `app:import`
+regenerates the sitemap once, at the end of each run, so the two can no
+longer race. The 6.3 h measured on the first complete run would end around
+05:20 on Sunday; current runs take about 40 minutes.
 
 ## 5. Recommended sequence
 

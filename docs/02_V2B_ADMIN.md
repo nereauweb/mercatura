@@ -340,8 +340,9 @@ Deviations recorded while doing v2b.4:
   picker is a searchable select instead of the legacy AJAX grid.
 - Image `alt` is edited per image from the variant page (media
   custom property); the storefront gallery uses it when present.
-- The sitemap is scheduled nightly at 03:30 and regenerated on demand from
-  its page; nothing regenerates it on view any more.
+- The sitemap is regenerated at the end of every `app:import` (until
+  31/10/2026 also by its own nightly 03:30 job, removed then) and on demand
+  from its page; nothing regenerates it on view any more.
 
 Rough size, in resources and screens: 22 resources, 3 custom pages, 5
 widgets, 3 migrations, ~8 action/enum classes, ~25 test classes. v2b.3 is

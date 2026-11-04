@@ -91,9 +91,9 @@ class Import extends ImportCommand
             $this->call('cleanup:customizations');
             ImportStageCompleted::dispatch((int) $this->import_id, ImportConnector::STAGE_CUSTOMIZATIONS);
         }
-        $this->call('app:GenerateSitemap');
         $time_elapsed_secs = microtime(true) - $start;
         $this->db_log('end', 'Processo di import finito alle '.date('H:i').' del '.date('d/m/Y').', durata totale: '.round($time_elapsed_secs / 60, 2).' minuti ('.round($time_elapsed_secs / 60 / 60, 2).' h)', 'success');
+        $this->call('app:GenerateSitemap');
 
     }
 

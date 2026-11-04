@@ -472,7 +472,7 @@ return [
         'sitemap_last' => 'Ultima generazione',
         'sitemap_never' => 'Mai generata',
         'sitemap_urls' => 'URL nella sitemap',
-        'sitemap_schedule' => 'La sitemap viene rigenerata ogni notte dallo scheduler (app:GenerateSitemap).',
+        'sitemap_schedule' => 'La sitemap viene rigenerata al termine di ogni import.',
         'sitemap_regenerate' => 'Rigenera ora',
         'sitemap_done' => 'Sitemap rigenerata',
         'sitemap_open' => 'Apri sitemap.xml',
