@@ -117,9 +117,11 @@ when open and show a check when done:
    preventivo per maggiori informazioni", "La quantità richiesta eccede
    quella attuale, la data di spedizione sarà quella della disponibilità
    futura". Footer question **"Vuoi personalizzare il prodotto applicando
-   una stampa?"** with **SÌ / SÌ (richiedi preventivo) / NO (acquista
-   direttamente)**; NO jumps to the summary; the middle one hands the
-   selection to the quick quote (§4.4).
+   una stampa?"** with **SÌ / NO (acquista direttamente)** when the
+   article has customization data, **SÌ (richiedi preventivo) / NO** when
+   it has none (the quote answer is the fallback, not a third choice:
+   04/11/2026, configurator-modal v2); NO jumps to the summary; the quote
+   answer hands the selection to the quick quote (§4.4).
 3. **Stampa** — the options tree of §4.1 arrives here. Technique buttons
    row, then a position select whose options are the priced
    area/option combinations for that technique (label "Fronte — 10x10 cm
@@ -294,7 +296,7 @@ for the modal. Step 3 offers every technique as a button row and one
 select of priced position/area/option rows for the browsed technique;
 "Aggiungi posizione" keeps one decoration per position, so different
 positions may use different techniques (the owner's extension). The
-"SÌ (richiedi preventivo)" answer sends to the quotation page with the
+"SÌ (richiedi preventivo)" answer (offered only without customization data since 04/11/2026) sends to the quotation page with the
 quantities in the URL hash until F3 wires the modal. No browser test yet:
 the page test checks the mount and the copy, the endpoints are tested in
 F1. Bundle: 119 KB gzip, at the budget.

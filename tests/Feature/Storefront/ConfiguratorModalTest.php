@@ -36,5 +36,20 @@ final class ConfiguratorModalTest extends TestCase
         $this->assertStringContainsString('role="dialog"', $modal);
         $this->assertStringContainsString($f->a->sku, $modal, 'the quantity table shows the article codes');
         $this->assertStringNotContainsString(__('frontend.product.configurator.title'), $modal);
+        $this->assertStringContainsString(__('frontend.product.configurator_modal.decoration_yes').'</button>', $modal);
+        $this->assertStringNotContainsString(__('frontend.product.configurator_modal.decoration_quote'), $modal, 'with customization data the quote answer is not offered');
+    }
+
+    public function test_without_customization_data_the_quote_answer_replaces_yes(): void
+    {
+        $this->seed(CoreSeeder::class);
+        $f = CustomizationFixture::create();
+        $f->a->customizations()->delete();
+        config(['mercatura.storefront.configurator' => 'modal']);
+
+        $modal = $this->get('/prodotti/'.$f->product->slug)->assertOk()->getContent();
+        $this->assertStringContainsString(__('frontend.product.configurator_modal.decoration_quote'), $modal);
+        $this->assertStringNotContainsString(__('frontend.product.configurator_modal.decoration_yes').'</button>', $modal);
+        $this->assertStringContainsString(__('frontend.product.configurator_modal.decoration_no'), $modal);
     }
 }

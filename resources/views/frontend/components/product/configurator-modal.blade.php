@@ -1,4 +1,4 @@
-{{-- @mercatura-view frontend.components.product.configurator-modal @version 1 --}}
+{{-- @mercatura-view frontend.components.product.configurator-modal @version 2 --}}
 {{-- Modal configurator (docs/04_STOREFRONT_FLOWS.md §4.2), driven by the Alpine productConfiguratorModal component
      mounted on the product page root. Five accordion steps; every amount comes from the JSON summary endpoint. --}}
 @props(['product', 'article', 'configurator'])
@@ -62,10 +62,12 @@
                     <div class="rounded-card bg-surface-muted p-4">
                         <p class="font-semibold">{{ __($m.'decoration_question') }}</p>
                         <div class="mt-3 flex flex-wrap gap-2">
+                            {{-- "Sì" when the article has customization data; "Sì (richiedi preventivo)" only as its fallback when it has none. --}}
                             @if($configurator['has_printing'])
                             <button type="button" @click="chooseDecoration('yes')" class="rounded-full bg-accent px-5 py-2 text-sm font-bold uppercase text-on-accent hover:bg-accent-strong">{{ __($m.'decoration_yes') }}</button>
-                            @endif
+                            @else
                             <button type="button" @click="chooseDecoration('quote')" class="rounded-full border border-accent px-5 py-2 text-sm font-bold uppercase text-accent hover:bg-accent hover:text-on-accent">{{ __($m.'decoration_quote') }}</button>
+                            @endif
                             <button type="button" @click="chooseDecoration('no')" class="rounded-full bg-primary-strong px-5 py-2 text-sm font-bold uppercase text-on-primary hover:bg-primary">{{ __($m.'decoration_no') }}</button>
                         </div>
                     </div>
