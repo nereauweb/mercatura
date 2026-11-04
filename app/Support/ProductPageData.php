@@ -156,6 +156,8 @@ final class ProductPageData
         $prices = $article->ordered_prices();
         $single = $article->prices->count() === 1;
 
+        // Both tables label their columns the same way: "50+" (from 50 pieces up), no suffix per size.
+        $suffix = $perSize ? '' : '+';
         $neutralColumns = [];
         $neutralCells = [];
         $printedColumns = [];
@@ -164,7 +166,7 @@ final class ProductPageData
         $count = 0;
         foreach ($prices as $price) {
             if (! $perSize || $count < 4) {
-                $neutralColumns[] = $price->from_quantity.($perSize ? '' : '+');
+                $neutralColumns[] = $price->from_quantity.$suffix;
                 $neutralCells[] = $format($price->price);
                 $count++;
             }
@@ -175,13 +177,13 @@ final class ProductPageData
                 break;
             }
             if ($price->from_quantity > 1 && $price->from_quantity >= $minPrint && $price->from_quantity != $lastFrom) {
-                $printedColumns[] = (string) $price->from_quantity;
+                $printedColumns[] = $price->from_quantity.$suffix;
                 $printedCells[] = $format($article->price_per_quantity($price->from_quantity, false, false, true));
                 $lastFrom = $price->from_quantity;
                 $count++;
             } elseif ($price->from_quantity == 1 && $minPrint != $lastFrom && ($minPrint > 1 || $single)) {
                 $qty = max(1, $minPrint);
-                $printedColumns[] = $qty.'+';
+                $printedColumns[] = $qty.$suffix;
                 $printedCells[] = $format($article->price_per_quantity($qty, false, false, true));
                 $lastFrom = $qty;
                 $count++;

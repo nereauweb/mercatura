@@ -24,6 +24,9 @@ final class ProductPriceTableTest extends TestCase
 
         $this->assertSame(['1+', '50+', '100+'], $table['columns']);
         $this->assertNotEmpty($table['printed_columns']);
+        foreach ($table['printed_columns'] as $column) {
+            $this->assertStringEndsWith('+', $column, 'printed columns are labelled like the neutral ones');
+        }
         $this->assertNotEmpty($table['printed_rows']);
         $this->assertStringContainsString('Serigrafia', (string) $table['printed_note']);
         $this->assertStringContainsString('Fronte', (string) $table['printed_note']);

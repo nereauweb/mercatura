@@ -1,4 +1,4 @@
-{{-- @mercatura-view frontend.pages.product @version 5 --}}
+{{-- @mercatura-view frontend.pages.product @version 6 --}}
 {{-- Product page for one variant: gallery, identity, colours, description, CTAs, print info, price tables,
      details, configurator, related products, selling points. Data: $product, $article, $page (ProductPageData).
      Stacks: product-before, product-after-price, product-after-description, product-after-tables, product-after. --}}
@@ -88,10 +88,10 @@
 		@stack('product-before')
 
 		<section class="grid gap-8 md:grid-cols-5">
-			<div class="md:col-span-2">
+			<div class="min-w-0 md:col-span-2">
 				<x-frontend::product.gallery :images="$page['gallery']" :alt="$product->name" :badges="$badges" />
 			</div>
-			<div class="flex flex-col gap-4 md:col-span-3">
+			<div class="flex min-w-0 flex-col gap-4 md:col-span-3">
 				<div>
 					<h1 class="text-2xl font-bold text-primary md:text-3xl">{{ $product->name }}</h1>
 					<p class="text-sm text-text-muted">{{ __('frontend.product.code') }} <strong>{{ $article->sku }}</strong></p>
@@ -150,12 +150,12 @@
 
 		<section class="mt-8 grid gap-8 md:grid-cols-5">
 			@if($hasPrices)
-			<div class="md:col-span-2">
+			<div class="min-w-0 md:col-span-2">
 				<h2 class="text-lg font-bold uppercase text-primary">{{ __('frontend.product.price_table') }}</h2>
 				<x-frontend::product.price-table :table="$page['price_table']" :quote-url="$quoteUrl" :quick-quote-id="$quickModal ? $article->id : null" class="mt-2" />
 			</div>
 			@endif
-			<div class="{{ $hasPrices ? 'md:col-span-3' : 'md:col-span-5' }}">
+			<div class="min-w-0 {{ $hasPrices ? 'md:col-span-3' : 'md:col-span-5' }}">
 				<x-frontend::product.details :details="$page['details']" :packaging="$page['packaging']" />
 			</div>
 		</section>
