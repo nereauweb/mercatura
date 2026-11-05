@@ -74,6 +74,15 @@ class CatalogResourcesTest extends TestCase
         }
     }
 
+    public function test_product_list_shows_the_stored_cover_not_the_placeholder(): void
+    {
+        $product = $this->createProduct();
+        $product->forceFill(['cover_url' => '/storage/123/conversions/test-thumb.webp'])->save();
+
+        Livewire::test(ListProducts::class)
+            ->assertSee(url('/storage/123/conversions/test-thumb.webp'), false);
+    }
+
     public function test_create_product_makes_a_main_variant_and_attaches_the_parent_category(): void
     {
         $product = $this->createProduct();

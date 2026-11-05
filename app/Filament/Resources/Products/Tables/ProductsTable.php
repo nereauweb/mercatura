@@ -35,7 +35,11 @@ final class ProductsTable
             ->defaultSort('id', 'desc')
             ->columns([
                 TextColumn::make('id')->label(__('admin.common.id'))->sortable(),
-                ImageColumn::make('cover_url')->label(__('admin.catalog.cover'))->square()->size(40)->defaultImageUrl(asset('/img/logo-mark.png')),
+                // cover_url is a site-relative URL (/storage/…), not a path on the public disk:
+                // resolve it to an absolute URL so ImageColumn does not look for it on the disk.
+                ImageColumn::make('cover_url')->label(__('admin.catalog.cover'))->square()->size(40)
+                    ->getStateUsing(fn (Product $record): ?string => $record->cover_url ? url($record->cover_url) : null)
+                    ->defaultImageUrl(asset('/img/logo-mark.png')),
                 TextColumn::make('sku')->label(__('admin.catalog.sku'))->searchable()->sortable()->copyable(),
                 TextColumn::make('name')->label(__('admin.catalog.name'))->searchable()->sortable()->limit(50)->wrap(),
                 TextColumn::make('brand')->label(__('admin.catalog.brand'))->placeholder('-')->toggleable(),

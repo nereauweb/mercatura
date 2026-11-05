@@ -32,7 +32,8 @@ final class ProductsRelationManager extends RelationManager
             ->defaultSort('category_product.position')
             ->reorderable('category_product.position')
             ->columns([
-                ImageColumn::make('cover_url')->label(__('admin.catalog.cover'))->square()->size(32),
+                ImageColumn::make('cover_url')->label(__('admin.catalog.cover'))->square()->size(32)
+                    ->getStateUsing(fn (Product $record): ?string => $record->cover_url ? url($record->cover_url) : null),
                 TextColumn::make('sku')->label(__('admin.catalog.sku'))->searchable(),
                 TextColumn::make('name')->label(__('admin.catalog.name'))->searchable()->limit(60),
                 IconColumn::make('active')->label(__('admin.catalog.active'))->boolean(),
