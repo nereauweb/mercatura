@@ -323,6 +323,13 @@ Deviations recorded while doing v2b.3:
 - Category icons stay plain files under `storage/app/public/categories/icons`
   (the storefront reads the bare file name); brand logos are stored as
   `/storage/brands/<file>` paths.
+- Brand records drive the storefront (2026-11-06). The import links each
+  product to its brand (`App\Support\BrandResolver`: match by name, then by
+  slug so a panel rename sticks; unknown labels create an active brand; a
+  brand deleted in the panel is not recreated; empty, `0` and `Unbranded`
+  mean no brand) and writes the brand's name as the label. The card logo
+  (`App\Support\BrandLogo`) comes from the active brand's `logo`; only
+  products without a brand fall back to `public/img/brands/{brand_image}`.
 - Cache invalidation after catalogue writes is `Cache::flush()`
   (`App\Support\CatalogCache`): the storefront caches are per-entity keys
   without tags. Bulk status changes reindex the touched products explicitly.

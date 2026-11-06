@@ -1,4 +1,4 @@
-{{-- @mercatura-view frontend.components.product.card @version 3 --}}
+{{-- @mercatura-view frontend.components.product.card @version 4 --}}
 {{-- Product card: thumbnail, badges, name, sku, colour dots that swap the thumbnail, starting price, quote CTA.
      Slots: after-price. eager/priority: first-row LCP candidates (listing, slider). --}}
 @props(['product', 'eager' => false, 'priority' => false])
@@ -17,6 +17,7 @@
         ? $product->main_variant_relationship
         : $product->main_variant();
     $hover = config('mercatura.storefront.card_hover_image') ? $mainVariant?->hoverImage() : null;
+    $brandLogo = \App\Support\BrandLogo::for($product);
 @endphp
 <article x-data="{ cover: @js($cover), base: @js($cover), hover: @js($hover), async swap(id) { try { const r = await fetch(@js(url('/variante')) + '/' + id + '/cover'); if (r.ok) { this.cover = await r.text(); this.base = this.cover; this.hover = null; } } catch (e) {} } }"
          @if($hover) @mouseenter="if (hover) cover = hover" @mouseleave="cover = base" @endif
@@ -35,8 +36,9 @@
                 @endforeach
             </ul>
         @endif
-        @if($product->brand_image && file_exists(public_path('img/brands/'.$product->brand_image)))
-            <img src="/img/brands/{{ $product->brand_image }}" alt="{{ $product->brand }}" width="50" height="50" loading="lazy" class="absolute right-2 top-2 h-auto max-w-[50px]">
+        @if($brandLogo)
+            {{-- Bounded on both sides: tall marks stay off the product, wide wordmarks stay legible. --}}
+            <img src="{{ $brandLogo['url'] }}" alt="{{ $brandLogo['alt'] }}" width="64" height="28" loading="lazy" class="absolute right-2 top-2 h-auto max-h-7 w-auto max-w-16 object-contain">
         @endif
     </div>
     <div class="flex flex-1 flex-col px-3 py-2">

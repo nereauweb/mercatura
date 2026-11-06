@@ -1,4 +1,4 @@
-{{-- @mercatura-view livewire.frontend-product-list @version 3 --}}
+{{-- @mercatura-view livewire.frontend-product-list @version 4 --}}
 {{-- Filters panel + product grid + pagination. Filters apply immediately; wire:loading gives visual state
      while the smallest component (this one) re-renders. --}}
 @php
@@ -11,8 +11,8 @@
     $brandOptions = $this->visibleOptions('brands', $options['brands'], $brands, 'name');
     $printOptions = $this->visibleOptions('prints', $options['prints'], $print_techniques, 'label');
 @endphp
-<div class="grid gap-6 md:grid-cols-4" x-data="{ showNav: false, showFilters: false }">
-	<aside class="md:col-span-1">
+<div class="grid grid-cols-1 gap-6 md:grid-cols-4" x-data="{ showNav: false, showFilters: false }">
+	<aside class="min-w-0 md:col-span-1">
 		<div class="mb-3 grid grid-cols-2 gap-2 md:hidden">
 			<button type="button" @click="showNav = !showNav" :aria-expanded="showNav" class="flex items-center justify-center gap-2 rounded-card border border-border px-3 py-2 text-sm font-semibold"><x-frontend::icon name="menu" class="h-4 w-4" />{{ $categoryModel ? __('frontend.catalog.subcategories') : __('frontend.catalog.categories') }}</button>
 			<button type="button" @click="showFilters = !showFilters" :aria-expanded="showFilters" class="flex items-center justify-center gap-2 rounded-card border border-border px-3 py-2 text-sm font-semibold"><x-frontend::icon name="bolt" class="h-4 w-4" />{{ __('frontend.catalog.filters') }} @if($activeFilters)<span class="rounded-full bg-accent px-1.5 text-xs text-on-accent">{{ $activeFilters }}</span>@endif</button>
@@ -119,7 +119,7 @@
 		</div>
 	</aside>
 
-	<section class="relative md:col-span-3" aria-live="polite" aria-busy="false" wire:loading.attr="aria-busy">
+	<section class="relative min-w-0 md:col-span-3" aria-live="polite" aria-busy="false" wire:loading.attr="aria-busy">
 		<div wire:loading.delay class="absolute inset-0 z-10 flex items-start justify-center rounded-card bg-surface/70 pt-10 text-sm font-semibold text-primary">
 			{{ __('frontend.catalog.loading') }}
 		</div>

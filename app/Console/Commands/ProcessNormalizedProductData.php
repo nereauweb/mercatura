@@ -10,6 +10,7 @@ use App\Models\ProductColor;
 use App\Models\ProductSize;
 use App\Models\ProductVariant;
 use App\Models\ProductVariantPrice;
+use App\Support\BrandResolver;
 use App\Support\CaughtExceptionLogger;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
@@ -54,6 +55,7 @@ class ProcessNormalizedProductData extends ImportCommand
 
     private function process(): void
     {
+        $brands = new BrandResolver;
         // ===== INIZIALIZZAZIONE IMPORT =====
         $this->import_id = $this->argument('import_id') ? $this->argument('import_id') : time();
         $start = microtime(true);
@@ -531,7 +533,10 @@ class ProcessNormalizedProductData extends ImportCommand
             // Solo se NON è aggiornamento parziale
             if (! $partial_update) {
                 $product->variants_colors = json_encode($variants_colors);
-                $product->brand = $brand;
+                // Link the brand record (created on first sight); its name is the label, so a rename in the panel sticks.
+                $brandRecord = $brands->resolve($brand);
+                $product->brand_id = $brandRecord?->id;
+                $product->brand = $brandRecord !== null ? $brandRecord->name : $brand;
                 $product->brand_image = $brand_image;
                 $product->default_customization_technique = $normalized_product->default_customization_technique;
                 $product->default_customization_position = $normalized_product->default_customization_position;

@@ -46,6 +46,9 @@ final class CatalogPageTest extends TestCase
         $this->assertStringContainsString(__('frontend.catalog.all_products'), $html);
         $main = substr($html, strpos($html, '<main'), strpos($html, '</main>') - strpos($html, '<main'));
         $this->assertStringNotContainsString('uk-', $main);
+        // Mobile: an explicit minmax(0,1fr) column and shrinkable items, or the filters panel widens the page.
+        $this->assertStringContainsString('class="grid grid-cols-1 gap-6 md:grid-cols-4"', $main);
+        $this->assertStringContainsString('<aside class="min-w-0 md:col-span-1">', $main);
     }
 
     public function test_unknown_category_slug_is_not_found(): void
