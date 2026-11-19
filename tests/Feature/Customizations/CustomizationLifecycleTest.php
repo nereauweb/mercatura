@@ -48,6 +48,24 @@ class CustomizationLifecycleTest extends TestCase
         $this->assertFalse($f->product->customizations()->whereKey($f->screenA->id)->exists());
     }
 
+    public function test_the_highest_minimum_customization_ignores_inactive_rows_in_the_aggregate(): void
+    {
+        $this->seed(CoreSeeder::class);
+        $f = CustomizationFixture::create();
+        // Both rows of A have minimum 50; ofMany breaks the tie on the highest id (embroidery).
+        Customization::query()->whereKey($f->embroideryA->id)->update(['active' => false]);
+        Customization::query()->whereKey($f->screenA->id)->update(['minimum_quantity' => 25]);
+        Customization::query()->whereKey($f->embroideryA->id)->update(['minimum_quantity' => 100]);
+
+        $variant = $f->a->fresh();
+        $this->assertNotNull($variant->highestMinimumCustomization);
+        $this->assertSame($f->screenA->id, $variant->highestMinimumCustomization->id);
+        $this->assertSame(25, (int) $variant->maxCustomizationMinimumQuantity());
+
+        Customization::query()->whereKey($f->screenA->id)->update(['active' => false]);
+        $this->assertSame(0, $f->a->fresh()->maxCustomizationMinimumQuantity(), 'no live row: zero, not an error');
+    }
+
     public function test_cleanup_deactivates_rows_not_listed_and_reactivates_rows_listed_again(): void
     {
         $this->seed(CoreSeeder::class);

@@ -373,16 +373,24 @@ class ProductVariant extends Model implements HasMedia
 
     public function maxCustomizationMinimumQuantity()
     {
-        return $this->highestMinimumCustomization->minimum_quantity;
+        return $this->highestMinimumCustomization->minimum_quantity ?? 0;
     }
 
-    /** @return HasOne<\App\Models\Customizations\Customization, $this> */
+    /**
+     * The live customization with the highest minimum quantity. The pipeline
+     * constraints go inside ofMany's aggregate subqueries: applied only to the
+     * outer query, the aggregate could pick an inactive or non-live row (e.g.
+     * the highest id among equal minimums) that the outer filter then drops,
+     * leaving the relation null while live rows exist.
+     *
+     * @return HasOne<\App\Models\Customizations\Customization, $this>
+     */
     public function highestMinimumCustomization(): HasOne
     {
-        $relation = $this->hasOne(\App\Models\Customizations\Customization::class, 'variant_id')->ofMany('minimum_quantity', 'max');
-        CustomizationPipeline::apply($relation->getQuery());
-
-        return $relation;
+        return $this->hasOne(\App\Models\Customizations\Customization::class, 'variant_id')
+            ->ofMany(['minimum_quantity' => 'max'], function (\Illuminate\Database\Eloquent\Builder $query): void {
+                CustomizationPipeline::apply($query);
+            });
     }
 
     /** Raw supplier data kept by the source connector, for the admin. @return array<string, mixed> */
